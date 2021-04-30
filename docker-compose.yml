@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+
+#  influxdb:
+#    image: influxdb:1.8.4
+#    container_name: influxdb
+#    restart: unless-stopped
+#    environment:
+#      - INFLUXDB_REPORTING_DISABLED=true
+#      - INFLUXDB_ADMIN_PASSWORD=password
+#      - INFLUXDB_ADMIN_USER=admin
+#
+#    volumes:
+#      #- influx-data:/var/lib/influxdb/
+#      - ./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
+#      - ./config/influxdb/init.sql:/docker-entrypoint-initdb.d/init.iql:ro
+#    ports:
+#      - 8086:8086
+#      - 2003:2003
+#
+#  grafana:
+#    image: grafana/grafana:7.4.2
+#    container_name: grafana
+#    restart: unless-stopped
+#    depends_on:
+#      - influxdb
+#    environment:
+#      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+#      - GF_SECURITY_ADMIN_PASSWORD=admin
+#      - GF_INSTALL_PLUGINS=
+#    volumes:
+#      - grafana-data:/var/lib/grafana
+#      - ./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+#      - ./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+#      - ./config/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+#    ports:
+#      - 3000:3000
+
+  db:
+    image: postgres:10.16
+    container_name: postgres_db
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: avia
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+      - ./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh:ro
+      - ./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro
+
+#  loki:
+#    image: grafana/loki:1.5.0
+#    container_name: loki
+#    restart: unless-stopped
+#    command: -config.file=/etc/loki/local-config.yaml
+#    ports:
+#      - 3100:3100
+#    healthcheck:
+#      test: ["CMD", "wget", "--spider", "-S", "http://localhost:3100/ready"]
+#      interval: 1m
+#      timeout: 10s
+#      retries: 3
+#      start_period: 1m
+
+
+networks:
+  default:
+    name: profiling-sandbox
+
+volumes:
+  influx-data:
+    name: influx-data
+  grafana-data:
+    name: grafana-data
+  postgresql-data:
+    name: postgresql-data
