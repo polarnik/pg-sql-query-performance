@@ -7,7 +7,7 @@ set -e
 #apt-get install wget unzip sudo -y
 #wget -c --output-document=dbdump.zip https://edu.postgrespro.ru/demo-medium.zip
 #unzip dbdump.zip -d dbdump
-#mv /dbdump/demo-medium-*.sql /dbdump/demo.sql
+#mv /dbdump/demo-*.sql /dbdump/demo.sql
 
 # https://postgrespro.ru/education/courses/QPT
 #psql -t template1 --username "$POSTGRES_USER" -c "ALTER SYSTEM SET shared_preload_libraries='pg_stat_statements','pg_buffercache','pg_prewarm','auto_explain';"
@@ -38,6 +38,13 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 EOSQL
 
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_count.sql
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle_in_transaction.sql
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle.sql
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_waiting.sql
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_statements.sql
 
 
-#psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /dbdump/demo.sql
+
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /dbdump/demo.sql
+

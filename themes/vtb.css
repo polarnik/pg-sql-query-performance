@@ -24,6 +24,7 @@ body {
     background-color: white;
     font-family: 'Roboto';
     padding: 0;
+    font-size: 26pt;
  }
 
  section h1 a, section h2 a {
@@ -65,17 +66,17 @@ section.lead13 h1,
 section.lead17 h1,
 section.lead18 h1
 {
+    font-size: 140%;
     letter-spacing: 1.1px;
-    font-size: 36pt;
     position: absolute;
-    width: calc(555px - 54px);
+    width: calc(555px - 30px);
     height: calc(190px - 10px);
     background: #002882;
     color: #fff;
     margin: 0;
     z-index: 3;
     padding: 0;
-    padding-left: 54px;
+    padding-left: 30px;
     padding-top: 10px;
     top: 228px;
 }
@@ -147,16 +148,16 @@ section.lead13 h2,
 section.lead17 h2, 
 section.lead18 h2 
 {
-    font-size: 26pt;
+    font-size: 100%;
     position: absolute;
-    width: calc(555px - 24px - 54px);
+    width: calc(555px - 24px - 30px);
     height: 65px;
     background: #00AAFF;
     color: white;
     z-index: 3;
     padding: 0;
     margin: 0;
-    padding-left: 54px;
+    padding-left: 30px;
     top: 427px;
 }
 
@@ -229,6 +230,111 @@ section.lead18 h2 strong
     padding-top: 10px;
 
 }
+
+
+
+
+section h3,
+section.lead1 h3, 
+section.lead2 h3, 
+section.lead5 h3, 
+section.lead6 h3, 
+section.lead9 h3, 
+section.lead10 h3, 
+section.lead11 h3, 
+section.lead12 h3, 
+section.lead13 h3, 
+section.lead17 h3, 
+section.lead18 h3 
+{
+    font-size: 100%;
+    position: absolute;
+    width: calc(455px - 30px);
+    height: calc(190px - 10px);
+    background: #00AAFF;
+    color: white;
+    z-index: 3;
+    padding: 0;
+    margin: 0;
+    padding-left: 30px;
+    padding-top: 10px;
+    top: calc(427px + 65px + 10px);
+}
+
+section h3:after,
+section.lead1 h3:after, 
+section.lead2 h3:after, 
+section.lead5 h3:after, 
+section.lead6 h3:after, 
+section.lead9 h3:after, 
+section.lead10 h3:after, 
+section.lead11 h3:after, 
+section.lead12 h3:after, 
+section.lead13 h3:after, 
+section.lead17 h3:after, 
+section.lead18 h3:after 
+{
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    left: calc(455px - 4px);
+    border-top: 190px solid #00AAFF;
+    border-right: 69px solid transparent;
+    border-left: 2px solid #00AAFF;
+}
+
+section h3:before,
+section.lead1 h3:before, 
+section.lead2 h3:before, 
+section.lead5 h3:before, 
+section.lead6 h3:before, 
+section.lead9 h3:before, 
+section.lead10 h3:before, 
+section.lead11 h3:before, 
+section.lead12 h3:before, 
+section.lead13 h3:before, 
+section.lead17 h3:before, 
+section.lead18 h3:before 
+{
+    content: "";
+    position: absolute;
+    right: 100%;
+    bottom: 0;
+    left: calc(455px + 32px);
+    width: 6px;
+    height: 190px;
+    transform: skew(-20deg);
+    background: #9BDDFC;
+    overflow: hidden;
+    z-index: -1;
+}
+
+section h3 strong, 
+section.lead1 h3 strong, 
+section.lead2 h3 strong, 
+section.lead5 h3 strong, 
+section.lead6 h3 strong, 
+section.lead9 h3 strong, 
+section.lead10 h3 strong, 
+section.lead11 h3 strong, 
+section.lead12 h3 strong, 
+section.lead13 h3 strong, 
+section.lead17 h3 strong, 
+section.lead18 h3 strong
+{
+    color: white;
+    position: absolute;
+    padding-top: 10px;
+
+}
+
+
+
+
+
 
 section.lead1 {
     background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead01.png");
@@ -309,18 +415,15 @@ section > p > code
 }
 section pre, section > code, section > pre, section > p {
     margin: 30px;
-    font-size: 26pt;
 }
 
 section ul, section ol {
-    font-size: 40px;
     margin: 26pt;
 }
 
 section table {
     width: 94%;
     text-align: left;
-    font-size: 40px;
     margin: 26pt;
 }
 
@@ -340,6 +443,23 @@ section table tr td {
     border-width: 1px;
 }
 
+section blockquote {
+
+    background: none repeat scroll 0 0 #fafafa;
+    border-bottom: 3px dashed #bababa;
+    border-top: 3px dashed #bababa;
+    color: #0A0A0A;
+    font-style: italic;
+    /*line-height: 1.45;
+    padding: 10px 15px;*/
+    position: relative;
+    text-align: center;
+}
+
+section blockquote strike {
+    color: #a0a0a0;
+}
+
 /* Styling page number */
 section::after 
 {
@@ -357,23 +477,22 @@ section::after
     background-size: 100%;
     padding-right: 65px;
     padding-top: 12px;
-    font-size: 14px;
     text-align: right;
+    font-size: 14px;
 }
 
 section.head h1
 {
     letter-spacing: 1.1px;
-    font-size: 36pt;
     position: relative;
-    width: calc(1242px - 54px);
+    width: calc(1242px - 30px);
     height: calc(90px - 10px);
     background: #002882;
     color: #fff;
     margin: 0;
     z-index: 3;
     padding: 0;
-    padding-left: 54px;
+    padding-left: 30px;
     padding-top: 10px;
     top: 0px;
 }
@@ -408,7 +527,7 @@ section.head h1:before
 section.head h2
 {
     position: relative;
-    width: calc(1242px - 25px - 54px);
+    width: calc(1242px - 25px - 30px);
     margin-top: 10px;
     top: 0px;
 }
