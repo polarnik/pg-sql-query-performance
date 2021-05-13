@@ -11,3 +11,13 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+config/postgresql/demo-*
+
+### VS Code ###
+.vscode/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr

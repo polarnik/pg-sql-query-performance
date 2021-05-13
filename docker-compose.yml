@@ -2,23 +2,54 @@ version: '3.8'
 
 services:
 
-#  influxdb:
-#    image: influxdb:1.8.4
-#    container_name: influxdb
+  influxdb:
+    image: influxdb:1.8.4
+    container_name: sql_monitor_influxdb
+    #restart: unless-stopped
+    #depends_on:
+    #  db:
+    #    condition: service_healthy
+    #environment:
+    #  - INFLUXDB_REPORTING_DISABLED=true
+    #  - INFLUXDB_ADMIN_PASSWORD=password
+    #  - INFLUXDB_ADMIN_USER=admin
+    volumes:
+      - influx-data:/var/lib/influxdb/
+      - "./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro"
+      - "./config/influxdb/init.sh:/docker-entrypoint-initdb.d/init.sh:ro"
+    #ports:
+    #  - 8086:8086
+    #  - 2003:2003
+    #healthcheck:
+    #  test: ["CMD-SHELL", "curl -XGET localhost:8086/health"]
+    #  interval: 10s
+    #  timeout: 10s
+    #  retries: 30
+    #  start_period: 90s
+
+#  telegraf:
+#    image: telegraf:1.18.2
+#    container_name: sql_monitor_telegraf
 #    restart: unless-stopped
+#    depends_on:
+#      influxdb:
+#        condition: service_healthy
 #    environment:
-#      - INFLUXDB_REPORTING_DISABLED=true
-#      - INFLUXDB_ADMIN_PASSWORD=password
-#      - INFLUXDB_ADMIN_USER=admin
-#
+#      - INFLUXDB_HOST=sql_monitor_influxdb
+#      - CONNECTION_STRING="postgres://test:test@sql_monitor_postgres:5432/postgres"
+#      - PG_HOST=sql_monitor_postgres
+#      - STAND=demo
 #    volumes:
-#      #- influx-data:/var/lib/influxdb/
-#      - ./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro
-#      - ./config/influxdb/init.sql:/docker-entrypoint-initdb.d/init.iql:ro
-#    ports:
-#      - 8086:8086
-#      - 2003:2003
-#
+#      - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
+#      - "./config/telegraf/telegraf.d/inputs.postgresql_extensible.conf:/etc/telegraf/telegraf.d/inputs.postgresql_extensible.conf:ro"
+#    command: "telegraf --config /etc/telegraf/telegraf.conf --config-directory /etc/telegraf/telegraf.d/"
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -XGET localhost:8080"]
+#      interval: 10s
+#      timeout: 10s
+#      retries: 40
+#      start_period: 90s
+
 #  grafana:
 #    image: grafana/grafana:7.4.2
 #    container_name: grafana
@@ -31,27 +62,38 @@ services:
 #      - GF_INSTALL_PLUGINS=
 #    volumes:
 #      - grafana-data:/var/lib/grafana
-#      - ./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
-#      - ./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
-#      - ./config/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+#      - "./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro"
+#      - "./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro"
+#      - "./config/grafana/grafana.ini:/etc/grafana/grafana.ini:ro"
 #    ports:
 #      - 3000:3000
 
-  db:
-    image: postgres:10.16
-    container_name: postgres_db
-    restart: always
-    ports:
-      - 5433:5432
-    environment:
-      POSTGRES_PASSWORD: test
-      POSTGRES_USER: test
-      POSTGRES_DB: avia
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgresql-data:/var/lib/postgresql/data
-      - ./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh:ro
-      - ./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro
+#  db:
+#    image: postgres:10.16
+#    container_name: sql_monitor_postgres
+#    restart: always
+#    ports:
+#      - 5432:5432
+#    environment:
+#      POSTGRES_PASSWORD: test
+#      POSTGRES_USER: test
+#      POSTGRES_DB: postgres
+#      PGDATA: /var/lib/postgresql/data/pgdata
+#    volumes:
+#      - postgresql-data:/var/lib/postgresql/data
+#      - "./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh"
+#      - "./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro"
+#      - "./config/postgresql/monitoring_stat_activity_count.sql:/sql.tmp/monitoring_stat_activity_count.sql:ro"
+#      - "./config/postgresql/monitoring_stat_activity_idle_in_transaction.sql:/sql.tmp/monitoring_stat_activity_idle_in_transaction.sql:ro"
+#      - "./config/postgresql/monitoring_stat_activity_idle.sql:/sql.tmp/monitoring_stat_activity_idle.sql:ro"
+#      - "./config/postgresql/monitoring_stat_activity_waiting.sql:/sql.tmp/monitoring_stat_activity_waiting.sql:ro"
+#      - "./config/postgresql/monitoring_stat_statements.sql:/sql.tmp/monitoring_stat_statements.sql:ro"
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U postgres"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 20
+#      start_period: 90s
 
 #  loki:
 #    image: grafana/loki:1.5.0
@@ -70,12 +112,12 @@ services:
 
 networks:
   default:
-    name: profiling-sandbox
+    name: sql-monitor-network
 
 volumes:
   influx-data:
-    name: influx-data
+    name: sql-monitor-influx-data
   grafana-data:
-    name: grafana-data
+    name: sql-monitor-grafana-data
   postgresql-data:
-    name: postgresql-data
+    name: sql-monitor-postgresql-data
