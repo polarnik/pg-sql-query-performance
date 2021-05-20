@@ -1,0 +1,1 @@
+CREATE USER telegraf_monitoring_user WITH ENCRYPTED PASSWORD 'pass';

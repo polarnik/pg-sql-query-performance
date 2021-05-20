@@ -1,0 +1,13 @@
+# # config file version
+apiVersion: 1
+
+providers:
+ - name: ''
+   orgId: 1
+   folder: ''
+   folderUid: ''
+   type: file
+   allowUiUpdates: false
+   updateIntervalSeconds: 10
+   options:
+     path: /etc/grafana/provisioning/dashboards/json

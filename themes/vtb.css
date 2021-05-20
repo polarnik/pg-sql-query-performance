@@ -16,6 +16,19 @@
     font-family: 'Roboto';
 }
 
+footer {
+    box-sizing: border-box;
+    font-size: 66%;
+    height: 60px;
+    line-height: 50px;
+    overflow: hidden;
+    padding: 10px 25px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 body {
     font-family: Roboto;
   }
@@ -30,6 +43,57 @@ body {
  section h1 a, section h2 a {
     color: white;
  }
+
+section.main
+{
+    padding: 0;
+    background-position: 95% 10%, right bottom;
+    background-repeat: no-repeat, no-repeat;
+    background-size: 15%, cover;
+    background-origin: padding-box, border-box;
+    background: #002882;
+    color: white;
+}
+
+section.main h1
+{
+    vertical-align: middle;
+    width: 75%;
+    top: 35%;
+    margin: 0;
+    text-align: left;
+    font-size: 170%;
+    background-color: rgba(255, 255, 255, 0.0);
+}
+
+section.main:before
+{
+    content: " ";
+    position: absolute;
+    bottom: 0;
+    left: 1000px;
+    width: 1400px;
+    height: 100%;
+    transform: skew(-20deg);
+    background: #C5C7C8;
+}
+
+section.lead1 footer a, 
+section.lead2 footer a, 
+section.lead5 footer a, 
+section.lead6 footer a, 
+section.lead9 footer a, 
+section.lead10 footer a, 
+section.lead11 footer a, 
+section.lead12 footer a, 
+section.lead13 footer a, 
+section.lead17 footer a, 
+section.lead18 footer a 
+{
+    background-color: rgba(0, 0, 0, 0.0);
+    color: white !important;
+    text-decoration-color: white !important;
+}
 
 section.lead1, 
 section.lead2, 
@@ -48,7 +112,8 @@ section.lead18
     background-repeat: no-repeat, no-repeat;
     background-size: 15%, cover;
     background-origin: padding-box, border-box;
-    color: white;
+    color: white !important;
+    text-decoration-color: white !important;
 }
 
 
@@ -82,7 +147,7 @@ section.lead18 h1
 }
 
 
-section h1:after,
+section.title h1:after,
 section.lead1 h1:after,
 section.lead2 h1:after,
 section.lead5 h1:after,
@@ -109,7 +174,7 @@ section.lead18 h1:after
 
 
 
-section h1:before,
+section.title h1:before,
 section.lead1 h1:before,
 section.lead2 h1:before,
 section.lead5 h1:before,

@@ -17,3 +17,5 @@ where state IN ('Lock')
 group by usename , datname, state, md5(query)::uuid::varchar(100), query;
 $$
 LANGUAGE SQL SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.monitoring_stat_activity_waiting() TO telegraf_monitoring_user;

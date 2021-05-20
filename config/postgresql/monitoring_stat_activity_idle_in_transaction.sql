@@ -32,3 +32,5 @@ WHERE state IN ('idle in transaction', 'idle in transaction (aborted)')
 GROUP BY usename , datname, state, md5(query)::uuid::varchar(100), query;
 $$
 LANGUAGE SQL SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.monitoring_stat_activity_idle_in_transaction() TO telegraf_monitoring_user;

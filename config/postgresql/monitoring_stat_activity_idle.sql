@@ -34,3 +34,5 @@ WHERE state = 'idle'
 GROUP BY usename , datname, state, md5(query)::uuid::varchar(100), query;
 $function$
 ;
+
+GRANT EXECUTE ON FUNCTION public.monitoring_stat_activity_idle() TO telegraf_monitoring_user;
