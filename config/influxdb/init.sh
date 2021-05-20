@@ -2,6 +2,8 @@
 
 influx <<-EOSQL
 CREATE DATABASE telegraf_pg_demo;
+CREATE DATABASE jmeter;
+CREATE DATABASE gatling;
 EOSQL
 
 influx <<-EOSQL

@@ -21,6 +21,9 @@ SELECT
     coalesce(usename, '(none)') as usename,
     coalesce(datname, '(none)') as datname,
     state, 
+    wait_event,
+    wait_event_type,
+    backend_type,
     count(*) as "count",
     coalesce(sum(extract(epoch FROM clock_timestamp() - state_change)),0) as sum_state_seconds,
     coalesce(max(extract(epoch FROM clock_timestamp() - state_change)),0) as max_state_seconds,
@@ -34,3 +37,6 @@ GROUP BY usename , datname, state, wait_event, wait_event_type, backend_type
 ;
 $$
 LANGUAGE SQL SECURITY DEFINER;
+
+
+GRANT EXECUTE ON FUNCTION public.monitoring_stat_activity_count() TO telegraf_monitoring_user;

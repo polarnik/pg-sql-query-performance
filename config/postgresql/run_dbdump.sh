@@ -12,6 +12,7 @@ set -e
 # https://postgrespro.ru/education/courses/QPT
 #psql -t template1 --username "$POSTGRES_USER" -c "ALTER SYSTEM SET shared_preload_libraries='pg_stat_statements','pg_buffercache','pg_prewarm','auto_explain';"
 
+echo "Load PostgreSQL Extensions"
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 
 ALTER SYSTEM SET shared_preload_libraries='pg_stat_statements','auto_explain';
@@ -22,10 +23,13 @@ ALTER SYSTEM SET track_io_timing = 'on';
 ALTER SYSTEM SET track_functions = 'all';
 
 EOSQL
+echo "Load PostgreSQL Extensions ... complete"
 
 
 pg_ctl -D /var/lib/postgresql/data/pgdata restart
 
+
+echo "Create PostgreSQL Extensions"
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 
@@ -38,13 +42,18 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 EOSQL
 
+
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_user.sql
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_count.sql
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle_in_transaction.sql
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle.sql
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_waiting.sql
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_statements.sql
 
+echo "Create Monitoring Functions ... complete"
 
+echo "Restore Backup"
 
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /dbdump/demo.sql
 
+echo "Restore Backup ... complete"
