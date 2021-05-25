@@ -47,7 +47,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 2,
-  "iteration": 1621983976120,
+  "iteration": 1621985803688,
   "links": [],
   "panels": [
     {
@@ -271,7 +271,7 @@
               },
               {
                 "params": [
-                  " *60 /( $__interval_ms / 1000)"
+                  " *60 /( $__interval_ms / 1000)/10"
                 ],
                 "type": "math"
               }
@@ -753,7 +753,7 @@
               },
               {
                 "params": [
-                  " * 60 / ($__interval_ms / 1000)"
+                  " * 60 / ($__interval_ms / 1000)/10"
                 ],
                 "type": "math"
               }
@@ -1966,7 +1966,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 80
               }
             ]
           },
@@ -2036,7 +2036,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 100
+                "value": 73
               }
             ]
           },
@@ -2057,7 +2057,7 @@
               },
               {
                 "id": "custom.width",
-                "value": 90
+                "value": 187
               }
             ]
           },
@@ -2074,6 +2074,18 @@
               {
                 "id": "unit",
                 "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 81
               }
             ]
           }
@@ -3821,5 +3833,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Statistics",
   "uid": "pgstat",
-  "version": 9
+  "version": 11
 }
