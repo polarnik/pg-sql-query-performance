@@ -2030,7 +2030,7 @@
                   {
                     "targetBlank": true,
                     "title": "",
-                    "url": "/d/pgquery/postgresql-query-details?from=${__from}&to=${__to}&var-db_jmeter=${db_jmeter}&var-db=${db}&var-host=${__data.fields[host]}&var-datname=${__data.fields[datname]}&var-usename=${__data.fields[usename]}&var-queryid=${__data.fields[queryid]}"
+                    "url": "/d/pgquery/postgresql-query-details?from=${__from}&to=${__to}&var-db_jmeter=${db_jmeter}&var-db=${db}&var-host=${host}&var-datname=${__data.fields[datname]}&var-usename=${__data.fields[usename]}&var-queryid=${__data.fields[queryid]}"
                   }
                 ]
               },
@@ -3821,5 +3821,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Statistics",
   "uid": "pgstat",
-  "version": 5
+  "version": 7
 }
