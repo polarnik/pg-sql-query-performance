@@ -3631,9 +3631,9 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
-        "tagValuesQuery": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_10m\") FROM \"${archive}\".\"pg_stat_statements_query_md5\" WHERE \"datname\" =~ /^${tag:regex}$/  AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"usename\")",
+        "tagValuesQuery": "",
         "tags": [],
-        "tagsQuery": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_10m\") FROM \"${archive}\".\"pg_stat_statements_query_md5\" WHERE \"datname\" =~ /^${datname:regex}$/  AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
+        "tagsQuery": "",
         "type": "query",
         "useTags": false
       },
@@ -3771,7 +3771,7 @@
         "definition": "SELECT \"query_md5\", top(\"${TOP_by}\", ${TOP}) FROM \n(\nSELECT sum(\"calls_sum\") AS \"Calls\", sum(\"duration_sum\") AS \"Total\", sum(\"rows_sum\") AS \"Rows\", sum(\"duration_sum\")  / sum(\"calls_sum\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_query_md5_10min\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\", \"query_md5\"\n)",
         "description": null,
         "error": null,
-        "hide": 0,
+        "hide": 2,
         "includeAll": true,
         "label": "query_md5",
         "multi": true,
@@ -3821,5 +3821,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Statistics",
   "uid": "pgstat",
-  "version": 7
+  "version": 9
 }
