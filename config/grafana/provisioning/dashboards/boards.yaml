@@ -7,7 +7,7 @@ providers:
    folder: ''
    folderUid: ''
    type: file
-   allowUiUpdates: false
-   updateIntervalSeconds: 10
+   allowUiUpdates: true
+   updateIntervalSeconds: 0
    options:
      path: /etc/grafana/provisioning/dashboards/json

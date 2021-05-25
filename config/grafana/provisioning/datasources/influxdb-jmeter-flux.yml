@@ -35,6 +35,7 @@ datasources:
       httpMode: 'POST'
       organization: '1'
       version: 'Flux'
+      tlsSkipVerify: true
     # <string> json object of data that will be encrypted.
     secureJsonData:
       # <string> database password, if used
