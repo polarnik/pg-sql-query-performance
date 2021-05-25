@@ -1,0 +1,1428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.4.1">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="p-isStable" elementType="Argument">
+            <stringProp name="Argument.name">p-isStable</stringProp>
+            <stringProp name="Argument.value">${__P(isStable,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-isMaxPerf" elementType="Argument">
+            <stringProp name="Argument.name">p-isMaxPerf</stringProp>
+            <stringProp name="Argument.value">${__P(isMaxPerf,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-duration" elementType="Argument">
+            <stringProp name="Argument.name">p-duration</stringProp>
+            <stringProp name="Argument.value">${__P(duration,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-tps" elementType="Argument">
+            <stringProp name="Argument.name">p-tps</stringProp>
+            <stringProp name="Argument.value">${__P(tps,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-thread_count" elementType="Argument">
+            <stringProp name="Argument.name">p-thread_count</stringProp>
+            <stringProp name="Argument.value">${__P(thread_count,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-title" elementType="Argument">
+            <stringProp name="Argument.name">p-title</stringProp>
+            <stringProp name="Argument.value">${__P(title,0)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-testId" elementType="Argument">
+            <stringProp name="Argument.name">p-testId</stringProp>
+            <stringProp name="Argument.value">${__P(testId,${__time(,)})}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="p-tpm" elementType="Argument">
+            <stringProp name="Argument.name">p-tpm</stringProp>
+            <stringProp name="Argument.value">${__groovy(Double.parseDouble(vars.get(&apos;p-tps&apos;))*60.0,)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Преобразование из TPS в TPM, из транзакций в секунду в транзакции в минуту</stringProp>
+          </elementProp>
+          <elementProp name="p-thread_count-stable" elementType="Argument">
+            <stringProp name="Argument.name">p-thread_count-stable</stringProp>
+            <stringProp name="Argument.value">${__jexl3(${p-isStable}*${p-thread_count},)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Потоки теста стабильности с учетом флага isStable</stringProp>
+          </elementProp>
+          <elementProp name="p-thread_count-maxperf" elementType="Argument">
+            <stringProp name="Argument.name">p-thread_count-maxperf</stringProp>
+            <stringProp name="Argument.value">${__groovy(${p-isMaxPerf}*${p-thread_count},)}</stringProp>
+            <stringProp name="Argument.desc">Потоки теста поиска максимальной производительности с учетом флага isMaxPerf</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_03_seqscan" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_03_seqscan</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_03_seqscan_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_04_indexscan" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_04_indexscan</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_04_indexscan_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_05_bitmapscan" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_05_bitmapscan</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_05_bitmapscan_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_06_nestloop" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_06_nestloop</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_06_nestloop_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_07_hashjoin" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_07_hashjoin</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_07_hashjoin_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_08_mergejoin" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_08_mergejoin</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_08_mergejoin_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_10_profiling" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_10_profiling</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_10_profiling</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_10_profiling_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_11_technics" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_11_technics</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_11_technics</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_11_technics_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_11_technics REPEATABLE_READ" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_11_technics_REPEATABLE_READ</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_11_technics_REPEATABLE_READ</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">10</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">TRANSACTION_REPEATABLE_READ</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_11_technics_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_transaction" enabled="true">
+        <boolProp name="autocommit">false</boolProp>
+        <stringProp name="checkQuery"></stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_qpt_transaction</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_transaction</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery"></stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">0</stringProp>
+        <boolProp name="preinit">false</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_transaction_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <JDBCDataSource guiclass="TestBeanGUI" testclass="JDBCDataSource" testname="JDBC Connection Configuration qpt_idle" enabled="true">
+        <boolProp name="autocommit">true</boolProp>
+        <stringProp name="checkQuery">select 1</stringProp>
+        <stringProp name="connectionAge">5000</stringProp>
+        <stringProp name="connectionProperties"></stringProp>
+        <stringProp name="dataSource">DB_idle</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_idle</stringProp>
+        <stringProp name="driver">org.postgresql.Driver</stringProp>
+        <stringProp name="initQuery">/*Init SQL*/ select &apos;Init SQL&apos;</stringProp>
+        <boolProp name="keepAlive">true</boolProp>
+        <stringProp name="password">pass</stringProp>
+        <stringProp name="poolMax">50</stringProp>
+        <boolProp name="preinit">true</boolProp>
+        <stringProp name="timeout">10000</stringProp>
+        <stringProp name="transactionIsolation">DEFAULT</stringProp>
+        <stringProp name="trimInterval">60000</stringProp>
+        <stringProp name="username">qpt_idle_user</stringProp>
+      </JDBCDataSource>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 3" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_03_seqscan (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_03_seqscan.html</stringProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Последовательное сканирование" enabled="true">
+                <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
+                <stringProp name="query">SELECT * FROM flights;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Агрегация" enabled="true">
+                <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
+                <stringProp name="query">SELECT count(*) FROM seats;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Параллельное последовательное сканирование" enabled="true">
+                <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
+                <stringProp name="query">SELECT count(*) FROM bookings;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 4" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_04_indexscan (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_04_indexscan.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_04_indexscan: поиск одного значения" enabled="true">
+                <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
+                <stringProp name="query">SELECT * FROM bookings WHERE book_ref = &apos;0009D5&apos;;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_04_indexscan: с условием, которого нет в индексе" enabled="true">
+                <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
+                <stringProp name="query">SELECT * FROM bookings 
+  WHERE book_ref = &apos;0009D5&apos; AND total_amount &gt; ?;</stringProp>
+                <stringProp name="queryArguments">${__Random(1000,5000,)}</stringProp>
+                <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 5" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_05_bitmapscan (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_05_bitmapscan.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Сканирование по битовой карте" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">SELECT * FROM bookings WHERE total_amount &lt; 10000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Использование памяти" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">SET work_mem = &apos;64kB&apos;;
+SELECT * FROM bookings WHERE total_amount &lt; 10000;
+RESET work_mem;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Объединение битовых карт" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">SELECT * FROM bookings
+  WHERE total_amount &lt; 10000 OR total_amount &gt; 100000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Объединение битовых карт 2" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">  SELECT * FROM bookings
+  WHERE total_amount &lt; 10000
+     OR book_date = bookings.now() - INTERVAL &apos;1 day&apos;;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">SELECT * FROM bookings LIMIT 10;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">SELECT * FROM bookings WHERE total_amount &lt; 10000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Параллельное сканирование по битовой карте" enabled="true">
+                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                <stringProp name="query">SELECT 
+	count(*) 
+FROM bookings 
+WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 6" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_06_nestloop (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_06_nestloop.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Nested loop" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT *
+  FROM tickets t JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no 
+  WHERE t.ticket_no IN (&apos;0005434877256&apos;,&apos;0005433843368&apos;);</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Модификации" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM aircrafts a LEFT JOIN seats s ON (a.aircraft_code = s.aircraft_code) 
+  WHERE a.model LIKE &apos;Аэробус%&apos;;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Модификации 2" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM aircrafts a
+  WHERE a.model LIKE &apos;Аэробус%&apos;
+  AND NOT EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code);</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Модификации 3" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM aircrafts a LEFT JOIN seats s ON (a.aircraft_code = s.aircraft_code) 
+  WHERE a.model LIKE &apos;Аэробус%&apos;
+  AND s.aircraft_code IS NULL;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Модификации 4" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM aircrafts a
+  WHERE a.model LIKE &apos;Аэробус%&apos;
+  AND EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code);</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Модификации 5" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT *
+  FROM aircrafts a
+  WHERE a.model LIKE &apos;Аэробус%&apos;
+  AND EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code);</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_06_nestloop: Соединение нескольких таблиц" enabled="true">
+                <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
+                <stringProp name="query">SELECT t.passenger_name
+  FROM tickets t
+    JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
+    JOIN flights f ON f.flight_id = tf.flight_id
+  WHERE f.flight_id = 12345;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 7" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_07_hashjoin (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_07_hashjoin.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Hash join" enabled="true">
+                <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
+                <stringProp name="query">SELECT *
+  FROM tickets t JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Модификации" enabled="true">
+                <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM aircrafts a FULL JOIN seats s ON a.aircraft_code = s.aircraft_code
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Группировка и уникальные значения" enabled="true">
+                <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
+                <stringProp name="query">SELECT fare_conditions, count(*)
+  FROM seats
+  GROUP BY fare_conditions
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Группировка и уникальные значения 2" enabled="true">
+                <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
+                <stringProp name="query">SELECT DISTINCT fare_conditions
+  FROM seats
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Соединение нескольких таблиц" enabled="true">
+                <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
+                <stringProp name="query">SELECT t.passenger_name, f.flight_no
+  FROM tickets t
+    JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
+    JOIN flights f ON f.flight_id = tf.flight_id
+LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 8" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_08_mergejoin (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_08_mergejoin.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_08_mergejoin: Merge join" enabled="true">
+                <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+                <stringProp name="query">SELECT *
+  FROM tickets t JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
+  ORDER BY t.ticket_no
+LIMIT 100;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout">0</stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows"></stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_08_mergejoin: Merge join 2" enabled="true">
+                <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM tickets t JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
+  ORDER BY t.ticket_no
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout">0</stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_08_mergejoin: Merge join 3" enabled="true">
+                <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+                <stringProp name="query">SELECT * 
+  FROM aircrafts a JOIN seats s ON a.aircraft_code = s.aircraft_code
+  ORDER BY a.aircraft_code
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout">0</stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_08_mergejoin: Группировка и уникальные значения" enabled="true">
+                <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+                <stringProp name="query">SELECT DISTINCT book_date
+  FROM bookings
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout">0</stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_08_mergejoin: Группировка и уникальные значения 2" enabled="true">
+                <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+                <stringProp name="query">SELECT DISTINCT book_date
+  FROM bookings
+  ORDER BY book_date
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout">0</stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_08_mergejoin: Соединение нескольких таблиц" enabled="true">
+                <stringProp name="dataSource">DB_qpt_08_mergejoin</stringProp>
+                <stringProp name="query">SELECT t.ticket_no, bp.flight_id, bp.seat_no
+  FROM tickets t
+    JOIN ticket_flights tf ON t.ticket_no = tf.ticket_no 
+    JOIN boarding_passes bp ON bp.ticket_no = tf.ticket_no 
+     AND bp.flight_id = tf.flight_id 
+  ORDER BY t.ticket_no
+  LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout">0</stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 10" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_10_profiling (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_10_profiling.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_10_profiling: Профиль выполнения" enabled="true">
+                <stringProp name="dataSource">DB_qpt_10_profiling</stringProp>
+                <stringProp name="query">SELECT * FROM report()
+LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_10_profiling: отчет одним запросом" enabled="true">
+                <stringProp name="dataSource">DB_qpt_10_profiling</stringProp>
+                <stringProp name="query">WITH t AS (
+  SELECT f.aircraft_code, 
+    count(*) FILTER (WHERE s.fare_conditions = &apos;Economy&apos;) economy,
+    count(*) FILTER (WHERE s.fare_conditions = &apos;Comfort&apos;) comfort,
+    count(*) FILTER (WHERE s.fare_conditions = &apos;Business&apos;) business 
+  FROM flights f 
+    JOIN boarding_passes bp ON bp.flight_id = f.flight_id 
+    JOIN seats s ON s.aircraft_code = f.aircraft_code AND s.seat_no = bp.seat_no 
+  GROUP BY f.aircraft_code
+)
+SELECT a.model,
+       coalesce(t.economy,0) economy, 
+       coalesce(t.comfort,0) comfort, 
+       coalesce(t.business,0) business 
+  FROM aircrafts a LEFT JOIN t ON a.aircraft_code = t.aircraft_code 
+  ORDER BY a.model
+LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 11" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+              <intProp name="calcMode">2</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
+          <hashTree>
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_11_technics (TC)" enabled="true">
+              <boolProp name="TransactionController.includeTimers">false</boolProp>
+              <boolProp name="TransactionController.parent">false</boolProp>
+              <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_11_technics.html</stringProp>
+            </TransactionController>
+            <hashTree>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_11_technics: Пример оптимизации запроса" enabled="true">
+                <stringProp name="dataSource">DB_qpt_11_technics</stringProp>
+                <stringProp name="query">SELECT a.aircraft_code, (
+  SELECT round(avg(tf.amount))
+  FROM flights f 
+    JOIN ticket_flights tf ON tf.flight_id = f.flight_id 
+  WHERE f.aircraft_code = a.aircraft_code 
+    AND tf.amount &gt; (SELECT min(amount) FROM ticket_flights) 
+    AND tf.amount &lt; (SELECT max(amount) FROM ticket_flights) 
+) 
+FROM aircrafts a 
+GROUP BY a.aircraft_code
+LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_11_technics: Пример оптимизации запроса REPEATABLE_READ" enabled="true">
+                <stringProp name="dataSource">DB_qpt_11_technics_REPEATABLE_READ</stringProp>
+                <stringProp name="query">SELECT a.aircraft_code, (
+  SELECT round(avg(tf.amount))
+  FROM flights f 
+    JOIN ticket_flights tf ON tf.flight_id = f.flight_id 
+  WHERE f.aircraft_code = a.aircraft_code 
+    AND tf.amount &gt; (SELECT min(amount) FROM ticket_flights) 
+    AND tf.amount &lt; (SELECT max(amount) FROM ticket_flights) 
+) 
+FROM aircrafts a 
+GROUP BY a.aircraft_code
+LIMIT 1000;</stringProp>
+                <stringProp name="queryArguments"></stringProp>
+                <stringProp name="queryArgumentsTypes"></stringProp>
+                <stringProp name="queryTimeout"></stringProp>
+                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="resultSetHandler">Count Records</stringProp>
+                <stringProp name="resultSetMaxRows">1</stringProp>
+                <stringProp name="resultVariable"></stringProp>
+                <stringProp name="variableNames"></stringProp>
+              </JDBCSampler>
+              <hashTree/>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - transaction" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-stable}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">10</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.delayedStart">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">0</stringProp>
+        </TestAction>
+        <hashTree>
+          <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для всех потоков группы" enabled="true">
+            <intProp name="calcMode">2</intProp>
+            <stringProp name="throughput">${p-tpm}</stringProp>
+          </ConstantThroughputTimer>
+          <hashTree/>
+        </hashTree>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_transaction (TC)" enabled="true">
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+          <boolProp name="TransactionController.parent">false</boolProp>
+        </TransactionController>
+        <hashTree>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="transaction: AutoCommit(false)" enabled="true">
+            <stringProp name="dataSource">DB_qpt_transaction</stringProp>
+            <stringProp name="query"></stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryTimeout"></stringProp>
+            <stringProp name="queryType">AutoCommit(false)</stringProp>
+            <stringProp name="resultSetHandler">Count Records</stringProp>
+            <stringProp name="resultSetMaxRows">1</stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames"></stringProp>
+          </JDBCSampler>
+          <hashTree/>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="transaction: BEGIN" enabled="true">
+            <stringProp name="dataSource">DB_qpt_transaction</stringProp>
+            <stringProp name="query">BEGIN;</stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryTimeout"></stringProp>
+            <stringProp name="queryType">Callable Statement</stringProp>
+            <stringProp name="resultSetHandler">Count Records</stringProp>
+            <stringProp name="resultSetMaxRows">1</stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames"></stringProp>
+          </JDBCSampler>
+          <hashTree/>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="transaction: SELECT" enabled="true">
+            <stringProp name="dataSource">DB_qpt_transaction</stringProp>
+            <stringProp name="query">SELECT * FROM bookings WHERE book_ref in (&apos;0009D5&apos;);</stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryTimeout"></stringProp>
+            <stringProp name="queryType">Prepared Select Statement</stringProp>
+            <stringProp name="resultSetHandler">Count Records</stringProp>
+            <stringProp name="resultSetMaxRows">1</stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames"></stringProp>
+          </JDBCSampler>
+          <hashTree/>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action: WAIT" enabled="true">
+            <stringProp name="TestPlan.comments">HTTP Request, Kafka Request, ...</stringProp>
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">10000</stringProp>
+          </TestAction>
+          <hashTree/>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="transaction: COMMIT" enabled="true">
+            <stringProp name="dataSource">DB_qpt_transaction</stringProp>
+            <stringProp name="query">COMMIT;</stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryTimeout"></stringProp>
+            <stringProp name="queryType">Callable Statement</stringProp>
+            <stringProp name="resultSetHandler">Count Records</stringProp>
+            <stringProp name="resultSetMaxRows">1</stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames"></stringProp>
+          </JDBCSampler>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - MaxPerf" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${p-thread_count-maxperf}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${p-duration}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${p-duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Timer: qpt (TC)" enabled="true"/>
+        <hashTree>
+          <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
+            <intProp name="ActionProcessor.action">1</intProp>
+            <intProp name="ActionProcessor.target">0</intProp>
+            <stringProp name="ActionProcessor.duration">0</stringProp>
+          </TestAction>
+          <hashTree>
+            <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer: для каждого потока" enabled="true">
+              <intProp name="calcMode">0</intProp>
+              <stringProp name="throughput">${p-tpm}</stringProp>
+            </ConstantThroughputTimer>
+            <hashTree/>
+          </hashTree>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 3" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="310866836">Thread Group (user) - Stable 3</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="-64920728">qpt_03_seqscan (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 4" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="310866837">Thread Group (user) - Stable 4</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="1165705652">qpt_04_indexscan (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 5" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="310866838">Thread Group (user) - Stable 5</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="-1383794186">qpt_05_bitmapscan (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 6" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="310866839">Thread Group (user) - Stable 6</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="-1396781721">qpt_06_nestloop (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 7" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="310866840">Thread Group (user) - Stable 7</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="1945647852">qpt_07_hashjoin (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 8" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="310866841">Thread Group (user) - Stable 8</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="-1274823171">qpt_08_mergejoin (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 10" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="1046937310">Thread Group (user) - Stable 10</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="-1789227838">qpt_10_profiling (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+          <ModuleController guiclass="ModuleControllerGui" testclass="ModuleController" testname="Module : qpt 11" enabled="true">
+            <collectionProp name="ModuleController.node_path">
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="764597751">Test Plan</stringProp>
+              <stringProp name="1046937311">Thread Group (user) - Stable 11</stringProp>
+              <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
+              <stringProp name="112181">qpt</stringProp>
+              <stringProp name="-437069540">qpt_11_technics (TC)</stringProp>
+            </collectionProp>
+          </ModuleController>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <BackendListener guiclass="BackendListenerGui" testclass="BackendListener" testname="Backend Listener" enabled="true">
+        <elementProp name="arguments" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" enabled="true">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="influxdbMetricsSender" elementType="Argument">
+              <stringProp name="Argument.name">influxdbMetricsSender</stringProp>
+              <stringProp name="Argument.value">org.apache.jmeter.visualizers.backend.influxdb.HttpMetricsSender</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="influxdbUrl" elementType="Argument">
+              <stringProp name="Argument.name">influxdbUrl</stringProp>
+              <stringProp name="Argument.value">http://sql_monitor_influxdb:8086/write?db=jmeter</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="application" elementType="Argument">
+              <stringProp name="Argument.name">application</stringProp>
+              <stringProp name="Argument.value">postgresql demo database</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="measurement" elementType="Argument">
+              <stringProp name="Argument.name">measurement</stringProp>
+              <stringProp name="Argument.value">jmeter</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="summaryOnly" elementType="Argument">
+              <stringProp name="Argument.name">summaryOnly</stringProp>
+              <stringProp name="Argument.value">false</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="samplersRegex" elementType="Argument">
+              <stringProp name="Argument.name">samplersRegex</stringProp>
+              <stringProp name="Argument.value">.*</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="percentiles" elementType="Argument">
+              <stringProp name="Argument.name">percentiles</stringProp>
+              <stringProp name="Argument.value">90;95;99</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="testTitle" elementType="Argument">
+              <stringProp name="Argument.name">testTitle</stringProp>
+              <stringProp name="Argument.value">${p-title} (Thread: ${p-thread_count}, TPS: ${p-tps}, Duration: ${p-duration})</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="eventTags" elementType="Argument">
+              <stringProp name="Argument.name">eventTags</stringProp>
+              <stringProp name="Argument.value"></stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="TAG_testId" elementType="Argument">
+              <stringProp name="Argument.name">TAG_testId</stringProp>
+              <stringProp name="Argument.value">${p-testId}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+            <elementProp name="TAG_generatorHost" elementType="Argument">
+              <stringProp name="Argument.name">TAG_generatorHost</stringProp>
+              <stringProp name="Argument.value">${__machineName()}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
+      </BackendListener>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

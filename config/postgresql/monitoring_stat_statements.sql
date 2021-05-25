@@ -37,3 +37,5 @@ AS $$
           ON (pg_stat_database.datid = pg_stat_statements.dbid);
 $$
 LANGUAGE SQL SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.monitoring_stat_statements() TO telegraf_monitoring_user;

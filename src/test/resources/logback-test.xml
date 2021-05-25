@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{ISO8601}  ---  %level  ---  %thread  ---  %logger  ---  %msg%n%rEx</pattern>
+        </encoder>
+        <immediateFlush>true</immediateFlush>
+    </appender>
+
+    <appender name="ASYNCCONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="CONSOLE"/>
+        <queueSize>500</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <!--
+    https://logback.qos.ch/manual/appenders.html#SizeAndTimeBasedRollingPolicy
+    -->
+    <appender name="APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/application.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>200</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%date{ISO8601}  ---  %level  ---  %thread  ---  %logger  ---  %msg%n%rEx</pattern>
+            <immediateFlush>true</immediateFlush>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="APPLICATION"/>
+        <queueSize>500</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+
+    <!--
+    <logger name="io.netty.util.internal" level="INFO" />
+    <logger name="io.gatling.http.client.impl.HttpAppHandler" level="INFO" />
+    -->
+    <logger name="io.gatling.graphite.message.GraphiteMetrics$" level="WARN" />
+
+    <!--
+    DEBUG Sending request=/ (GET) uri=http://localhost/: scenario=atOnceUsers, userId=70
+    <logger name="io.gatling.http.engine.tx.HttpTxExecutor" level="INFO" />
+    -->
+
+    <!--
+    DEBUG Start user #70
+    <logger name="io.gatling.core.controller.inject.open" level="INFO" />
+    -->
+
+    <!-- uncomment and set to DEBUG to log all failing HTTP requests -->
+    <!-- uncomment and set to TRACE to log all HTTP requests -->
+    <logger name="io.gatling.http.engine.response" level="WARN" />
+
+    <root level="INFO">
+        <appender-ref ref="ASYNCFILE" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+
+</configuration>

@@ -1,0 +1,6 @@
+
+CREATE ROLE grafana WITH LOGIN;
+CREATE DATABASE grafana;
+ALTER DATABASE grafana OWNER TO grafana;
+ALTER USER grafana WITH ENCRYPTED PASSWORD 'mypassword';
+ALTER DATABASE grafana OWNER TO grafana;

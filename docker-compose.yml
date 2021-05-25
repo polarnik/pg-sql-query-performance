@@ -2,17 +2,49 @@ version: '3.8'
 
 services:
 
+
+  db:
+    image: postgres:10.16
+    container_name: sql_monitor_postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+      - "./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh"
+      - "./config/postgresql/monitoring_user.sql:/sql.tmp/monitoring_user.sql:ro"
+      - "./config/postgresql/monitoring_stat_activity_count.sql:/sql.tmp/monitoring_stat_activity_count.sql:ro"
+      - "./config/postgresql/monitoring_stat_activity_idle_in_transaction.sql:/sql.tmp/monitoring_stat_activity_idle_in_transaction.sql:ro"
+      - "./config/postgresql/monitoring_stat_activity_idle.sql:/sql.tmp/monitoring_stat_activity_idle.sql:ro"
+      - "./config/postgresql/monitoring_stat_activity_waiting.sql:/sql.tmp/monitoring_stat_activity_waiting.sql:ro"
+      - "./config/postgresql/monitoring_stat_statements.sql:/sql.tmp/monitoring_stat_statements.sql:ro"
+      - "./config/postgresql/demo-medium-20170815.sql:/dbdump/demo.sql:ro"
+      - "./config/postgresql/grafana_db.sql:/sql.tmp/grafana_db.sql:ro"
+      - "./config/postgresql/bookings.functions.sql:/sql.tmp/bookings.functions.sql:ro"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --dbname=postgres --username=test"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+
+
   influxdb:
     image: influxdb:1.8.4
     container_name: sql_monitor_influxdb
-    #restart: unless-stopped
-    #depends_on:
-    #  db:
-    #    condition: service_healthy
-    #environment:
-    #  - INFLUXDB_REPORTING_DISABLED=true
-    #  - INFLUXDB_ADMIN_PASSWORD=password
-    #  - INFLUXDB_ADMIN_USER=admin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - INFLUXDB_REPORTING_DISABLED=true
+      - INFLUXDB_ADMIN_PASSWORD=password
+      - INFLUXDB_ADMIN_USER=admin
     volumes:
       - influx-data:/var/lib/influxdb/
       - "./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro"
@@ -51,11 +83,13 @@ services:
       start_period: 90s
 
   grafana:
-    image: grafana/grafana:7.5.6
+    image: grafana/grafana:7.5.7
     container_name: sql_monitor_grafana
     restart: unless-stopped
     depends_on:
       - influxdb
+      - db
+      - telegraf
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -68,47 +102,22 @@ services:
     ports:
       - 3000:3000
 
-  db:
-    image: postgres:10.16
-    container_name: sql_monitor_postgres
-    restart: always
-    ports:
-      - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: test
-      POSTGRES_USER: test
-      POSTGRES_DB: postgres
-      PGDATA: /var/lib/postgresql/data/pgdata
+  jmeter:
+    container_name: sql_monitor_jmeter
+    build:
+      context: "./"
+      dockerfile: "Dockerfile"
+    depends_on:
+      - grafana
+      - influxdb
+      - db
     volumes:
-      - postgresql-data:/var/lib/postgresql/data
-      - "./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh"
-      - "./config/postgresql/monitoring_user.sql:/sql.tmp/monitoring_user.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_count.sql:/sql.tmp/monitoring_stat_activity_count.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_idle_in_transaction.sql:/sql.tmp/monitoring_stat_activity_idle_in_transaction.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_idle.sql:/sql.tmp/monitoring_stat_activity_idle.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_waiting.sql:/sql.tmp/monitoring_stat_activity_waiting.sql:ro"
-      - "./config/postgresql/monitoring_stat_statements.sql:/sql.tmp/monitoring_stat_statements.sql:ro"
-      - "./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready --dbname=postgres --username=test"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 90s
-
-#  loki:
-#    image: grafana/loki:1.5.0
-#    container_name: loki
-#    restart: unless-stopped
-#    command: -config.file=/etc/loki/local-config.yaml
-#    ports:
-#      - 3100:3100
-#    healthcheck:
-#      test: ["CMD", "wget", "--spider", "-S", "http://localhost:3100/ready"]
-#      interval: 1m
-#      timeout: 10s
-#      retries: 3
-#      start_period: 1m
+      - "./src:/tmp/src:ro"
+      - "./pom.xml:/tmp/pom.xml:ro"
+    restart: "no"
+    command: "mvn clean verify -P jmeter,Stable -Dtps=1.0"
+    ports:
+      - 4445:4445
 
 
 networks:
@@ -116,6 +125,8 @@ networks:
     name: sql-monitor-network
 
 volumes:
+  jmeter-m2:
+    name: sql-monitor-jmeter-m2
   influx-data:
     name: sql-monitor-influx-data
   grafana-data:
