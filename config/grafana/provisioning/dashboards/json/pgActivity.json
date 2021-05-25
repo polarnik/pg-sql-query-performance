@@ -33,7 +33,7 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 3,
-  "iteration": 1621983051016,
+  "iteration": 1621984496421,
   "links": [
     {
       "$$hashKey": "object:465",
@@ -6085,8 +6085,8 @@
       {
         "current": {
           "selected": false,
-          "text": "Influx-xxx",
-          "value": "Influx-xxx"
+          "text": "Stand-Demo-JMeter",
+          "value": "Stand-Demo-JMeter"
         },
         "description": null,
         "error": null,
@@ -6211,7 +6211,9 @@
         "allValue": "",
         "current": {
           "selected": true,
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
@@ -6269,7 +6271,9 @@
         "allValue": "",
         "current": {
           "selected": true,
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
@@ -6396,7 +6400,9 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
@@ -6425,8 +6431,8 @@
       {
         "current": {
           "selected": false,
-          "text": "PostgreSQL Query: influx-xxx",
-          "value": "PostgreSQL Query: influx-xxx"
+          "text": "PostgreSQL Query: Stand-Demo-JMeter",
+          "value": "PostgreSQL Query: Stand-Demo-JMeter"
         },
         "description": null,
         "error": null,
@@ -6445,8 +6451,8 @@
     ]
   },
   "time": {
-    "from": "2020-11-11T12:24:09.228Z",
-    "to": "2020-11-11T13:13:06.986Z"
+    "from": "now-3h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -6475,5 +6481,5 @@
   "timezone": "",
   "title": "PostgreSQL Activity",
   "uid": "pgActivity",
-  "version": 8
+  "version": 10
 }
