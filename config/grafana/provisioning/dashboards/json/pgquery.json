@@ -2,6 +2,20 @@
   "annotations": {
     "list": [
       {
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#73BF69",
+        "limit": 100,
+        "matchAny": true,
+        "name": "OK",
+        "showIn": 0,
+        "tags": [
+          "OK"
+        ],
+        "type": "tags"
+      },
+      {
         "builtIn": 1,
         "datasource": "$db_jmeter",
         "enable": false,
@@ -33,7 +47,7 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 1,
-  "iteration": 1621984538425,
+  "iteration": 1622052239072,
   "links": [],
   "panels": [
     {
@@ -828,7 +842,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "maxDataPoints": 200,
       "nullPointMode": "null",
       "options": {
@@ -1076,7 +1090,7 @@
       },
       "percentage": false,
       "pluginVersion": "",
-      "pointradius": 2,
+      "pointradius": 3,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [
@@ -1285,7 +1299,7 @@
         "defaults": {},
         "overrides": []
       },
-      "fill": 1,
+      "fill": 3,
       "fillGradient": 10,
       "gridPos": {
         "h": 5,
@@ -1306,7 +1320,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -1558,7 +1572,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "maxDataPoints": 200,
       "nullPointMode": "null",
       "options": {
@@ -2133,7 +2147,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -2383,7 +2397,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -2658,7 +2672,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "maxDataPoints": 200,
       "nullPointMode": "null",
       "options": {
@@ -2926,7 +2940,7 @@
         "values": false
       },
       "lines": true,
-      "linewidth": 3,
+      "linewidth": 6,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -3174,6 +3188,13 @@
       "links": [],
       "pageSize": 1,
       "repeat": "query_md5",
+      "scopedVars": {
+        "query_md5": {
+          "selected": false,
+          "text": "d4300958-580a-b6d2-7900-24b7e64f4635",
+          "value": "d4300958-580a-b6d2-7900-24b7e64f4635"
+        }
+      },
       "scroll": true,
       "showHeader": true,
       "sort": {
@@ -5442,5 +5463,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Details",
   "uid": "pgquery",
-  "version": 2
+  "version": 6
 }
