@@ -33,7 +33,7 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 3,
-  "iteration": 1621984496421,
+  "iteration": 1622059173523,
   "links": [
     {
       "$$hashKey": "object:465",
@@ -71,7 +71,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -95,7 +95,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -253,7 +253,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -277,7 +277,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -435,7 +435,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -459,7 +459,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -617,7 +617,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -641,7 +641,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -798,8 +798,8 @@
             "defaults": {},
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
+          "fill": 10,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -823,7 +823,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -981,7 +981,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -1007,7 +1007,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -1450,7 +1450,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -1459,6 +1459,7 @@
           },
           "hiddenSeries": false,
           "id": 77,
+          "interval": "1m",
           "legend": {
             "alignAsTable": true,
             "avg": false,
@@ -1474,7 +1475,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -1612,7 +1613,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -1621,6 +1622,7 @@
           },
           "hiddenSeries": false,
           "id": 74,
+          "interval": null,
           "legend": {
             "alignAsTable": true,
             "avg": false,
@@ -1638,7 +1640,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -1776,7 +1778,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -1802,7 +1804,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -1940,7 +1942,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -1966,7 +1968,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -2104,7 +2106,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -2130,7 +2132,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -2301,7 +2303,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -2325,7 +2327,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -2463,7 +2465,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -2487,7 +2489,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -2625,7 +2627,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -2649,7 +2651,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -2787,7 +2789,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -2811,7 +2813,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -2949,7 +2951,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -2973,8 +2975,11 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
           "pluginVersion": "",
           "pointradius": 2,
@@ -3137,18 +3142,16 @@
           "dashes": false,
           "datasource": "$db",
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 57
+            "y": 4
           },
           "hiddenSeries": false,
           "id": 68,
@@ -3167,10 +3170,13 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.0-beta1",
+          "pluginVersion": "",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -3298,18 +3304,16 @@
           "dashes": false,
           "datasource": "$db",
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 66
+            "y": 13
           },
           "hiddenSeries": false,
           "id": 86,
@@ -3328,10 +3332,13 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.0-beta1",
+          "pluginVersion": "",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -3459,18 +3466,16 @@
           "dashes": false,
           "datasource": "$db",
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 75
+            "y": 22
           },
           "hiddenSeries": false,
           "id": 85,
@@ -3489,10 +3494,13 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.0-beta1",
+          "pluginVersion": "",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -3620,18 +3628,16 @@
           "dashes": false,
           "datasource": "$db",
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 84
+            "y": 31
           },
           "hiddenSeries": false,
           "id": 84,
@@ -3650,10 +3656,13 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.0-beta1",
+          "pluginVersion": "",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -3781,18 +3790,16 @@
           "dashes": false,
           "datasource": "$db",
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
             "x": 0,
-            "y": 93
+            "y": 40
           },
           "hiddenSeries": false,
           "id": 83,
@@ -3811,10 +3818,13 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.0-beta1",
+          "pluginVersion": "",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -3979,7 +3989,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -4003,7 +4013,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -4247,7 +4257,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -4271,7 +4281,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 4,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -4515,7 +4525,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -4539,7 +4549,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 4,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -4783,7 +4793,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -4807,7 +4817,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5051,7 +5061,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 4,
           "gridPos": {
             "h": 9,
             "w": 24,
@@ -5075,7 +5085,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 4,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5246,7 +5256,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 23,
@@ -5265,7 +5275,7 @@
             "values": false
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5348,7 +5358,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Panel Title",
+          "title": "Count by Server",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -5398,7 +5408,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 23,
@@ -5417,7 +5427,7 @@
             "values": false
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5500,7 +5510,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Panel Title",
+          "title": "Count by DB",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -5550,7 +5560,7 @@
             "overrides": []
           },
           "fill": 1,
-          "fillGradient": 0,
+          "fillGradient": 10,
           "gridPos": {
             "h": 9,
             "w": 23,
@@ -5569,7 +5579,7 @@
             "values": false
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 6,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5652,7 +5662,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Panel Title",
+          "title": "Count by State",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -5721,7 +5731,7 @@
             "values": false
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 4,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5804,7 +5814,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Panel Title",
+          "title": "Count by User",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -5873,7 +5883,7 @@
             "values": false
           },
           "lines": true,
-          "linewidth": 1,
+          "linewidth": 4,
           "nullPointMode": "null",
           "options": {
             "alertThreshold": true
@@ -5966,7 +5976,7 @@
           "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Panel Title",
+          "title": "Count by DB, User, State",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -6481,5 +6491,5 @@
   "timezone": "",
   "title": "PostgreSQL Activity",
   "uid": "pgActivity",
-  "version": 10
+  "version": 17
 }
