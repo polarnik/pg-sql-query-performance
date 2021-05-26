@@ -47,7 +47,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 2,
-  "iteration": 1621985803688,
+  "iteration": 1622052180120,
   "links": [],
   "panels": [
     {
@@ -184,8 +184,8 @@
         "defaults": {},
         "overrides": []
       },
-      "fill": 7,
-      "fillGradient": 0,
+      "fill": 10,
+      "fillGradient": 10,
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -212,7 +212,7 @@
         "values": true
       },
       "lines": true,
-      "linewidth": 2,
+      "linewidth": 6,
       "links": [],
       "maxDataPoints": 1000,
       "nullPointMode": "null",
@@ -454,7 +454,7 @@
         "overrides": []
       },
       "fill": 6,
-      "fillGradient": 0,
+      "fillGradient": 10,
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -481,7 +481,7 @@
         "values": true
       },
       "lines": true,
-      "linewidth": 1,
+      "linewidth": 6,
       "links": [],
       "maxDataPoints": 1000,
       "nullPointMode": "null",
@@ -667,7 +667,7 @@
         "overrides": []
       },
       "fill": 3,
-      "fillGradient": 0,
+      "fillGradient": 10,
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -694,7 +694,7 @@
         "values": true
       },
       "lines": true,
-      "linewidth": 1,
+      "linewidth": 6,
       "links": [],
       "maxDataPoints": 1000,
       "nullPointMode": "null",
@@ -885,7 +885,7 @@
         "overrides": []
       },
       "fill": 3,
-      "fillGradient": 0,
+      "fillGradient": 10,
       "gridPos": {
         "h": 5,
         "w": 12,
@@ -912,7 +912,7 @@
         "values": true
       },
       "lines": true,
-      "linewidth": 1,
+      "linewidth": 6,
       "links": [],
       "maxDataPoints": 1000,
       "nullPointMode": "null",
@@ -3754,7 +3754,7 @@
         },
         "description": null,
         "error": null,
-        "hide": 0,
+        "hide": 2,
         "label": "Filter",
         "name": "filter",
         "options": [
@@ -3833,5 +3833,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Statistics",
   "uid": "pgstat",
-  "version": 11
+  "version": 15
 }
