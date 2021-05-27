@@ -82,7 +82,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -101,7 +101,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -120,7 +120,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -139,7 +139,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -158,7 +158,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -177,7 +177,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -196,7 +196,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -215,7 +215,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">DEFAULT</stringProp>
@@ -234,7 +234,7 @@
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
         <stringProp name="password">pass</stringProp>
-        <stringProp name="poolMax">10</stringProp>
+        <stringProp name="poolMax">50</stringProp>
         <boolProp name="preinit">false</boolProp>
         <stringProp name="timeout">10000</stringProp>
         <stringProp name="transactionIsolation">TRANSACTION_REPEATABLE_READ</stringProp>
@@ -1209,11 +1209,13 @@ LIMIT 1000;</stringProp>
           <hashTree/>
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="transaction: SELECT" enabled="true">
             <stringProp name="dataSource">DB_qpt_transaction</stringProp>
-            <stringProp name="query">SELECT * FROM bookings WHERE book_ref in (&apos;0009D5&apos;);</stringProp>
+            <stringProp name="query">SELECT * 
+FROM aircrafts_data 
+WHERE range &gt; 3000;</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="queryTimeout"></stringProp>
-            <stringProp name="queryType">Prepared Select Statement</stringProp>
+            <stringProp name="queryType">Callable Statement</stringProp>
             <stringProp name="resultSetHandler">Count Records</stringProp>
             <stringProp name="resultSetMaxRows">1</stringProp>
             <stringProp name="resultVariable"></stringProp>
@@ -1224,16 +1226,21 @@ LIMIT 1000;</stringProp>
             <stringProp name="TestPlan.comments">HTTP Request, Kafka Request, ...</stringProp>
             <intProp name="ActionProcessor.action">1</intProp>
             <intProp name="ActionProcessor.target">0</intProp>
-            <stringProp name="ActionProcessor.duration">10000</stringProp>
+            <stringProp name="ActionProcessor.duration">1</stringProp>
           </TestAction>
-          <hashTree/>
+          <hashTree>
+            <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+              <stringProp name="ConstantTimer.delay">10000</stringProp>
+            </ConstantTimer>
+            <hashTree/>
+          </hashTree>
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="transaction: COMMIT" enabled="true">
             <stringProp name="dataSource">DB_qpt_transaction</stringProp>
             <stringProp name="query">COMMIT;</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
             <stringProp name="queryTimeout"></stringProp>
-            <stringProp name="queryType">Callable Statement</stringProp>
+            <stringProp name="queryType">Commit</stringProp>
             <stringProp name="resultSetHandler">Count Records</stringProp>
             <stringProp name="resultSetMaxRows">1</stringProp>
             <stringProp name="resultVariable"></stringProp>

@@ -19,7 +19,7 @@ AS $$
   SELECT
       pg_user.usename,
       pg_stat_database.datname,
-      left(regexp_replace(query, '\\r|\\n|\\t|\\s+', ' ', 'g'), 10000) query,
+      left(regexp_replace(query, '\s+', ' ', 'g'), 10000) query,
       md5(query)::uuid::varchar(100) as query_md5,
       queryid,
       calls,

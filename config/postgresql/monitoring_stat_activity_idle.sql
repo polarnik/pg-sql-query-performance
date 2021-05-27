@@ -22,7 +22,7 @@ SELECT
     datname,
     state,
     md5(query)::uuid::varchar(100) as query_md5,
-    left(regexp_replace(query, '\\r|\\n|\\t|\\s+', ' ', 'g'), 10000) query,
+    left(regexp_replace(query, '\s+', ' ', 'g'), 10000) query,
     count(*) as "count",
     coalesce(sum(extract(epoch FROM clock_timestamp() - state_change)),0) as sum_idle_seconds,
     coalesce(max(extract(epoch FROM clock_timestamp() - state_change)),0) as max_idle_seconds,
