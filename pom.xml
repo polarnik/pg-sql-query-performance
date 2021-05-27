@@ -378,8 +378,8 @@
         	<properties>
         		<isStable>1</isStable>
         		<duration>600000</duration>
-        		<tps>2.00</tps>
-        		<thread_count>20</thread_count>
+        		<tps>40.00</tps>
+        		<thread_count>50</thread_count>
         		<title>Stability test</title>
         	</properties>
         </profile>

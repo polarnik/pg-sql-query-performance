@@ -7,4 +7,4 @@
 
 # /c/Tools/marp/marp.exe --output "$(pwd)" --watch --allow-local-files --html --theme "$(pwd)/themes/vtb.css" --template "bare" --bespoke.osc false --bespoke.progress false -I "$(pwd)"
 
-/c/Tools/marp/marp.exe --output "$(pwd)" --watch --allow-local-files  --html --template "bespoke" --bespoke.osc true --bespoke.progress true  -I "$(pwd)"
+/c/Tools/marp/marp.exe --output "$(pwd)/docs" --watch --allow-local-files  --html --template "bespoke" --bespoke.osc true --bespoke.progress true  -I "$(pwd)/docs"

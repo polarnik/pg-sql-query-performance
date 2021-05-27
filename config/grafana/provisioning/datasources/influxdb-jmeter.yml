@@ -30,7 +30,9 @@ datasources:
    basicAuthUser: readuser
    # <string> json object of data that will be encrypted.
    jsonData:
-     httpMode: POST  
+     httpMode: POST
+     maxSeries: 300
+     timeInterval: 60s
    secureJsonData:
      # <string> basic auth password
      basicAuthPassword: password

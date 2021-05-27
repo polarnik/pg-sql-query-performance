@@ -1,9 +1,9 @@
-#!/bin/sh 
+#!/bin/sh -x
 
 # API-KEY Grafana, need change
-KEY="eyJrIjoiRGl4bjN0NzAzbEFwd0Z5RVhZN0ZtSnE5RjViSHZrZ24iLCJuIjoiYWRtaW5rZXkiLCJpZCI6MX0="
+KEY="eyJrIjoic21OT3lWU0lnOEJFOG51MlpXa3FYTzI5UjBLaHVmazYiLCJuIjoiYWFhYWFhIiwiaWQiOjF9"
 # Grafana Dashboard UID, need change
-UID="pgstat"
+UID="pgquery"
 DIR="./config/grafana/provisioning/dashboards/json/"
 
 tmpFile=$(mktemp)
@@ -16,7 +16,7 @@ jq .dashboard "$tmpFile" > "$DIR/$UID.json"
 #jq --arg a "${TITLE} (GIT)" '.title = $a' "$DIR/$UID.json" > "$tmpFile"
 #mv "$tmpFile" "$DIR/$UID.json"
 #jq --arg a "${UID}_GIT" '.uid = $a' "$DIR/$UID.json" > "$tmpFile"
-mv "$tmpFile" "$DIR/$UID.json"
+#mv "$tmpFile" "$DIR/$UID.json"
 
 git add "$DIR/$UID.json"
 git commit -m "Update $UID"
