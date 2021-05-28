@@ -23,7 +23,7 @@ services:
       - "./config/postgresql/monitoring_stat_activity_idle.sql:/sql.tmp/monitoring_stat_activity_idle.sql:ro"
       - "./config/postgresql/monitoring_stat_activity_waiting.sql:/sql.tmp/monitoring_stat_activity_waiting.sql:ro"
       - "./config/postgresql/monitoring_stat_statements.sql:/sql.tmp/monitoring_stat_statements.sql:ro"
-      - "./config/postgresql/demo-medium-20170815.sql:/dbdump/demo.sql:ro"
+      - "./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro"
       - "./config/postgresql/grafana_db.sql:/sql.tmp/grafana_db.sql:ro"
       - "./config/postgresql/bookings.functions.sql:/sql.tmp/bookings.functions.sql:ro"
     healthcheck:
