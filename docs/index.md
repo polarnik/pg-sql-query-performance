@@ -1038,9 +1038,18 @@ END;
 <!-- _class: title -->
 ![bg](#000)
 ![](#fff)
-# Статистика без Query Text хранится отдельно
+# За счет Continious Query Influxdb cтатистика  отдельно
 
-## __Query Text хранится отдельно__
+## __А Query Text тоже отдельно__
+
+![bg right:45% w:90%](img/sql-cont-query.svg)
+
+---
+
+![bg](#000)
+![](#fff)
+
+![bg h:90% w:90%](img/sql-cont-query.svg)
 
 ---
 
