@@ -643,3 +643,12 @@ section.head h2:after
 {
     left: calc(1242px - 25px - 4px);
 }
+
+span.hljs-keyword {
+    color: #00AAFF;
+    font-weight: bold;
+}
+
+span.hljs-string {
+    
+}

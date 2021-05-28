@@ -134,6 +134,19 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 
 ![bg w:95% h:80%](img/sql-bottleneck.svg)
 
+---
+
+![bg](#000)
+![](#fff)
+
+![bg w:95% h:75%](img/load.2.png)
+
+---
+
+![bg](#000)
+![](#fff)
+
+![bg w:95% h:75%](img/load.6.png)
 
 
 ---
@@ -1008,7 +1021,41 @@ END;
 
 ## __Query Text хранится отдельно__
 
+---
 
+<!-- _class: title -->
+![bg](#000)
+![](#fff)
+# https://github.com/ polarnik/pg-sql-query-performance
+
+## __Проект с демонстрацией__
+
+![bg right:45% h:70% ](img/sql-qrcode.svg)
+
+---
+
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Как запустить проект
+
+```bash
+# Отдельно поднять сервер баз данных
+docker-compose up db
+
+# Остановить поднятый сервер БД
+# <Ctrl+C> или командой
+docker stop sql_monitor_postgres
+
+# А теперь поднять все компоненты
+docker-compose up
+
+# Открыть Grafana
+open 'http://localhost:3000'
+
+```
+
+![bg right:45% h:70% ](img/sql-qrcode.svg)
 
 ---
 <!-- _class: main 
@@ -1018,65 +1065,276 @@ END;
 
 ---
 <!-- _class: head -->
-
+![bg](#000)
+![](#fff)
 # Partial-индексы и вот это вот все
 
 ```sql
 select 
-    concat(message_json_wo_status, '"status":"', status,'"}') body 
-from ntn_web.ntn_web_message msg
+    concat('{"message":"', message, '"}') body 
+from web_message
 where
-    user_id = '0eccb87d-5920-4a3b-af9f-6fdc4349f525'
+    user_id = '0eaab87d-5977-4a3a-af9f-6f5f424140f5'
     and status = 'NEW'
     and category in ('NOTIFICATION')
     and channel = 'WEB_POPUP'
-    and (   msg.expiration_time is null 
-            or msg.expiration_time >= now())
-order by msg.created_at desc
+    and (   expiration_time is null 
+            or expiration_time >= now())
+order by created_at desc
 limit 10;
 ```
 
+
 ---
 <!-- _class: head -->
-
+![bg](#000)
+![](#fff)
 # Запрос в статистике
 
 ```sql
 select 
-    concat(message_json_wo_status, ?, status, ?) body 
-from ntn_web.ntn_web_message msg
+    concat($1, message, $2) body 
+from ntn_web.web_message msg
 where
-    user_id = ?
-    and status = ?
-    and category in (?)
-    and channel = ?
-    and (   msg.expiration_time is null 
-            or msg.expiration_time >= ?)
-order by msg.created_at desc
-limit ?;
+    user_id = $3
+    and status = $4
+    and category in ($5)
+    and channel = $6
+    and (   expiration_time is null 
+            or expiration_time >= $7)
+order by created_at desc
+limit $8;
 ```
-
 ---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Первое предположение: добавить в индекс все
 
 ```sql
-create index fix_index1 on ntn_web.ntn_web_message msg
-using btree(user_id)
-where status = 'NEW'
-   and category in ('NOTIFICATION')
-   and channel = 'WEB_POPUP'
+select 
+    concat($1, message, $2) body 
+from ntn_web.web_message msg
+where
+    user_id = $3                      -- в индекс
+    and status = $4                   -- в индекс
+    and category in ($5)              -- в индекс
+    and channel = $6                  -- в индекс
+    and (   expiration_time is null  
+            or expiration_time >= $7) -- в индекс
+order by created_at desc              -- в индекс
+limit $8;
 ```
 
 ---
 <!-- _class: head -->
 ![bg](#000)
 ![](#fff)
-# Как выполнять трассировку SQL
+# Большой индекс, который не будет использован
 
-## __Выбери свой способ__
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = $4
+  and category in ($5) and channel = $6
+  and ( expiration_time is null or expiration_time >= $7 )  
+order by created_at desc limit $8;
 
-* Угадываем параметры
+------ В индекс включены все поля
+create index fix_web_message_idx_1 on web_message
+using btree(user_id, status, category, channel,
+   expiration_time, created_at DESC);
+```
 
-* Параметры из профилирования
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Меньший индекс, который будет использован
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = $4
+  and category in ($5) and channel = $6
+  and ( expiration_time is null or expiration_time >= $7 )  
+order by created_at desc limit $8;
+
+------ Из индекса исключены неподходящие строки
+create index fix_web_message_idx_2 on web_message
+using btree(user_id, expiration_time, 
+  created_at DESC)
+where status = 'NEW'
+  and category in ('NOTIFICATION')
+  and channel = 'WEB_POPUP';
+```
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Для заданных параметров фильтрации годится
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+  and ( expiration_time is null or expiration_time >= $7 )
+order by created_at desc limit $8;
+
+------ Из индекса исключены неподходящие строки
+create index fix_web_message_idx_2 on web_message
+using btree(user_id, expiration_time, 
+  created_at DESC)
+where status = 'NEW'
+  and category in ('NOTIFICATION')
+  and channel = 'WEB_POPUP';
+```
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Немного перепишем запрос
+
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+--and ( expiration_time is null or expiration_time >= $7 )
+  and coalease( expiration_time, '3000-01-01' ) >= now()
+order by created_at desc limit $8;
+-- TODO: успеть актуализировать запрос до 3000-го года
+```
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Немного перепишем запрос
+
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+  and coalease( expiration_time, '3000-01-01' ) >= now()
+order by created_at desc limit $8;
+-- TODO: успеть актуализировать запрос до 3000-го года
+```
+
+## __Код будет работать до 3000-го года корректно__
+
+А потом мы что-нибудь придумаем
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Функцию coalease тоже можно индексировать
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+  and coalease( expiration_time, '3000-01-01' ) >= now()
+order by created_at desc limit $8;
+-- TODO: успеть актуализировать запрос до 3000-го года
+
+------ В индекс добавлен результат выполнения coalease
+create index fix_web_message_idx_3 on web_message
+using btree(user_id, coalease(expiration_time,'3000-01-01'),
+  created_at DESC)
+where status = 'NEW'
+  and category in ('NOTIFICATION')
+  and channel = 'WEB_POPUP';
+```
+
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Сделаем из индекса аналог View
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+  and coalease( expiration_time, '3000-01-01' ) >= now()
+order by created_at desc limit $8;
+-- TODO: успеть актуализировать запрос до 3000-го года
+
+------ В индекс добавлена колонка message
+create index fix_web_message_idx_4 on web_message
+using btree(user_id, coalease(expiration_time,'3000-01-01'),
+  message, created_at DESC)
+where status = 'NEW'
+  and category in ('NOTIFICATION')
+  and channel = 'WEB_POPUP';
+```
+
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Результат функции concat можно индексировать
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+  and coalease( expiration_time, '3000-01-01' ) >= now()
+order by created_at desc limit $8;
+-- TODO: успеть актуализировать запрос до 3000-го года
+
+------ В индекс добавлен результат выполнения concat
+create index fix_web_message_idx_4 on web_message
+using btree(user_id, coalease(expiration_time,'3000-01-01'),
+  concat('{"message":"', message, '"}'), created_at DESC)
+where status = 'NEW'
+  and category in ('NOTIFICATION')
+  and channel = 'WEB_POPUP';
+```
+
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Все это стало возможно при знании параметров
+
+```sql
+select concat($1, message, $2) body from web_message
+where user_id = $3 and status = 'NEW'
+  and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
+  and coalease( expiration_time, '3000-01-01' ) >= now()
+order by created_at desc limit $8;
+-- TODO: успеть актуализировать запрос до 3000-го года
+
+------ В индекс добавлен результат выполнения concat
+create index fix_web_message_idx_4 on web_message
+using btree(user_id, coalease(expiration_time,'3000-01-01'),
+  concat('{"message":"', message, '"}'), created_at DESC)
+where status = 'NEW'
+  and category in ('NOTIFICATION')
+  and channel = 'WEB_POPUP';
+```
+
+
+---
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Чтобы узнать параметры запроса
+
+## __Нужна трассировка приложения, интуиция или знания__
+
+* Смотрим исходники
+
+* Угадываем параметры (UI, БД)
+
+* Параметры из профилирования JVM
 
 * Параметры из логов трассировки JDBC
 
@@ -1086,25 +1344,13 @@ where status = 'NEW'
 
 * Перехват параметров с JDBC Proxy
 
+
 ---
 <!-- _class: main 
 -->
 
 # Приложение: инструменты
 
----
-<!-- _class: head -->
-# Мониторинг
-![bg](#000)
-![](#fff)
-- APM, Application Performance Monitoring-системы New Relic, Dynatrace
-- ELK + [логи приложения](https://www.playframework.com/documentation/2.8.x/AccessingAnSQLDatabase#How-to-configure-SQL-log-statement) с медленными SQL-запросами
-- [PgBadger](https://pgbadger.darold.net/) + [логи PostgreSQL](https://pgbadger.darold.net/documentation.html#POSTGRESQL-CONFIGURATION) с медленными SQL-запросами
-- Утилита [PASH Viewer](https://github.com/dbacvetkov/PASH-Viewer) и системы мониторинга: okmeter.io
-- [pg_stats_statements](https://www.postgresql.org/docs/10/pgstatstatements.html) и Prometheus [exporter](https://github.com/prometheus-community/postgres_exporter) или [Telegraf](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/postgresql_extensible) + InfluxDB
-- [pg_profile](https://github.com/zubkov-andrei/pg_profile) для сравнительных [отчетов](https://pgconf.ru/media/2020/02/04/%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B9%20%D0%97%D1%83%D0%B1%D0%BA%D0%BE%D0%B2%20-%20pg_profile.pdf)
-
-- [pg_stat_monitor](https://github.com/percona/pg_stat_monitor) для PostgreSQL 11+ или [pg_stat_plans](https://github.com/2ndQuadrant/pg_stat_plans) и доступ к статистике через SQL
 
 ---
 <!-- _class: head -->
@@ -1120,6 +1366,19 @@ where status = 'NEW'
 - Логирование с Side Effect Injection: [AspectJ](https://www.eclipse.org/aspectj/), [Byteman](https://byteman.jboss.org/), [jMint](https://github.com/Toparvion/jmint)
 - JDBC Proxy [P6Spy](https://github.com/p6spy) (нужно встраивать в сервис)
 
+---
+<!-- _class: head -->
+# Мониторинг
+![bg](#000)
+![](#fff)
+- APM, Application Performance Monitoring-системы New Relic, Dynatrace
+- ELK + [логи приложения](https://www.playframework.com/documentation/2.8.x/AccessingAnSQLDatabase#How-to-configure-SQL-log-statement) с медленными SQL-запросами
+- [PgBadger](https://pgbadger.darold.net/) + [логи PostgreSQL](https://pgbadger.darold.net/documentation.html#POSTGRESQL-CONFIGURATION) с медленными SQL-запросами
+- Утилита [PASH Viewer](https://github.com/dbacvetkov/PASH-Viewer) и системы мониторинга: okmeter.io
+- [pg_stats_statements](https://www.postgresql.org/docs/10/pgstatstatements.html) и Prometheus [exporter](https://github.com/prometheus-community/postgres_exporter) или [Telegraf](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/postgresql_extensible) + InfluxDB
+- [pg_profile](https://github.com/zubkov-andrei/pg_profile) для сравнительных [отчетов](https://pgconf.ru/media/2020/02/04/%D0%90%D0%BD%D0%B4%D1%80%D0%B5%D0%B9%20%D0%97%D1%83%D0%B1%D0%BA%D0%BE%D0%B2%20-%20pg_profile.pdf)
+
+- [pg_stat_monitor](https://github.com/percona/pg_stat_monitor) для PostgreSQL 11+ или [pg_stat_plans](https://github.com/2ndQuadrant/pg_stat_plans) и доступ к статистике через SQL
 
 ---
 <!-- _class: lead2
