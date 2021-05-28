@@ -1377,7 +1377,6 @@ where status = 'NEW'
 
 * Перехват параметров с JDBC Proxy
 
-
 ---
 <!-- _class: main 
 -->
