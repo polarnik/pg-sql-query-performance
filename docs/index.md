@@ -8,15 +8,18 @@ paginate: true
 _paginate: false
 
 ---
+
 <!-- _class: lead2
-_footer: 'Смирнов Вячеслав, 2021 (ссылка на [слайды](https://polarnik.github.io/pg-sql-query-performance/), ссылка [на проект](https://github.com/polarnik/pg-sql-query-performance))'
+_footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-query-performance/), ссылка [на проект](https://github.com/polarnik/pg-sql-query-performance)'
 -->
 
-# Мониторинг, анализ и оптимизация запросов к PostgreSQL
-## __Из слона (Postgres) муху (баги)__
-
+![bg](img/first.svg)
 
 <!--
+
+
+
+
 История ускорения системы.
 Про три месяца оформления и исправления дефектов большой системы,
 которую можно услышать за тридцать минут и прожить за десять.
@@ -457,7 +460,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 <!-- _class: head -->
 ![bg](#000)
 ![](#fff)
-# Эффект будет и для продуктива для репутации
+# Эффект будет и для дела и для репутации
 
 ## __Инженер:__
 
@@ -932,8 +935,8 @@ ConfigMap:
 
 Чтобы соединения быстрее возвращались в пул потоков HikariPool:
 
-* Ускоряем медленные запросы (Active)
-* Исправляем долгие транзакции (Idle in transaction)
+- Ускоряем медленные запросы (Active)
+- Исправляем долгие транзакции (Idle in transaction)
 
 А далее смотрим, кто не использует свои подключения и уменьшаем 
 ```yml
@@ -1411,9 +1414,12 @@ where status = 'NEW'
 - [pg_stat_monitor](https://github.com/percona/pg_stat_monitor) для PostgreSQL 11+ или [pg_stat_plans](https://github.com/2ndQuadrant/pg_stat_plans) и доступ к статистике через SQL
 
 ---
-<!-- _class: lead2
-_footer: 'Мониторинг, анализ и оптимизация SQL-запросов (ссылка на [слайды](https://polarnik.github.io/pg-sql-query-performance/), ссылка [на проект](https://github.com/polarnik/pg-sql-query-performance))'
+<!-- 
+_class: lead2
+_footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-query-performance/), ссылка [на проект](https://github.com/polarnik/pg-sql-query-performance)'
 -->
 
-# Давайте обсудим <br> доклад <br> «Из слона муху»
-## __owasp@ya.ru, @qa_load__
+![bg](img/last.svg)
+
+
+
