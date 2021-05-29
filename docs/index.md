@@ -235,27 +235,33 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 
 ---
 
-![bg](img/pgstat.2.png)
-
----
-
-<!-- _class: title -->
-
-# При клике по строке будет переход на детали 
-
-## __Клик по колонке QueryID__
-
-![bg brightness:0.5](img/pgstat.2.png)
-
----
-
 <!-- _class: title -->
 
 # Детальная статистика по выбранному запросу
 
-## __С выбранным QueryID__
+## __И не только это__
 
 ![bg brightness:0.5](img/pgstat.3.png)
+
+---
+
+<!-- _class: head -->
+![bg](#000)
+![](#fff)
+# Demo-стенд
+
+- PostgreSQL
+
+- InfluxDB
+- Grafana
+- Telegraf
+- JMeter
+
+github.com/polarnik/pg-sql-query-performance
+
+![bg right:35% h:60% ](img/sql-qrcode.svg)
+
+
 
 
 ---
@@ -1104,7 +1110,7 @@ open 'http://localhost:3000'
 
 ```sql
 select 
-    concat('{"message":"', message, '"}') body 
+    concat('{"m":"', message, '"}') body 
 from web_message
 where
     user_id = '0eaab87d-5977-4a3a-af9f-6f5f424140f5'
@@ -1271,7 +1277,6 @@ where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
   and coalease( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
--- TODO: успеть актуализировать запрос до 3000-го года
 
 ------ В индекс добавлен результат выполнения coalease
 create index fix_web_message_idx_3 on web_message
@@ -1295,7 +1300,6 @@ where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
   and coalease( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
--- TODO: успеть актуализировать запрос до 3000-го года
 
 ------ В индекс добавлена колонка message
 create index fix_web_message_idx_4 on web_message
@@ -1319,12 +1323,11 @@ where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
   and coalease( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
--- TODO: успеть актуализировать запрос до 3000-го года
 
 ------ В индекс добавлен результат выполнения concat
 create index fix_web_message_idx_4 on web_message
 using btree(user_id, coalease(expiration_time,'3000-01-01'),
-  concat('{"message":"', message, '"}'), created_at DESC)
+  concat('{"m":"', message, '"}'), created_at DESC)
 where status = 'NEW'
   and category in ('NOTIFICATION')
   and channel = 'WEB_POPUP';
@@ -1338,17 +1341,16 @@ where status = 'NEW'
 # Все это стало возможно при знании параметров
 
 ```sql
-select concat($1, message, $2) body from web_message
+select concat('{"m":"', message, '"}') body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
   and coalease( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
--- TODO: успеть актуализировать запрос до 3000-го года
 
 ------ В индекс добавлен результат выполнения concat
 create index fix_web_message_idx_4 on web_message
 using btree(user_id, coalease(expiration_time,'3000-01-01'),
-  concat('{"message":"', message, '"}'), created_at DESC)
+  concat('{"m":"', message, '"}'), created_at DESC)
 where status = 'NEW'
   and category in ('NOTIFICATION')
   and channel = 'WEB_POPUP';
@@ -1367,7 +1369,7 @@ where status = 'NEW'
 
 * Угадываем параметры (UI, БД)
 
-* Параметры из профилирования JVM
+* Параметры из __профилирования JVM__ ([JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html), [YourKit](https://www.yourkit.com/java/profiler/features/))
 
 * Параметры из логов трассировки JDBC
 
