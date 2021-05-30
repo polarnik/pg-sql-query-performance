@@ -1,7 +1,5 @@
 #!/bin/sh -x
 
-ENV PGDATA /var/lib/postgresql/data/
-
 set -e
 
 #apt-get install wget unzip sudo -y
