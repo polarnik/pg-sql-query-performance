@@ -47,7 +47,7 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 1,
-  "iteration": 1622052239072,
+  "iteration": 1623151990213,
   "links": [],
   "panels": [
     {
@@ -150,7 +150,7 @@
               "type": "tag"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "",
@@ -400,7 +400,7 @@
               "type": "tag"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "",
@@ -650,7 +650,7 @@
               "type": "tag"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "",
@@ -886,81 +886,7 @@
               "type": "fill"
             }
           ],
-          "hide": true,
-          "measurement": "pg_stat_statements_query_md5",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_10m"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/($__interval_ms / 1000 / 60)"
-                ],
-                "type": "math"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            },
-            {
-              "condition": "AND",
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            }
-          ]
-        },
-        {
-          "alias": "($tag_host) $tag_query_md5",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -1121,7 +1047,7 @@
             }
           ],
           "hide": false,
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by Query\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/ AND \"queryid\" =~ /^$queryid$/ AND \"query_md5\" =~ /^$query_md5$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
@@ -1185,7 +1111,7 @@
             }
           ],
           "hide": false,
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by DB\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
@@ -1363,87 +1289,7 @@
               "type": "fill"
             }
           ],
-          "hide": true,
-          "measurement": "pg_stat_statements_query_md5",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_10m"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_10m)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        },
-        {
-          "alias": "$tag_query_md5 ($tag_host)",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -1622,81 +1468,7 @@
               "type": "fill"
             }
           ],
-          "hide": true,
-          "measurement": "pg_stat_statements_query_md5",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_10m"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / ($__interval_ms / 1000)"
-                ],
-                "type": "math"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        },
-        {
-          "alias": "($tag_host) $tag_query_md5",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -1856,113 +1628,7 @@
               "type": "fill"
             }
           ],
-          "hide": true,
-          "measurement": "pg_stat_statements_query_md5",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_10m"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        },
-        {
-          "alias": "RPS DB",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": true,
-          "measurement": "pg_stat_statements_query_md5",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_10m"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            }
-          ]
-        },
-        {
-          "alias": "RPS Query",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "C",
@@ -2017,7 +1683,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "D",
@@ -2190,87 +1856,7 @@
               "type": "fill"
             }
           ],
-          "hide": true,
-          "measurement": "pg_stat_statements_query_md5",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "rows_10m"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_10m)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        },
-        {
-          "alias": "$tag_query_md5 ($tag_host)",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -2470,7 +2056,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -2740,7 +2326,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -2995,7 +2581,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10min",
+          "measurement": "pg_stat_statements_query_md5_10m",
           "orderByTime": "ASC",
           "policy": "$archive",
           "refId": "B",
@@ -3191,8 +2777,8 @@
       "scopedVars": {
         "query_md5": {
           "selected": false,
-          "text": "d4300958-580a-b6d2-7900-24b7e64f4635",
-          "value": "d4300958-580a-b6d2-7900-24b7e64f4635"
+          "text": "f6ab26bc-a39b-06aa-ca1a-2015bcd41465",
+          "value": "f6ab26bc-a39b-06aa-ca1a-2015bcd41465"
         }
       },
       "scroll": true,
@@ -3253,7 +2839,7 @@
           "measurement": "pg_stat_statements_diff",
           "orderByTime": "ASC",
           "policy": "$archive",
-          "query": "SELECT last(\"calls_sum\") as \"calls\" FROM \"$archive\".\"pg_stat_statements_diff_1d\" WHERE (\"query_md5\" =~ /^$query_md5$/ AND \"queryid\" =~ /^$queryid$/ AND \"datname\" =~ /^$datname$/) GROUP BY \"query\"",
+          "query": "SELECT last(\"calls_sum\") as \"calls\" FROM \"$archive\".\"pg_stat_statements_query_1d\" WHERE (\"query_md5\" =~ /^$query_md5$/ AND \"queryid\" =~ /^$queryid$/ AND \"datname\" =~ /^$datname$/) GROUP BY \"query\"",
           "rawQuery": true,
           "refId": "D",
           "resultFormat": "table",
@@ -3315,7 +2901,7 @@
           "hide": false,
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT last(\"calls\") as \"calls\" FROM \"$new\".\"pg_stat_statements\" WHERE (\"query_md5\" =~ /^$query_md5$/ AND \"queryid\" =~ /^$queryid$/ AND \"datname\" =~ /^$datname$/) GROUP BY \"query\"",
+          "query": "SELECT last(\"calls\") as \"calls\" FROM \"1d\".\"pg_stat_statements_query_10m\" WHERE (\"query_md5\" =~ /^${query_md5:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/) GROUP BY \"query\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table",
@@ -3454,7 +3040,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -3615,7 +3201,7 @@
             }
           ],
           "hide": false,
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by Query\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/ AND \"queryid\" =~ /^$queryid$/ AND \"query_md5\" =~ /^$query_md5$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
@@ -3679,7 +3265,7 @@
             }
           ],
           "hide": false,
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by DB\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
@@ -3852,7 +3438,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -4031,7 +3617,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -4191,7 +3777,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -4246,7 +3832,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "B",
@@ -4423,7 +4009,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -4595,7 +4181,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -4760,7 +4346,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -4925,7 +4511,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -5090,7 +4676,7 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff",
+          "measurement": "pg_stat_statements_diff_1m",
           "orderByTime": "ASC",
           "policy": "$new",
           "refId": "A",
@@ -5277,7 +4863,7 @@
         "options": [],
         "query": "SHOW RETENTION POLICIES",
         "refresh": 2,
-        "regex": "/^(?!$archive$).*$/",
+        "regex": "/^(?!$archive|1d$).*$/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -5318,7 +4904,7 @@
           ]
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
+        "definition": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
         "description": null,
         "error": null,
         "hide": 0,
@@ -5327,7 +4913,7 @@
         "multi": true,
         "name": "host",
         "options": [],
-        "query": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
+        "query": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -5348,7 +4934,7 @@
           ]
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
+        "definition": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
         "description": null,
         "error": null,
         "hide": 2,
@@ -5357,7 +4943,7 @@
         "multi": true,
         "name": "datname",
         "options": [],
-        "query": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
+        "query": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -5378,7 +4964,7 @@
           ]
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
+        "definition": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
         "description": null,
         "error": null,
         "hide": 0,
@@ -5387,7 +4973,7 @@
         "multi": true,
         "name": "usename",
         "options": [],
-        "query": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
+        "query": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -5410,7 +4996,7 @@
           "value": "$__all"
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
+        "definition": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
         "description": null,
         "error": null,
         "hide": 0,
@@ -5419,7 +5005,7 @@
         "multi": true,
         "name": "query_md5",
         "options": [],
-        "query": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10min\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
+        "query": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -5463,5 +5049,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Details",
   "uid": "pgquery",
-  "version": 6
+  "version": 10
 }
