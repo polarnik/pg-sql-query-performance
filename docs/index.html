@@ -659,7 +659,7 @@ limit $<span class="hljs-number">8</span>;
 <span class="hljs-keyword">where</span> user_id <span class="hljs-operator">=</span> $<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>) <span class="hljs-keyword">and</span> channel <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;WEB_POPUP&#x27;</span>
 <span class="hljs-comment">--and ( expiration_time is null or expiration_time &gt;= $7 )</span>
-  <span class="hljs-keyword">and</span> coalease( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
+  <span class="hljs-keyword">and</span> coalesce( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> created_at <span class="hljs-keyword">desc</span> limit $<span class="hljs-number">8</span>;
 <span class="hljs-comment">-- <span class="hljs-doctag">TODO:</span> успеть актуализировать запрос до 3000-го года</span>
 </span></span></foreignObject></svg></code></pre>
@@ -669,7 +669,7 @@ limit $<span class="hljs-number">8</span>;
 <pre><code class="language-sql"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">select</span> concat($<span class="hljs-number">1</span>, message, $<span class="hljs-number">2</span>) body <span class="hljs-keyword">from</span> web_message
 <span class="hljs-keyword">where</span> user_id <span class="hljs-operator">=</span> $<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>) <span class="hljs-keyword">and</span> channel <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;WEB_POPUP&#x27;</span>
-  <span class="hljs-keyword">and</span> coalease( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
+  <span class="hljs-keyword">and</span> coalesce( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> created_at <span class="hljs-keyword">desc</span> limit $<span class="hljs-number">8</span>;
 <span class="hljs-comment">-- <span class="hljs-doctag">TODO:</span> успеть актуализировать запрос до 3000-го года</span>
 </span></span></foreignObject></svg></code></pre>
@@ -677,16 +677,16 @@ limit $<span class="hljs-number">8</span>;
 <p>А потом мы что-нибудь придумаем</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="110" data-paginate="true" data-class="head" data-theme="vtb" data-background-color="#000" data-color="#fff" class="head" data-marpit-pagination="110" data-marpit-pagination-total="118" style="--paginate:true;--class:head;--theme:vtb;--background-color:#000;--color:#fff;color:#fff;background-color:#000;background-image:none;">
-<h1>Функцию coalease тоже можно индексировать</h1>
+<h1>Функцию coalesce тоже можно индексировать</h1>
 <pre><code class="language-sql"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">select</span> concat($<span class="hljs-number">1</span>, message, $<span class="hljs-number">2</span>) body <span class="hljs-keyword">from</span> web_message
 <span class="hljs-keyword">where</span> user_id <span class="hljs-operator">=</span> $<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>) <span class="hljs-keyword">and</span> channel <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;WEB_POPUP&#x27;</span>
-  <span class="hljs-keyword">and</span> coalease( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
+  <span class="hljs-keyword">and</span> coalesce( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> created_at <span class="hljs-keyword">desc</span> limit $<span class="hljs-number">8</span>;
 
-<span class="hljs-comment">------ В индекс добавлен результат выполнения coalease</span>
+<span class="hljs-comment">------ В индекс добавлен результат выполнения coalesce</span>
 <span class="hljs-keyword">create</span> index fix_web_message_idx_3 <span class="hljs-keyword">on</span> web_message
-<span class="hljs-keyword">using</span> btree(user_id, coalease(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
+<span class="hljs-keyword">using</span> btree(user_id, coalesce(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
   created_at <span class="hljs-keyword">DESC</span>)
 <span class="hljs-keyword">where</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>)
@@ -698,12 +698,12 @@ limit $<span class="hljs-number">8</span>;
 <pre><code class="language-sql"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">select</span> concat($<span class="hljs-number">1</span>, message, $<span class="hljs-number">2</span>) body <span class="hljs-keyword">from</span> web_message
 <span class="hljs-keyword">where</span> user_id <span class="hljs-operator">=</span> $<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>) <span class="hljs-keyword">and</span> channel <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;WEB_POPUP&#x27;</span>
-  <span class="hljs-keyword">and</span> coalease( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
+  <span class="hljs-keyword">and</span> coalesce( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> created_at <span class="hljs-keyword">desc</span> limit $<span class="hljs-number">8</span>;
 
 <span class="hljs-comment">------ В индекс добавлена колонка message</span>
 <span class="hljs-keyword">create</span> index fix_web_message_idx_4 <span class="hljs-keyword">on</span> web_message
-<span class="hljs-keyword">using</span> btree(user_id, coalease(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
+<span class="hljs-keyword">using</span> btree(user_id, coalesce(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
   message, created_at <span class="hljs-keyword">DESC</span>)
 <span class="hljs-keyword">where</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>)
@@ -715,12 +715,12 @@ limit $<span class="hljs-number">8</span>;
 <pre><code class="language-sql"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">select</span> concat($<span class="hljs-number">1</span>, message, $<span class="hljs-number">2</span>) body <span class="hljs-keyword">from</span> web_message
 <span class="hljs-keyword">where</span> user_id <span class="hljs-operator">=</span> $<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>) <span class="hljs-keyword">and</span> channel <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;WEB_POPUP&#x27;</span>
-  <span class="hljs-keyword">and</span> coalease( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
+  <span class="hljs-keyword">and</span> coalesce( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> created_at <span class="hljs-keyword">desc</span> limit $<span class="hljs-number">8</span>;
 
 <span class="hljs-comment">------ В индекс добавлен результат выполнения concat</span>
 <span class="hljs-keyword">create</span> index fix_web_message_idx_4 <span class="hljs-keyword">on</span> web_message
-<span class="hljs-keyword">using</span> btree(user_id, coalease(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
+<span class="hljs-keyword">using</span> btree(user_id, coalesce(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
   concat(<span class="hljs-string">&#x27;{&quot;m&quot;:&quot;&#x27;</span>, message, <span class="hljs-string">&#x27;&quot;}&#x27;</span>), created_at <span class="hljs-keyword">DESC</span>)
 <span class="hljs-keyword">where</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>)
@@ -732,12 +732,12 @@ limit $<span class="hljs-number">8</span>;
 <pre><code class="language-sql"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">select</span> concat(<span class="hljs-string">&#x27;{&quot;m&quot;:&quot;&#x27;</span>, message, <span class="hljs-string">&#x27;&quot;}&#x27;</span>) body <span class="hljs-keyword">from</span> web_message
 <span class="hljs-keyword">where</span> user_id <span class="hljs-operator">=</span> $<span class="hljs-number">3</span> <span class="hljs-keyword">and</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>) <span class="hljs-keyword">and</span> channel <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;WEB_POPUP&#x27;</span>
-  <span class="hljs-keyword">and</span> coalease( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
+  <span class="hljs-keyword">and</span> coalesce( expiration_time, <span class="hljs-string">&#x27;3000-01-01&#x27;</span> ) <span class="hljs-operator">&gt;=</span> now()
 <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> created_at <span class="hljs-keyword">desc</span> limit $<span class="hljs-number">8</span>;
 
 <span class="hljs-comment">------ В индекс добавлен результат выполнения concat</span>
 <span class="hljs-keyword">create</span> index fix_web_message_idx_4 <span class="hljs-keyword">on</span> web_message
-<span class="hljs-keyword">using</span> btree(user_id, coalease(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
+<span class="hljs-keyword">using</span> btree(user_id, coalesce(expiration_time,<span class="hljs-string">&#x27;3000-01-01&#x27;</span>),
   concat(<span class="hljs-string">&#x27;{&quot;m&quot;:&quot;&#x27;</span>, message, <span class="hljs-string">&#x27;&quot;}&#x27;</span>), created_at <span class="hljs-keyword">DESC</span>)
 <span class="hljs-keyword">where</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;NEW&#x27;</span>
   <span class="hljs-keyword">and</span> category <span class="hljs-keyword">in</span> (<span class="hljs-string">&#x27;NOTIFICATION&#x27;</span>)

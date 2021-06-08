@@ -1240,7 +1240,7 @@ select concat($1, message, $2) body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
 --and ( expiration_time is null or expiration_time >= $7 )
-  and coalease( expiration_time, '3000-01-01' ) >= now()
+  and coalesce( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
 -- TODO: успеть актуализировать запрос до 3000-го года
 ```
@@ -1256,7 +1256,7 @@ order by created_at desc limit $8;
 select concat($1, message, $2) body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
-  and coalease( expiration_time, '3000-01-01' ) >= now()
+  and coalesce( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
 -- TODO: успеть актуализировать запрос до 3000-го года
 ```
@@ -1269,18 +1269,18 @@ order by created_at desc limit $8;
 <!-- _class: head -->
 ![bg](#000)
 ![](#fff)
-# Функцию coalease тоже можно индексировать
+# Функцию coalesce тоже можно индексировать
 
 ```sql
 select concat($1, message, $2) body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
-  and coalease( expiration_time, '3000-01-01' ) >= now()
+  and coalesce( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
 
------- В индекс добавлен результат выполнения coalease
+------ В индекс добавлен результат выполнения coalesce
 create index fix_web_message_idx_3 on web_message
-using btree(user_id, coalease(expiration_time,'3000-01-01'),
+using btree(user_id, coalesce(expiration_time,'3000-01-01'),
   created_at DESC)
 where status = 'NEW'
   and category in ('NOTIFICATION')
@@ -1298,12 +1298,12 @@ where status = 'NEW'
 select concat($1, message, $2) body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
-  and coalease( expiration_time, '3000-01-01' ) >= now()
+  and coalesce( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
 
 ------ В индекс добавлена колонка message
 create index fix_web_message_idx_4 on web_message
-using btree(user_id, coalease(expiration_time,'3000-01-01'),
+using btree(user_id, coalesce(expiration_time,'3000-01-01'),
   message, created_at DESC)
 where status = 'NEW'
   and category in ('NOTIFICATION')
@@ -1321,12 +1321,12 @@ where status = 'NEW'
 select concat($1, message, $2) body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
-  and coalease( expiration_time, '3000-01-01' ) >= now()
+  and coalesce( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
 
 ------ В индекс добавлен результат выполнения concat
 create index fix_web_message_idx_4 on web_message
-using btree(user_id, coalease(expiration_time,'3000-01-01'),
+using btree(user_id, coalesce(expiration_time,'3000-01-01'),
   concat('{"m":"', message, '"}'), created_at DESC)
 where status = 'NEW'
   and category in ('NOTIFICATION')
@@ -1344,12 +1344,12 @@ where status = 'NEW'
 select concat('{"m":"', message, '"}') body from web_message
 where user_id = $3 and status = 'NEW'
   and category in ('NOTIFICATION') and channel = 'WEB_POPUP'
-  and coalease( expiration_time, '3000-01-01' ) >= now()
+  and coalesce( expiration_time, '3000-01-01' ) >= now()
 order by created_at desc limit $8;
 
 ------ В индекс добавлен результат выполнения concat
 create index fix_web_message_idx_4 on web_message
-using btree(user_id, coalease(expiration_time,'3000-01-01'),
+using btree(user_id, coalesce(expiration_time,'3000-01-01'),
   concat('{"m":"', message, '"}'), created_at DESC)
 where status = 'NEW'
   and category in ('NOTIFICATION')
