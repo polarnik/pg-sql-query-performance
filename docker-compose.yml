@@ -49,6 +49,7 @@ services:
       - influx-data:/var/lib/influxdb/
       - "./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro"
       - "./config/influxdb/init.sh:/docker-entrypoint-initdb.d/init.sh:ro"
+      - "./config/influxdb/test.sh:/test.sh:ro"
     #ports:
     #  - 8086:8086
     #  - 2003:2003
