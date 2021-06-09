@@ -33,7 +33,7 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 3,
-  "iteration": 1622059173523,
+  "iteration": 1623231039524,
   "links": [
     {
       "$$hashKey": "object:465",
@@ -5789,7 +5789,7 @@
               "measurement": "pg_stat_activity_count",
               "orderByTime": "ASC",
               "policy": "7d",
-              "query": "SELECT sum(\"count\") as \"count\" FROM (\nSELECT mean(\"count\") as \"count\" FROM \"7d\".\"pg_stat_activity_count\" WHERE (\"host\" =~ /^${host:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND $timeFilter GROUP BY time($__interval), \"state\", \"usename\", \"datname\", \"host\" fill(null)\n) WHERE $timeFilter GROUP BY time($__interval), \"usename\"",
+              "query": "SELECT sum(\"count\") as \"count\" FROM (\nSELECT mean(\"count\") as \"count\" FROM \"7d\".\"pg_stat_activity_count\" WHERE (\"host\" =~ /^${host:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"state\" =~ /^${state:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND $timeFilter GROUP BY time($__interval), \"state\", \"usename\", \"datname\", \"host\" fill(null)\n) WHERE $timeFilter GROUP BY time($__interval), \"usename\"",
               "rawQuery": true,
               "refId": "A",
               "resultFormat": "time_series",
@@ -5968,6 +5968,12 @@
                   "key": "host",
                   "operator": "=~",
                   "value": "/^$host$/"
+                },
+                {
+                  "condition": "AND",
+                  "key": "state",
+                  "operator": "=~",
+                  "value": "/^$state$/"
                 }
               ]
             }
@@ -6116,8 +6122,8 @@
       {
         "current": {
           "selected": false,
-          "text": "PostgreSQL Query: Stand-Demo-JMeter",
-          "value": "PostgreSQL Query: Stand-Demo-JMeter"
+          "text": "PostgreSQL Activity: Stand-Demo-JMeter",
+          "value": "PostgreSQL Activity: Stand-Demo-JMeter"
         },
         "description": null,
         "error": null,
@@ -6129,7 +6135,7 @@
         "options": [],
         "query": "influxdb",
         "refresh": 1,
-        "regex": "/PostgreSQL Query: ${db_jmeter:regex}/i",
+        "regex": "/PostgreSQL Activity: ${db_jmeter:regex}/i",
         "skipUrlSync": false,
         "type": "datasource"
       },
@@ -6325,7 +6331,7 @@
         "name": "TOP",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "10",
             "value": "10"
           },
@@ -6350,7 +6356,7 @@
             "value": "50"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "100",
             "value": "100"
           },
@@ -6461,7 +6467,7 @@
     ]
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -6491,5 +6497,5 @@
   "timezone": "",
   "title": "PostgreSQL Activity",
   "uid": "pgActivity",
-  "version": 17
+  "version": 20
 }
