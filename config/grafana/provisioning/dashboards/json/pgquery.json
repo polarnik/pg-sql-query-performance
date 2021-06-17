@@ -2,52 +2,28 @@
   "annotations": {
     "list": [
       {
-        "datasource": "-- Grafana --",
-        "enable": true,
-        "hide": false,
-        "iconColor": "#73BF69",
-        "limit": 100,
-        "matchAny": true,
-        "name": "OK",
-        "showIn": 0,
-        "tags": [
-          "OK"
-        ],
-        "type": "tags"
-      },
-      {
         "builtIn": 1,
-        "datasource": "$db_jmeter",
+        "datasource": "-- Grafana --",
         "enable": false,
         "hide": false,
-        "iconColor": "#37872D",
+        "iconColor": "#F2495C",
         "limit": 100,
-        "name": "(start)",
+        "matchAny": false,
+        "name": "",
         "query": "select text,generatorHost,application,title FROM (select text from events where $timeFilter and \"text\" =~ /.*started$/ GROUP BY generatorHost,application,title)",
         "showIn": 0,
         "tags": [],
         "tagsColumn": "generatorHost,application,title",
         "textColumn": "text",
         "type": "tags"
-      },
-      {
-        "datasource": "$db_jmeter",
-        "enable": false,
-        "hide": false,
-        "iconColor": "#1F60C4",
-        "name": "(stop)",
-        "query": "select \"text\", \"generatorHost\", \"application\" FROM (select text from events where $timeFilter and \"text\" =~ /.*ended$/ GROUP BY  \"generatorHost\", \"application\")",
-        "showIn": 0,
-        "tagsColumn": "application,generatorHost",
-        "textColumn": "text"
       }
     ]
   },
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 1,
-  "iteration": 1623151990213,
+  "id": 2,
+  "iteration": 1623956211230,
   "links": [],
   "panels": [
     {
@@ -97,7 +73,7 @@
             "properties": [
               {
                 "id": "custom.width",
-                "value": 326
+                "value": 197
               }
             ]
           },
@@ -110,260 +86,56 @@
               {
                 "id": "custom.width",
                 "value": null
+              },
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 294
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "host"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 163
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Mean"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
               }
             ]
           }
         ]
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 23,
         "x": 0,
         "y": 1
-      },
-      "id": 37,
-      "links": [],
-      "options": {
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "",
-      "targets": [
-        {
-          "groupBy": [
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "datname"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "usename"
-              ],
-              "type": "tag"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "query": "",
-          "rawQuery": false,
-          "refId": "A",
-          "resultFormat": "table",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Calls"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Total"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "rows_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Rows"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / sum(\"calls_sum\")"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Mean"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "shared_blks_hit_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Shared Hit"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "shared_blks_read_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Shared Read"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            }
-          ]
-        }
-      ],
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "indexByName": {
-              "Calls": 6,
-              "Mean": 8,
-              "Rows": 7,
-              "Shared Hit": 9,
-              "Shared Read": 10,
-              "Time": 0,
-              "Total": 5,
-              "datname": 2,
-              "host": 1,
-              "queryid": 4,
-              "usename": 3
-            },
-            "renameByName": {}
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false,
-            "width": 100
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "usename"
-            },
-            "properties": [
-              {
-                "id": "custom.width"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Total"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": null
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 23,
-        "x": 0,
-        "y": 4
       },
       "id": 129,
       "links": [],
@@ -400,7 +172,8 @@
               "type": "tag"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10m",
+          "hide": false,
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "",
@@ -411,7 +184,7 @@
             [
               {
                 "params": [
-                  "calls_sum"
+                  "calls"
                 ],
                 "type": "field"
               },
@@ -429,7 +202,7 @@
             [
               {
                 "params": [
-                  "duration_sum"
+                  "duration"
                 ],
                 "type": "field"
               },
@@ -447,7 +220,7 @@
             [
               {
                 "params": [
-                  "rows_sum"
+                  "rows"
                 ],
                 "type": "field"
               },
@@ -465,7 +238,7 @@
             [
               {
                 "params": [
-                  "duration_sum"
+                  "duration"
                 ],
                 "type": "field"
               },
@@ -475,7 +248,7 @@
               },
               {
                 "params": [
-                  " / sum(\"calls_sum\")"
+                  " / sum(\"calls\")"
                 ],
                 "type": "math"
               },
@@ -489,7 +262,7 @@
             [
               {
                 "params": [
-                  "shared_blks_hit_sum"
+                  "shared_blks_hit"
                 ],
                 "type": "field"
               },
@@ -507,7 +280,7 @@
             [
               {
                 "params": [
-                  "shared_blks_read_sum"
+                  "shared_blks_read"
                 ],
                 "type": "field"
               },
@@ -530,99 +303,172 @@
               "value": "/^$queryid$/"
             }
           ]
-        }
-      ],
-      "transformations": [
+        },
         {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
+          "groupBy": [
+            {
+              "params": [
+                "host"
+              ],
+              "type": "tag"
             },
-            "indexByName": {
-              "Calls": 6,
-              "Mean": 8,
-              "Rows": 7,
-              "Shared Hit": 9,
-              "Shared Read": 10,
-              "Time": 0,
-              "Total": 5,
-              "datname": 2,
-              "host": 1,
-              "queryid": 4,
-              "usename": 3
+            {
+              "params": [
+                "datname"
+              ],
+              "type": "tag"
             },
-            "renameByName": {}
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "table"
-    },
-    {
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false,
-            "width": 100
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
+            {
+              "params": [
+                "usename"
+              ],
+              "type": "tag"
+            }
+          ],
+          "hide": false,
+          "measurement": "pg_stat_statements_diff_1m_archive",
+          "orderByTime": "ASC",
+          "policy": "$archive",
+          "query": "",
+          "rawQuery": false,
+          "refId": "B",
+          "resultFormat": "table",
+          "select": [
+            [
               {
-                "color": "green",
-                "value": null
+                "params": [
+                  "calls"
+                ],
+                "type": "field"
               },
               {
-                "color": "red",
-                "value": 80
+                "params": [],
+                "type": "sum"
+              },
+              {
+                "params": [
+                  "Calls"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "sum"
+              },
+              {
+                "params": [
+                  "Total"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "rows"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "sum"
+              },
+              {
+                "params": [
+                  "Rows"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "sum"
+              },
+              {
+                "params": [
+                  " / sum(\"calls\")"
+                ],
+                "type": "math"
+              },
+              {
+                "params": [
+                  "Mean"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "shared_blks_hit"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "sum"
+              },
+              {
+                "params": [
+                  "Shared Hit"
+                ],
+                "type": "alias"
+              }
+            ],
+            [
+              {
+                "params": [
+                  "shared_blks_read"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "sum"
+              },
+              {
+                "params": [
+                  "Shared Read"
+                ],
+                "type": "alias"
               }
             ]
-          }
+          ],
+          "tags": [
+            {
+              "key": "host",
+              "operator": "=~",
+              "value": "/^$host$/"
+            },
+            {
+              "condition": "AND",
+              "key": "datname",
+              "operator": "=~",
+              "value": "/^$datname$/"
+            },
+            {
+              "condition": "AND",
+              "key": "usename",
+              "operator": "=~",
+              "value": "/^$usename$/"
+            }
+          ]
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "usename"
-            },
-            "properties": [
-              {
-                "id": "custom.width"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Total"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": null
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 23,
-        "x": 0,
-        "y": 7
-      },
-      "id": 130,
-      "links": [],
-      "options": {
-        "showHeader": true,
-        "sortBy": []
-      },
-      "pluginVersion": "",
-      "targets": [
         {
           "groupBy": [
             {
@@ -645,23 +491,30 @@
             },
             {
               "params": [
+                "queryid"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
                 "query_md5"
               ],
               "type": "tag"
             }
           ],
-          "measurement": "pg_stat_statements_query_md5_10m",
+          "hide": false,
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
           "policy": "$archive",
           "query": "",
           "rawQuery": false,
-          "refId": "A",
+          "refId": "C",
           "resultFormat": "table",
           "select": [
             [
               {
                 "params": [
-                  "calls_sum"
+                  "calls"
                 ],
                 "type": "field"
               },
@@ -679,7 +532,7 @@
             [
               {
                 "params": [
-                  "duration_sum"
+                  "duration"
                 ],
                 "type": "field"
               },
@@ -697,7 +550,7 @@
             [
               {
                 "params": [
-                  "rows_sum"
+                  "rows"
                 ],
                 "type": "field"
               },
@@ -715,7 +568,7 @@
             [
               {
                 "params": [
-                  "duration_sum"
+                  "duration"
                 ],
                 "type": "field"
               },
@@ -725,7 +578,7 @@
               },
               {
                 "params": [
-                  " / sum(\"calls_sum\")"
+                  " / sum(\"calls\")"
                 ],
                 "type": "math"
               },
@@ -739,7 +592,7 @@
             [
               {
                 "params": [
-                  "shared_blks_hit_sum"
+                  "shared_blks_hit"
                 ],
                 "type": "field"
               },
@@ -757,7 +610,7 @@
             [
               {
                 "params": [
-                  "shared_blks_read_sum"
+                  "shared_blks_read"
                 ],
                 "type": "field"
               },
@@ -784,22 +637,27 @@
       ],
       "transformations": [
         {
+          "id": "merge",
+          "options": {}
+        },
+        {
           "id": "organize",
           "options": {
             "excludeByName": {
               "Time": true
             },
             "indexByName": {
-              "Calls": 6,
-              "Mean": 8,
-              "Rows": 7,
-              "Shared Hit": 9,
-              "Shared Read": 10,
+              "Calls": 7,
+              "Mean": 9,
+              "Rows": 8,
+              "Shared Hit": 10,
+              "Shared Read": 11,
               "Time": 0,
-              "Total": 5,
+              "Total": 6,
               "datname": 2,
               "host": 1,
-              "query_md5": 4,
+              "query_md5": 5,
+              "queryid": 4,
               "usename": 3
             },
             "renameByName": {}
@@ -810,1953 +668,6 @@
       "type": "table"
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 10,
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 0,
-        "y": 11
-      },
-      "hiddenSeries": false,
-      "id": 66,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "hideEmpty": true,
-        "hideZero": true,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "maxDataPoints": 200,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": true,
-      "targets": [
-        {
-          "alias": "($tag_host) $tag_query_md5",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/($__interval_ms / 1000 / 60)"
-                ],
-                "type": "math"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            },
-            {
-              "condition": "AND",
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Sum: Query Duration / min",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transparent": true,
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "decimals": 1,
-          "format": "ms",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 6,
-      "gridPos": {
-        "h": 5,
-        "w": 9,
-        "x": 7,
-        "y": 11
-      },
-      "hiddenSeries": false,
-      "id": 67,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "maxDataPoints": 100,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 3,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:473",
-          "alias": "Sum Duration per minute by Query / Sum Duration per minute by DB",
-          "color": "#336699"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "Sum Duration per minute by Query",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by Query\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/ AND \"queryid\" =~ /^$queryid$/ AND \"query_md5\" =~ /^$query_md5$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
-          "rawQuery": false,
-          "refId": "C",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Sum Duration per minute by Query"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            },
-            {
-              "condition": "AND",
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            }
-          ]
-        },
-        {
-          "alias": "Sum Duration per minute by DB",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by DB\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
-          "rawQuery": false,
-          "refId": "D",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "Sum Duration per minute by DB"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Query duration / DB duration",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transformations": [
-        {
-          "id": "calculateField",
-          "options": {
-            "binary": {
-              "left": "Sum Duration per minute by Query",
-              "operator": "/",
-              "reducer": "sum",
-              "right": "Sum Duration per minute by DB"
-            },
-            "mode": "binary",
-            "reduce": {
-              "reducer": "sum"
-            },
-            "replaceFields": true
-          }
-        }
-      ],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "decimals": null,
-          "format": "percentunit",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 3,
-      "fillGradient": 10,
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 16,
-        "y": 11
-      },
-      "hiddenSeries": false,
-      "id": 68,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$tag_query_md5 ($tag_host)",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_sum)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Avg (Query Duration)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transparent": true,
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "decimals": 1,
-          "format": "ms",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "description": "Средняя интенсивность вызовов запроса.\nИзмеряется в запросах в сек (RPS)",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 10,
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 0,
-        "y": 16
-      },
-      "hiddenSeries": false,
-      "id": 69,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "maxDataPoints": 200,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:9603",
-          "alias": "RPS",
-          "color": "#FF9830"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": true,
-      "targets": [
-        {
-          "alias": "($tag_host) $tag_query_md5",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / ($__interval_ms / 1000)"
-                ],
-                "type": "math"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Query Calls",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "format": "reqps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 10,
-      "gridPos": {
-        "h": 5,
-        "w": 9,
-        "x": 7,
-        "y": 16
-      },
-      "hiddenSeries": false,
-      "id": 79,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 3,
-      "maxDataPoints": 100,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "repeat": null,
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:9465",
-          "alias": "RPS Query / RPS DB",
-          "color": "#FF9830"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": true,
-      "targets": [
-        {
-          "alias": "RPS Query",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "C",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        },
-        {
-          "alias": "RPS DB",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "D",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Query Calls / DB Calls",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transformations": [
-        {
-          "id": "calculateField",
-          "options": {
-            "alias": "",
-            "binary": {
-              "left": "RPS Query",
-              "operator": "/",
-              "reducer": "sum",
-              "right": "RPS DB"
-            },
-            "mode": "binary",
-            "reduce": {
-              "reducer": "sum"
-            },
-            "replaceFields": true
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "format": "percentunit",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 10,
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 16,
-        "y": 16
-      },
-      "hiddenSeries": false,
-      "id": 80,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "hideEmpty": true,
-        "hideZero": true,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$tag_query_md5 ($tag_host)",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "rows_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_sum)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Avg (Query Rows)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "decimals": 0,
-          "format": "none",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 10,
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 0,
-        "y": 21
-      },
-      "hiddenSeries": false,
-      "id": 131,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:380",
-          "alias": "Sum duration by 1min",
-          "color": "#73BF69",
-          "fill": 0,
-          "fillGradient": 0,
-          "nullPointMode": "null"
-        },
-        {
-          "$$hashKey": "object:1875",
-          "alias": "Duration+",
-          "color": "#73BF69",
-          "fillBelowTo": "Avg",
-          "lines": false
-        },
-        {
-          "$$hashKey": "object:1880",
-          "alias": "Avg",
-          "color": "#5794F2",
-          "fillBelowTo": "Duration-",
-          "hideTooltip": true,
-          "lines": false
-        },
-        {
-          "$$hashKey": "object:1891",
-          "alias": "Duration-",
-          "hideTooltip": false,
-          "lines": false
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$col",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              },
-              {
-                "params": [
-                  " /($__interval_ms / 1000 / 60) + mean(duration_stddev)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Duration+"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              },
-              {
-                "params": [
-                  "/($__interval_ms / 1000 / 60)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              },
-              {
-                "params": [
-                  " /($__interval_ms / 1000 / 60) - mean(duration_stddev)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Duration-"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              },
-              {
-                "params": [
-                  "/($__interval_ms / 1000 / 60)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Sum duration by 1min"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Sum: Query Duration / min with Std Dev",
-      "tooltip": {
-        "shared": true,
-        "sort": 2,
-        "value_type": "individual"
-      },
-      "transformations": [],
-      "transparent": true,
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "decimals": 1,
-          "format": "ms",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "description": "Средняя интенсивность вызовов запроса.\nИзмеряется в запросах в сек (RPS)",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 0,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 5,
-        "w": 9,
-        "x": 7,
-        "y": 21
-      },
-      "hiddenSeries": false,
-      "id": 132,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "maxDataPoints": 200,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:1341",
-          "alias": "RPS",
-          "color": "#73BF69",
-          "fill": 0
-        },
-        {
-          "$$hashKey": "object:1346",
-          "alias": "+StdDev",
-          "fillBelowTo": "Avg",
-          "lines": false
-        },
-        {
-          "$$hashKey": "object:1351",
-          "alias": "Avg",
-          "fillBelowTo": "-StdDev",
-          "lines": false
-        },
-        {
-          "$$hashKey": "object:1362",
-          "alias": "-StdDev",
-          "lines": false
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$col",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "query_md5"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "host"
-              ],
-              "type": "tag"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / ($__interval_ms / 1000) + mean(calls_stddev)/60"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "+StdDev"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / ($__interval_ms / 1000)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / ($__interval_ms / 1000) - mean(calls_stddev)/60"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "-StdDev"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "calls_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  " / ($__interval_ms / 1000)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "RPS"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Query Calls",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transformations": [],
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "format": "reqps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "$db",
-      "description": "Среднее значение для всех хостов, баз данных, текстов запроса. Для данного queryid",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 16,
-        "y": 21
-      },
-      "hiddenSeries": false,
-      "id": 133,
-      "interval": "10m",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": false,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 6,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:638",
-          "alias": "Duration",
-          "fill": 0,
-          "lines": true
-        },
-        {
-          "$$hashKey": "object:645",
-          "alias": "Duration+",
-          "fillBelowTo": "Avg",
-          "lines": false
-        },
-        {
-          "$$hashKey": "object:650",
-          "alias": "Avg",
-          "fillBelowTo": "Duration-",
-          "lines": false
-        },
-        {
-          "$$hashKey": "object:661",
-          "alias": "Duration-",
-          "lines": false
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "alias": "$col",
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "pg_stat_statements_query_md5_10m",
-          "orderByTime": "ASC",
-          "policy": "$archive",
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_sum) + mean(duration_stddev)/sum(calls_sum)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Duration+"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_sum)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Avg"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_sum) - mean(duration_stddev)/sum(calls_sum)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Duration-"
-                ],
-                "type": "alias"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "duration_sum"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "sum"
-              },
-              {
-                "params": [
-                  "/sum(calls_sum)"
-                ],
-                "type": "math"
-              },
-              {
-                "params": [
-                  "Duration"
-                ],
-                "type": "alias"
-              }
-            ]
-          ],
-          "tags": [
-            {
-              "key": "datname",
-              "operator": "=~",
-              "value": "/^$datname$/"
-            },
-            {
-              "condition": "AND",
-              "key": "usename",
-              "operator": "=~",
-              "value": "/^$usename$/"
-            },
-            {
-              "condition": "AND",
-              "key": "queryid",
-              "operator": "=~",
-              "value": "/^$queryid$/"
-            },
-            {
-              "condition": "AND",
-              "key": "host",
-              "operator": "=~",
-              "value": "/^$host$/"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Avg (Query Duration)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "transparent": true,
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:4547",
-          "decimals": 1,
-          "format": "ms",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "$$hashKey": "object:4548",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
       "columns": [],
       "datasource": "$db",
       "fieldConfig": {
@@ -2765,10 +676,10 @@
       },
       "fontSize": "100%",
       "gridPos": {
-        "h": 15,
+        "h": 11,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 6
       },
       "id": 46,
       "links": [],
@@ -2777,8 +688,8 @@
       "scopedVars": {
         "query_md5": {
           "selected": false,
-          "text": "f6ab26bc-a39b-06aa-ca1a-2015bcd41465",
-          "value": "f6ab26bc-a39b-06aa-ca1a-2015bcd41465"
+          "text": "d4300958-580a-b6d2-7900-24b7e64f4635",
+          "value": "d4300958-580a-b6d2-7900-24b7e64f4635"
         }
       },
       "scroll": true,
@@ -2839,7 +750,7 @@
           "measurement": "pg_stat_statements_diff",
           "orderByTime": "ASC",
           "policy": "$archive",
-          "query": "SELECT last(\"calls_sum\") as \"calls\" FROM \"$archive\".\"pg_stat_statements_query_1d\" WHERE (\"query_md5\" =~ /^$query_md5$/ AND \"queryid\" =~ /^$queryid$/ AND \"datname\" =~ /^$datname$/) GROUP BY \"query\"",
+          "query": "SELECT last(\"calls_sum\") as \"calls\" FROM \"$archive\".\"pg_stat_statements_query_1d\" WHERE (\"query_md5\" =~ /^${query_md5:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/) GROUP BY \"query\"",
           "rawQuery": true,
           "refId": "D",
           "resultFormat": "table",
@@ -2901,7 +812,7 @@
           "hide": false,
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT last(\"calls\") as \"calls\" FROM \"1d\".\"pg_stat_statements_query_10m\" WHERE (\"query_md5\" =~ /^${query_md5:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/) GROUP BY \"query\"",
+          "query": "SELECT last(\"calls_sum\") as \"calls\" FROM \"1d\".\"pg_stat_statements_query_10m\" WHERE (\"query_md5\" =~ /^${query_md5:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/) GROUP BY \"query\"\n\n",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table",
@@ -2925,6 +836,21 @@
       "title": "Query Text of $query_md5",
       "transform": "table",
       "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "query": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
         {
           "id": "organize",
           "options": {
@@ -2958,11 +884,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 17
       },
       "id": 92,
       "panels": [],
-      "title": "Детальная статистика по QueryID = ${queryid} (есть данные только за последние 7 дней)",
+      "title": "Stats for QueryID = ${queryid}",
       "type": "row"
     },
     {
@@ -2981,7 +907,7 @@
         "h": 5,
         "w": 7,
         "x": 0,
-        "y": 42
+        "y": 18
       },
       "hiddenSeries": false,
       "id": 94,
@@ -2997,7 +923,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -3040,9 +966,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3147,7 +1073,7 @@
         "h": 5,
         "w": 9,
         "x": 7,
-        "y": 42
+        "y": 18
       },
       "hiddenSeries": false,
       "id": 96,
@@ -3163,7 +1089,7 @@
       },
       "lines": false,
       "linewidth": 1,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -3201,9 +1127,9 @@
             }
           ],
           "hide": false,
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by Query\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/ AND \"queryid\" =~ /^$queryid$/ AND \"query_md5\" =~ /^$query_md5$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
           "rawQuery": false,
           "refId": "A",
@@ -3265,9 +1191,9 @@
             }
           ],
           "hide": false,
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "query": "SELECT sum(\"duration_10m\") as \"Sum Duration per minute by DB\" FROM \"$archive\".\"pg_stat_statements_query_md5\" WHERE (\"datname\" =~ /^$datname$/ AND \"host\" =~ /^$host$/ AND \"usename\" =~ /^$usename$/) AND $timeFilter GROUP BY time($__interval), \"query_md5\" fill(null)",
           "rawQuery": false,
           "refId": "B",
@@ -3385,7 +1311,7 @@
         "h": 5,
         "w": 7,
         "x": 16,
-        "y": 42
+        "y": 18
       },
       "hiddenSeries": false,
       "id": 98,
@@ -3401,7 +1327,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -3438,9 +1364,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3552,7 +1478,7 @@
         "h": 5,
         "w": 7,
         "x": 0,
-        "y": 47
+        "y": 23
       },
       "hiddenSeries": false,
       "id": 100,
@@ -3568,7 +1494,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -3617,9 +1543,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3723,7 +1649,7 @@
         "h": 5,
         "w": 9,
         "x": 7,
-        "y": 47
+        "y": 23
       },
       "hiddenSeries": false,
       "id": 102,
@@ -3739,7 +1665,7 @@
       },
       "lines": false,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -3777,9 +1703,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -3832,9 +1758,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "B",
           "resultFormat": "time_series",
           "select": [
@@ -3945,7 +1871,7 @@
         "h": 5,
         "w": 7,
         "x": 16,
-        "y": 47
+        "y": 23
       },
       "hiddenSeries": false,
       "id": 104,
@@ -3961,7 +1887,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -4009,9 +1935,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4122,7 +2048,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 52
+        "y": 28
       },
       "hiddenSeries": false,
       "id": 115,
@@ -4138,7 +2064,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -4181,9 +2107,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4287,7 +2213,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 52
+        "y": 28
       },
       "hiddenSeries": false,
       "id": 116,
@@ -4303,7 +2229,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -4346,9 +2272,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4452,7 +2378,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 52
+        "y": 28
       },
       "hiddenSeries": false,
       "id": 117,
@@ -4468,7 +2394,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -4511,9 +2437,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4617,7 +2543,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 52
+        "y": 28
       },
       "hiddenSeries": false,
       "id": 118,
@@ -4633,7 +2559,7 @@
       },
       "lines": true,
       "linewidth": 3,
-      "maxDataPoints": 1000,
+      "maxDataPoints": 300,
       "nullPointMode": "null",
       "options": {
         "alertThreshold": true
@@ -4676,9 +2602,9 @@
               "type": "fill"
             }
           ],
-          "measurement": "pg_stat_statements_diff_1m",
+          "measurement": "pg_stat_statements_diff_1m_archive",
           "orderByTime": "ASC",
-          "policy": "$new",
+          "policy": "archive",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -4778,27 +2704,6 @@
       {
         "current": {
           "selected": false,
-          "text": "Influx-production-1",
-          "value": "Influx-production-1"
-        },
-        "description": null,
-        "error": null,
-        "hide": 2,
-        "includeAll": false,
-        "label": "DataBase for annotation",
-        "multi": false,
-        "name": "db_jmeter",
-        "options": [],
-        "query": "influxdb",
-        "queryValue": "",
-        "refresh": 1,
-        "regex": "/^Stand-.*-JMeter$/i",
-        "skipUrlSync": false,
-        "type": "datasource"
-      },
-      {
-        "current": {
-          "selected": false,
           "text": "PostgreSQL Query: Stand-Demo-JMeter",
           "value": "PostgreSQL Query: Stand-Demo-JMeter"
         },
@@ -4812,71 +2717,35 @@
         "options": [],
         "query": "influxdb",
         "refresh": 1,
-        "regex": "/PostgreSQL Query: ${db_jmeter:regex}/i",
+        "regex": "/PostgreSQL Query: .*/i",
         "skipUrlSync": false,
         "type": "datasource"
       },
       {
-        "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "autogen",
-          "value": "autogen"
-        },
-        "datasource": "$db",
-        "definition": "",
         "description": null,
         "error": null,
         "hide": 2,
-        "includeAll": false,
         "label": "Retention policy (archive)",
-        "multi": false,
         "name": "archive",
-        "options": [],
-        "query": "SHOW RETENTION POLICIES",
-        "refresh": 2,
-        "regex": "/^autogen$/",
+        "query": "archive",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "constant"
       },
       {
-        "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "7d",
-          "value": "7d"
-        },
-        "datasource": "$db",
-        "definition": "",
         "description": null,
         "error": null,
         "hide": 2,
-        "includeAll": false,
         "label": "Retention Policy (new)",
-        "multi": false,
         "name": "new",
-        "options": [],
-        "query": "SHOW RETENTION POLICIES",
-        "refresh": 2,
-        "regex": "/^(?!$archive|1d$).*$/",
+        "query": "1d",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "constant"
       },
       {
         "current": {
           "selected": false,
-          "text": "3889201485",
-          "value": "3889201485"
+          "text": "3575890253",
+          "value": "3575890253"
         },
         "description": null,
         "error": null,
@@ -4890,21 +2759,24 @@
             "value": "3889201485"
           }
         ],
-        "query": "3889201485",
+        "query": "3575890253",
         "skipUrlSync": false,
         "type": "textbox"
       },
       {
         "allValue": "",
         "current": {
-          "selected": false,
-          "text": "${__data.fields[host]}",
+          "selected": true,
+          "tags": [],
+          "text": [
+            "All"
+          ],
           "value": [
-            "${__data.fields[host]}"
+            "$__all"
           ]
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
+        "definition": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
         "description": null,
         "error": null,
         "hide": 0,
@@ -4913,7 +2785,7 @@
         "multi": true,
         "name": "host",
         "options": [],
-        "query": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
+        "query": "SELECT DISTINCT(\"host\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND $timeFilter GROUP BY \"host\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -4928,13 +2800,11 @@
         "allValue": "",
         "current": {
           "selected": false,
-          "text": "demo",
-          "value": [
-            "demo"
-          ]
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
+        "definition": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
         "description": null,
         "error": null,
         "hide": 2,
@@ -4943,7 +2813,7 @@
         "multi": true,
         "name": "datname",
         "options": [],
-        "query": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
+        "query": "SELECT DISTINCT(\"datname\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE \"queryid\"=~/^${queryid:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND $timeFilter GROUP BY \"datname\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -4958,13 +2828,11 @@
         "allValue": ".*",
         "current": {
           "selected": false,
-          "text": "rrko_async_ms",
-          "value": [
-            "rrko_async_ms"
-          ]
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
+        "definition": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
         "description": null,
         "error": null,
         "hide": 0,
@@ -4973,7 +2841,7 @@
         "multi": true,
         "name": "usename",
         "options": [],
-        "query": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
+        "query": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -4991,12 +2859,16 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": "$db",
-        "definition": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
+        "definition": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
         "description": null,
         "error": null,
         "hide": 0,
@@ -5005,7 +2877,7 @@
         "multi": true,
         "name": "query_md5",
         "options": [],
-        "query": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls_sum\") FROM \"${archive}\".\"pg_stat_statements_query_md5_10m\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
+        "query": "SELECT DISTINCT(\"query_md5\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE \"datname\" =~ /^${datname:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/  AND $timeFilter GROUP BY \"query_md5\")",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -5049,5 +2921,5 @@
   "timezone": "",
   "title": "PostgreSQL Query Details",
   "uid": "pgquery",
-  "version": 10
+  "version": 11
 }
