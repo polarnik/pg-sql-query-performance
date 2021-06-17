@@ -1,9 +1,9 @@
 #!/bin/sh -x
 
 # API-KEY Grafana, need change
-KEY="eyJrIjoic21OT3lWU0lnOEJFOG51MlpXa3FYTzI5UjBLaHVmazYiLCJuIjoiYWFhYWFhIiwiaWQiOjF9"
+KEY="eyJrIjoiQjd0Y2E5bnIwTmVVeDEyMXVVV2k4b093MDlDOHdBTUQiLCJuIjoiYWRtaW4iLCJpZCI6MX0="
 # Grafana Dashboard UID, need change
-UID="pgquery"
+UID="$1"
 DIR="./config/grafana/provisioning/dashboards/json/"
 
 tmpFile=$(mktemp)
