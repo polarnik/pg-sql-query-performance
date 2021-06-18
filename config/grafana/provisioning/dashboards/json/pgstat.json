@@ -23,7 +23,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 3,
-  "iteration": 1623957362557,
+  "iteration": 1624005335058,
   "links": [],
   "panels": [
     {
@@ -1282,7 +1282,7 @@
                   {
                     "targetBlank": true,
                     "title": "SQL Stats Details for queryid=﻿${__data.fields[queryid]}",
-                    "url": "/d/pgquery?from=${__from}﻿&to=﻿${__to}﻿﻿&var-db=﻿${db:percentencode}﻿&var-host=﻿${host:percentencode}﻿&var-datname=﻿${__data.fields[datname]:percentencode}﻿&var-usename=﻿${__data.fields[usename]:percentencode}﻿&var-queryid=﻿${__data.fields[queryid]:percentencode}"
+                    "url": "/d/pgquery?from=${__from}﻿&to=﻿${__to}﻿﻿&var-db=﻿${db:percentencode}﻿&var-host=﻿${__data.fields[host]:percentencode}﻿&var-datname=﻿${__data.fields[datname]:percentencode}﻿&var-usename=﻿${__data.fields[usename]:percentencode}﻿&var-queryid=﻿${__data.fields[queryid]:percentencode}"
                   }
                 ]
               },
@@ -2152,5 +2152,5 @@
   "timezone": "",
   "title": "PostgreSQL Statistics",
   "uid": "pgstat",
-  "version": 19
+  "version": 23
 }
