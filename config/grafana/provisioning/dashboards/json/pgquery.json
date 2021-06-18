@@ -23,7 +23,7 @@
   "gnetId": null,
   "graphTooltip": 1,
   "id": 2,
-  "iteration": 1623956211230,
+  "iteration": 1624005460645,
   "links": [],
   "panels": [
     {
@@ -688,8 +688,8 @@
       "scopedVars": {
         "query_md5": {
           "selected": false,
-          "text": "d4300958-580a-b6d2-7900-24b7e64f4635",
-          "value": "d4300958-580a-b6d2-7900-24b7e64f4635"
+          "text": "bd48170a-946d-5f51-c757-d8ca7e375f65",
+          "value": "bd48170a-946d-5f51-c757-d8ca7e375f65"
         }
       },
       "scroll": true,
@@ -884,7 +884,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 72
       },
       "id": 92,
       "panels": [],
@@ -907,7 +907,7 @@
         "h": 5,
         "w": 7,
         "x": 0,
-        "y": 18
+        "y": 73
       },
       "hiddenSeries": false,
       "id": 94,
@@ -1073,7 +1073,7 @@
         "h": 5,
         "w": 9,
         "x": 7,
-        "y": 18
+        "y": 73
       },
       "hiddenSeries": false,
       "id": 96,
@@ -1311,7 +1311,7 @@
         "h": 5,
         "w": 7,
         "x": 16,
-        "y": 18
+        "y": 73
       },
       "hiddenSeries": false,
       "id": 98,
@@ -1478,7 +1478,7 @@
         "h": 5,
         "w": 7,
         "x": 0,
-        "y": 23
+        "y": 78
       },
       "hiddenSeries": false,
       "id": 100,
@@ -1649,7 +1649,7 @@
         "h": 5,
         "w": 9,
         "x": 7,
-        "y": 23
+        "y": 78
       },
       "hiddenSeries": false,
       "id": 102,
@@ -1871,7 +1871,7 @@
         "h": 5,
         "w": 7,
         "x": 16,
-        "y": 23
+        "y": 78
       },
       "hiddenSeries": false,
       "id": 104,
@@ -2048,7 +2048,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 28
+        "y": 83
       },
       "hiddenSeries": false,
       "id": 115,
@@ -2213,7 +2213,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 28
+        "y": 83
       },
       "hiddenSeries": false,
       "id": 116,
@@ -2378,7 +2378,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 28
+        "y": 83
       },
       "hiddenSeries": false,
       "id": 117,
@@ -2543,7 +2543,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 28
+        "y": 83
       },
       "hiddenSeries": false,
       "id": 118,
@@ -2744,8 +2744,8 @@
       {
         "current": {
           "selected": false,
-          "text": "3575890253",
-          "value": "3575890253"
+          "text": "3268112626",
+          "value": "3268112626"
         },
         "description": null,
         "error": null,
@@ -2754,12 +2754,12 @@
         "name": "queryid",
         "options": [
           {
-            "selected": false,
-            "text": "3889201485",
-            "value": "3889201485"
+            "selected": true,
+            "text": "3268112626",
+            "value": "3268112626"
           }
         ],
-        "query": "3575890253",
+        "query": "3268112626",
         "skipUrlSync": false,
         "type": "textbox"
       },
@@ -2825,11 +2825,15 @@
         "useTags": false
       },
       {
-        "allValue": ".*",
+        "allValue": "",
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": "$db",
         "definition": "SELECT DISTINCT(\"usename\") FROM (SELECT last(\"calls\") FROM \"${archive}\".\"pg_stat_statements_diff_1m_archive\" WHERE $timeFilter AND \"queryid\"=~/^${queryid:regex}$/ AND \"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/  GROUP BY \"usename\")",
@@ -2921,5 +2925,5 @@
   "timezone": "",
   "title": "PostgreSQL Statistics: Query Details",
   "uid": "pgquery",
-  "version": 13
+  "version": 15
 }
