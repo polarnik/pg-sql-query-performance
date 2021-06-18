@@ -1239,7 +1239,7 @@
                   {
                     "targetBlank": false,
                     "title": "host: ${__data.fields[host]} (filter)",
-                    "url": "${current:raw}?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}&var-current=${current:percentencode}&var-detail=${detail:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
                   }
                 ]
               },
@@ -1260,7 +1260,7 @@
                 "value": [
                   {
                     "title": "host: ${__data.fields[host]} + datname: ${__data.fields[datname]} (filter)",
-                    "url": "${current:raw}?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}&var-current=${current:percentencode}&var-detail=${detail:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
                   }
                 ]
               },
@@ -1281,8 +1281,8 @@
                 "value": [
                   {
                     "targetBlank": true,
-                    "title": "SQL Details for queryid=﻿${__data.fields[queryid]}",
-                    "url": "${detail:raw}?from=${__from}﻿&to=﻿${__to}﻿﻿&var-db=﻿${db:percentencode}﻿&var-host=﻿${host:percentencode}﻿&var-datname=﻿${__data.fields[datname]:percentencode}﻿&var-usename=﻿${__data.fields[usename]:percentencode}﻿&var-queryid=﻿${__data.fields[queryid]:percentencode}"
+                    "title": "SQL Stats Details for queryid=﻿${__data.fields[queryid]}",
+                    "url": "/d/pgquery?from=${__from}﻿&to=﻿${__to}﻿﻿&var-db=﻿${db:percentencode}﻿&var-host=﻿${host:percentencode}﻿&var-datname=﻿${__data.fields[datname]:percentencode}﻿&var-usename=﻿${__data.fields[usename]:percentencode}﻿&var-queryid=﻿${__data.fields[queryid]:percentencode}"
                   }
                 ]
               },
@@ -1303,7 +1303,7 @@
                 "value": [
                   {
                     "title": "host: ${__data.fields[host]} + datname: ${__data.fields[datname]} + usename: ${__data.fields[usename]} (filter)",
-                    "url": "${current}?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-usename=${__data.fields[usename]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP}&var-TOP_by=${TOP_by}&var-current=${current:percentencode}&var-detail=${detail:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-usename=${__data.fields[usename]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP}&var-TOP_by=${TOP_by}"
                   }
                 ]
               },
@@ -1791,11 +1791,11 @@
           },
           {
             "selected": false,
-            "text": "/d/pgstat/postgresql-query-statistics",
-            "value": "/d/pgstat/postgresql-query-statistics"
+            "text": "/d/pgstat",
+            "value": "/d/pgstat"
           }
         ],
-        "query": "/d/pgstat/postgresql-query-statistics",
+        "query": "/d/pgstat",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -1822,11 +1822,11 @@
           },
           {
             "selected": false,
-            "text": "/d/pgquery/postgresql-query-details",
-            "value": "/d/pgquery/postgresql-query-details"
+            "text": "/d/pgquery",
+            "value": "/d/pgquery"
           }
         ],
-        "query": "/d/pgquery/postgresql-query-details",
+        "query": "/d/pgquery",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -2150,7 +2150,7 @@
     ]
   },
   "timezone": "",
-  "title": "PostgreSQL Query Statistics",
+  "title": "PostgreSQL Statistics",
   "uid": "pgstat",
-  "version": 17
+  "version": 19
 }
