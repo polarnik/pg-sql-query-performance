@@ -35,7 +35,7 @@ services:
 
 
   influxdb:
-    image: influxdb:1.8.4
+    image: influxdb:1.8.6
     container_name: sql_monitor_influxdb
     restart: unless-stopped
     environment:
@@ -57,7 +57,7 @@ services:
       start_period: 90s
 
   telegraf:
-    image: telegraf:1.18.2
+    image: telegraf:1.18.3
     container_name: sql_monitor_telegraf
     restart: unless-stopped
     depends_on:
@@ -80,7 +80,7 @@ services:
       start_period: 90s
 
   grafana:
-    image: grafana/grafana:7.5.7
+    image: grafana/grafana:8.0.2
     container_name: sql_monitor_grafana
     restart: unless-stopped
     depends_on:

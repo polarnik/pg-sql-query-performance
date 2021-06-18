@@ -1,6 +1,33 @@
 # pg-sql-query-performance
 Мониторинг, анализ и оптимизация производительности SQL-запросов к PostgreSQL. Описание и демонстрация
 
+Monitoring, analyzing, and optimizing the performance of PostgreSQL SQL queries. Description and demonstration
+
+## Start
+
+```bash
+docker-compose up
+```
+
+Open Grafana: [http://localhost:3000](http://localhost:3000)
+
+
+## Stop
+
+```bash
+docker-compose stop
+```
+
+## Remove
+
+```bash
+docker-compose down -v
+```
+
+## Docs
+
+Codefest 11 : https://polarnik.github.io/pg-sql-query-performance/
+
 ## FAQ
 
 Если при сборке проекта будет ошибка
