@@ -2919,7 +2919,7 @@
     ]
   },
   "timezone": "",
-  "title": "PostgreSQL Query Details",
+  "title": "PostgreSQL Statistics: Query Details",
   "uid": "pgquery",
-  "version": 11
+  "version": 13
 }
