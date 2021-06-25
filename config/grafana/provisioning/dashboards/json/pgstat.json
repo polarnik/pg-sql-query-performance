@@ -23,7 +23,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 3,
-  "iteration": 1624631731362,
+  "iteration": 1624632258053,
   "links": [],
   "panels": [
     {
@@ -1220,7 +1220,7 @@
                   {
                     "targetBlank": false,
                     "title": "host: ${__data.fields[host]} (filter)",
-                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${datname:percentencode}&var-usename=${usename:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=All&var-usename=All&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
                   }
                 ]
               },
@@ -1241,7 +1241,7 @@
                 "value": [
                   {
                     "title": "host: ${__data.fields[host]} + datname: ${__data.fields[datname]} (filter)",
-                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-usename=${usename:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-usename=All&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
                   }
                 ]
               },
@@ -1766,7 +1766,7 @@
         "name": "current",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "All",
             "value": "$__all"
           },
@@ -1797,7 +1797,7 @@
         "name": "detail",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "All",
             "value": "$__all"
           },
@@ -1967,7 +1967,7 @@
             "value": "10"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "20",
             "value": "20"
           },
@@ -1977,7 +1977,7 @@
             "value": "30"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "40",
             "value": "40"
           },
@@ -2129,5 +2129,5 @@
   "timezone": "",
   "title": "PostgreSQL Statistics",
   "uid": "pgstat",
-  "version": 8
+  "version": 11
 }
