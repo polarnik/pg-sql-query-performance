@@ -280,6 +280,15 @@
         <stringProp name="username">qpt_idle_user</stringProp>
       </JDBCDataSource>
       <hashTree/>
+      <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+        <stringProp name="CounterConfig.start">1</stringProp>
+        <stringProp name="CounterConfig.end">5</stringProp>
+        <stringProp name="CounterConfig.incr">1</stringProp>
+        <stringProp name="CounterConfig.name">NUMBER</stringProp>
+        <stringProp name="CounterConfig.format"></stringProp>
+        <boolProp name="CounterConfig.per_user">false</boolProp>
+      </CounterConfig>
+      <hashTree/>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group (user) - Stable 3" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -309,15 +318,6 @@
             </ConstantThroughputTimer>
             <hashTree/>
           </hashTree>
-          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
-            <stringProp name="CounterConfig.start">1</stringProp>
-            <stringProp name="CounterConfig.end">3</stringProp>
-            <stringProp name="CounterConfig.incr">1</stringProp>
-            <stringProp name="CounterConfig.name">NUMBER</stringProp>
-            <stringProp name="CounterConfig.format"></stringProp>
-            <boolProp name="CounterConfig.per_user">false</boolProp>
-          </CounterConfig>
-          <hashTree/>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
             <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_03_seqscan (TC)" enabled="true">
@@ -328,11 +328,11 @@
             <hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Последовательное сканирование" enabled="true">
                 <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-                <stringProp name="query">/*${NUMBER}*/ SELECT * FROM flights;</stringProp>
+                <stringProp name="query">SELECT * FROM flights;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -341,11 +341,11 @@
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Агрегация" enabled="true">
                 <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-                <stringProp name="query">/*${NUMBER}*/ SELECT count(*) FROM seats;</stringProp>
+                <stringProp name="query">SELECT count(*) FROM seats;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -354,11 +354,11 @@
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Параллельное последовательное сканирование" enabled="true">
                 <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-                <stringProp name="query">/*${NUMBER}*/ SELECT count(*) FROM bookings;</stringProp>
+                <stringProp name="query">SELECT count(*) FROM bookings;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -398,15 +398,6 @@
             </ConstantThroughputTimer>
             <hashTree/>
           </hashTree>
-          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
-            <stringProp name="CounterConfig.start">1</stringProp>
-            <stringProp name="CounterConfig.end">3</stringProp>
-            <stringProp name="CounterConfig.incr">1</stringProp>
-            <stringProp name="CounterConfig.name">NUMBER</stringProp>
-            <stringProp name="CounterConfig.format"></stringProp>
-            <boolProp name="CounterConfig.per_user">false</boolProp>
-          </CounterConfig>
-          <hashTree/>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
             <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_04_indexscan (TC)" enabled="true">
@@ -417,11 +408,11 @@
             <hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_04_indexscan: поиск одного значения" enabled="true">
                 <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
-                <stringProp name="query">/*${NUMBER}*/ SELECT * FROM bookings WHERE book_ref = &apos;0009D5&apos;;</stringProp>
+                <stringProp name="query">SELECT * FROM bookings WHERE book_ref = &apos;0009D5&apos;;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -430,7 +421,7 @@
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_04_indexscan: с условием, которого нет в индексе" enabled="true">
                 <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
-                <stringProp name="query">/*${NUMBER}*/ 
+                <stringProp name="query">-- with parameters
 SELECT * FROM bookings 
   WHERE book_ref = &apos;0009D5&apos; AND total_amount &gt; ?;</stringProp>
                 <stringProp name="queryArguments">${__Random(1000,5000,)}</stringProp>
@@ -486,11 +477,14 @@ SELECT * FROM bookings
             <hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Сканирование по битовой карте" enabled="true">
                 <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
-                <stringProp name="query">SELECT * FROM bookings WHERE total_amount &lt; 10000;</stringProp>
+                <stringProp name="query">/* with random comments ${NUMBER} */
+
+SELECT * FROM bookings WHERE total_amount &lt; 10000
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -499,7 +493,8 @@ SELECT * FROM bookings
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Использование памяти" enabled="true">
                 <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
-                <stringProp name="query">SET work_mem = &apos;64kB&apos;;
+                <stringProp name="query">/* Callable: with multiple statements */
+SET work_mem = &apos;64kB&apos;;
 SELECT * FROM bookings WHERE total_amount &lt; 10000;
 RESET work_mem;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
@@ -514,12 +509,16 @@ RESET work_mem;</stringProp>
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Объединение битовых карт" enabled="true">
                 <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
-                <stringProp name="query">SELECT * FROM bookings
-  WHERE total_amount &lt; 10000 OR total_amount &gt; 100000;</stringProp>
+                <stringProp name="query">SELECT * 
+FROM bookings
+WHERE 
+	total_amount &lt; 10000 OR 
+	total_amount &gt; 100000
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -528,13 +527,15 @@ RESET work_mem;</stringProp>
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Объединение битовых карт 2" enabled="true">
                 <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
-                <stringProp name="query">  SELECT * FROM bookings
-  WHERE total_amount &lt; 10000
-     OR book_date = bookings.now() - INTERVAL &apos;1 day&apos;;</stringProp>
+                <stringProp name="query">SELECT * FROM bookings
+WHERE total_amount &lt; 10000
+     OR book_date = bookings.now() - INTERVAL &apos;1 day&apos;
+     
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -543,40 +544,284 @@ RESET work_mem;</stringProp>
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация" enabled="true">
                 <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
-                <stringProp name="query">SELECT * FROM bookings LIMIT 10;</stringProp>
+                <stringProp name="query">SELECT * 
+FROM bookings 
+LIMIT 10
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
                 <stringProp name="variableNames"></stringProp>
               </JDBCSampler>
               <hashTree/>
-              <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
-                <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
-                <stringProp name="query">SELECT * FROM bookings WHERE total_amount &lt; 10000;</stringProp>
-                <stringProp name="queryArguments"></stringProp>
-                <stringProp name="queryArgumentsTypes"></stringProp>
-                <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
-                <stringProp name="resultSetHandler">Count Records</stringProp>
-                <stringProp name="resultSetMaxRows">1</stringProp>
-                <stringProp name="resultVariable"></stringProp>
-                <stringProp name="variableNames"></stringProp>
-              </JDBCSampler>
-              <hashTree/>
+              <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true"/>
+              <hashTree>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND 1 = 1;</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND 2 = 2;</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND ? = ?;</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND 4 = 4;</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND (5 = 5);</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND ((6 = 6));</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND (? = ?);</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND ((? = ?));</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; ? AND (((? = ?)));</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE (total_amount &lt; ? AND (((? = ?))));</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE ((total_amount &lt; ?) AND (((? = ?))));</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE ((total_amount &lt; ?) AND ((((?) = (?)))));</stringProp>
+                  <stringProp name="queryArguments">${NUMBER}0000,${NUMBER},${NUMBER}</stringProp>
+                  <stringProp name="queryArgumentsTypes">INTEGER,INTEGER,INTEGER</stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Prepared Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+              </hashTree>
+              <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true"/>
+              <hashTree>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; 1000 AND 1 = 1;</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; 1000 AND 2 = 2;</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; 2000 AND 3 = 3;</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE total_amount &lt; 2000 AND (3 = 3);</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE (total_amount &lt; 2000) AND (3 = 3);</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE ((total_amount &lt; 2000) AND (3 = 3));</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+                <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
+                  <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
+                  <stringProp name="query">/* !!!!! */ SELECT * FROM bookings WHERE ((total_amount &lt; 2000) AND ((3 = 3)));</stringProp>
+                  <stringProp name="queryArguments"></stringProp>
+                  <stringProp name="queryArgumentsTypes"></stringProp>
+                  <stringProp name="queryTimeout"></stringProp>
+                  <stringProp name="queryType">Select Statement</stringProp>
+                  <stringProp name="resultSetHandler">Count Records</stringProp>
+                  <stringProp name="resultSetMaxRows">1</stringProp>
+                  <stringProp name="resultVariable"></stringProp>
+                  <stringProp name="variableNames"></stringProp>
+                </JDBCSampler>
+                <hashTree/>
+              </hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Параллельное сканирование по битовой карте" enabled="true">
                 <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
                 <stringProp name="query">SELECT 
 	count(*) 
 FROM bookings 
-WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp>
+WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -628,11 +873,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
                 <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
                 <stringProp name="query">SELECT *
   FROM tickets t JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no 
-  WHERE t.ticket_no IN (&apos;0005434877256&apos;,&apos;0005433843368&apos;);</stringProp>
+  WHERE t.ticket_no IN (&apos;0005434877256&apos;,&apos;0005433843368&apos;)
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -643,11 +889,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
                 <stringProp name="dataSource">DB_qpt_06_nestloop</stringProp>
                 <stringProp name="query">SELECT * 
   FROM aircrafts a LEFT JOIN seats s ON (a.aircraft_code = s.aircraft_code) 
-  WHERE a.model LIKE &apos;Аэробус%&apos;;</stringProp>
+  WHERE a.model LIKE &apos;Аэробус%&apos;
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -659,11 +906,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
                 <stringProp name="query">SELECT * 
   FROM aircrafts a
   WHERE a.model LIKE &apos;Аэробус%&apos;
-  AND NOT EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code);</stringProp>
+  AND NOT EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code)
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -675,11 +923,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
                 <stringProp name="query">SELECT * 
   FROM aircrafts a LEFT JOIN seats s ON (a.aircraft_code = s.aircraft_code) 
   WHERE a.model LIKE &apos;Аэробус%&apos;
-  AND s.aircraft_code IS NULL;</stringProp>
+  AND s.aircraft_code IS NULL
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -691,11 +940,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
                 <stringProp name="query">SELECT * 
   FROM aircrafts a
   WHERE a.model LIKE &apos;Аэробус%&apos;
-  AND EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code);</stringProp>
+  AND EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code)
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -707,11 +957,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
                 <stringProp name="query">SELECT *
   FROM aircrafts a
   WHERE a.model LIKE &apos;Аэробус%&apos;
-  AND EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code);</stringProp>
+  AND EXISTS (SELECT * FROM seats s WHERE s.aircraft_code = a.aircraft_code)
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -724,11 +975,12 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
   FROM tickets t
     JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
     JOIN flights f ON f.flight_id = tf.flight_id
-  WHERE f.flight_id = 12345;</stringProp>
+  WHERE f.flight_id = 12345
+;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -778,13 +1030,14 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
             <hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Hash join" enabled="true">
                 <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
-                <stringProp name="query">SELECT *
+                <stringProp name="query">/* with constant params */
+SELECT *
   FROM tickets t JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
-  LIMIT 1000;</stringProp>
+  LIMIT 100${NUMBER};</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -793,13 +1046,14 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Модификации" enabled="true">
                 <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
-                <stringProp name="query">SELECT * 
+                <stringProp name="query">/* with constant params */
+SELECT * 
   FROM aircrafts a FULL JOIN seats s ON a.aircraft_code = s.aircraft_code
-  LIMIT 1000;</stringProp>
+  LIMIT 100${NUMBER};</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -808,14 +1062,15 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Группировка и уникальные значения" enabled="true">
                 <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
-                <stringProp name="query">SELECT fare_conditions, count(*)
+                <stringProp name="query">/* with constant params */
+SELECT fare_conditions, count(*)
   FROM seats
   GROUP BY fare_conditions
-  LIMIT 1000;</stringProp>
+  LIMIT 100${NUMBER};</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -824,13 +1079,14 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Группировка и уникальные значения 2" enabled="true">
                 <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
-                <stringProp name="query">SELECT DISTINCT fare_conditions
+                <stringProp name="query">/* with constant params */
+SELECT DISTINCT fare_conditions
   FROM seats
-  LIMIT 1000;</stringProp>
+  LIMIT 100${NUMBER};</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -839,15 +1095,16 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;;</stringProp
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_07_hashjoin: Соединение нескольких таблиц" enabled="true">
                 <stringProp name="dataSource">DB_qpt_07_hashjoin</stringProp>
-                <stringProp name="query">SELECT t.passenger_name, f.flight_no
+                <stringProp name="query">/* with constant params */
+SELECT t.passenger_name, f.flight_no
   FROM tickets t
     JOIN ticket_flights tf ON tf.ticket_no = t.ticket_no
     JOIN flights f ON f.flight_id = tf.flight_id
-LIMIT 1000;</stringProp>
+LIMIT 100${NUMBER};</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Callable Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -904,7 +1161,7 @@ LIMIT 100;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout">0</stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows"></stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -920,7 +1177,7 @@ LIMIT 100;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout">0</stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -936,7 +1193,7 @@ LIMIT 100;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout">0</stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -951,7 +1208,7 @@ LIMIT 100;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout">0</stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -967,7 +1224,7 @@ LIMIT 100;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout">0</stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -986,7 +1243,7 @@ LIMIT 100;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout">0</stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -1041,7 +1298,7 @@ LIMIT 1000;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -1070,7 +1327,7 @@ LIMIT 1000;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -1134,7 +1391,7 @@ LIMIT 1000;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
@@ -1157,7 +1414,7 @@ LIMIT 1000;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
-                <stringProp name="queryType">Select Statement</stringProp>
+                <stringProp name="queryType">Prepared Select Statement</stringProp>
                 <stringProp name="resultSetHandler">Count Records</stringProp>
                 <stringProp name="resultSetMaxRows">1</stringProp>
                 <stringProp name="resultVariable"></stringProp>
