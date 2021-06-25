@@ -309,6 +309,15 @@
             </ConstantThroughputTimer>
             <hashTree/>
           </hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">3</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">NUMBER</stringProp>
+            <stringProp name="CounterConfig.format"></stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
             <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_03_seqscan (TC)" enabled="true">
@@ -319,7 +328,7 @@
             <hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Последовательное сканирование" enabled="true">
                 <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-                <stringProp name="query">SELECT * FROM flights;</stringProp>
+                <stringProp name="query">/*${NUMBER}*/ SELECT * FROM flights;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
@@ -332,7 +341,7 @@
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Агрегация" enabled="true">
                 <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-                <stringProp name="query">SELECT count(*) FROM seats;</stringProp>
+                <stringProp name="query">/*${NUMBER}*/ SELECT count(*) FROM seats;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
@@ -345,7 +354,7 @@
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_03_seqscan: Параллельное последовательное сканирование" enabled="true">
                 <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-                <stringProp name="query">SELECT count(*) FROM bookings;</stringProp>
+                <stringProp name="query">/*${NUMBER}*/ SELECT count(*) FROM bookings;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
@@ -389,6 +398,15 @@
             </ConstantThroughputTimer>
             <hashTree/>
           </hashTree>
+          <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="Counter" enabled="true">
+            <stringProp name="CounterConfig.start">1</stringProp>
+            <stringProp name="CounterConfig.end">3</stringProp>
+            <stringProp name="CounterConfig.incr">1</stringProp>
+            <stringProp name="CounterConfig.name">NUMBER</stringProp>
+            <stringProp name="CounterConfig.format"></stringProp>
+            <boolProp name="CounterConfig.per_user">false</boolProp>
+          </CounterConfig>
+          <hashTree/>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
             <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_04_indexscan (TC)" enabled="true">
@@ -399,7 +417,7 @@
             <hashTree>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_04_indexscan: поиск одного значения" enabled="true">
                 <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
-                <stringProp name="query">SELECT * FROM bookings WHERE book_ref = &apos;0009D5&apos;;</stringProp>
+                <stringProp name="query">/*${NUMBER}*/ SELECT * FROM bookings WHERE book_ref = &apos;0009D5&apos;;</stringProp>
                 <stringProp name="queryArguments"></stringProp>
                 <stringProp name="queryArgumentsTypes"></stringProp>
                 <stringProp name="queryTimeout"></stringProp>
@@ -412,7 +430,8 @@
               <hashTree/>
               <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_04_indexscan: с условием, которого нет в индексе" enabled="true">
                 <stringProp name="dataSource">DB_qpt_04_indexscan</stringProp>
-                <stringProp name="query">SELECT * FROM bookings 
+                <stringProp name="query">/*${NUMBER}*/ 
+SELECT * FROM bookings 
   WHERE book_ref = &apos;0009D5&apos; AND total_amount &gt; ?;</stringProp>
                 <stringProp name="queryArguments">${__Random(1000,5000,)}</stringProp>
                 <stringProp name="queryArgumentsTypes">INTEGER</stringProp>
