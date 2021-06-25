@@ -23,7 +23,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 3,
-  "iteration": 1624603607265,
+  "iteration": 1624631731352,
   "links": [],
   "panels": [
     {
@@ -139,10 +139,6 @@
     {
       "collapsed": false,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1112,10 +1108,6 @@
     {
       "collapsed": false,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1346,7 +1338,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "Total"
+            "displayName": "usename"
           }
         ]
       },
@@ -1383,7 +1375,7 @@
           "measurement": "pg_stat_statements_analyse",
           "orderByTime": "ASC",
           "policy": "$new",
-          "query": "SELECT top(\"${TOP_by}\", ${TOP}), \"Calls\", \"Total\", \"Rows\",\"Mean\", \"host\", \"datname\", \"usename\", \"queryid\", \"query_md5\" FROM \n(\nSELECT sum(\"calls\") AS \"Calls\", sum(\"duration\") AS \"Total\", sum(\"rows\") AS \"Rows\", sum(\"duration\")  / sum(\"calls\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_diff_1m_archive\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\", \"query_md5\"\n)",
+          "query": "SELECT top(\"${TOP_by}\", ${TOP}), \"Calls\", \"Total\", \"Rows\",\"Mean\", \"host\", \"datname\", \"usename\", \"queryid\" FROM \n(\nSELECT sum(\"calls\") AS \"Calls\", sum(\"duration\") AS \"Total\", sum(\"rows\") AS \"Rows\", sum(\"duration\")  / sum(\"calls\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_diff_1m_archive\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\"\n)",
           "rawQuery": true,
           "refId": "B",
           "resultFormat": "table",
@@ -1578,7 +1570,7 @@
           "measurement": "pg_stat_statements_query_10m",
           "orderByTime": "ASC",
           "policy": "1d",
-          "query": "SELECT last(\"query\") as \"query\" FROM\n(SELECT last(\"calls_sum\") AS \"XXXXX\" FROM \"1d\".\"pg_stat_statements_query_10m\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"query_md5\" =~ /^${query_md5:regex}$/ AND \"query\" =~ /${filter:regex}/) AND $timeFilter GROUP BY time(1000d), \"query_md5\", \"query\"),\n(SELECT last(\"calls_sum\") AS \"XXXXX\" FROM \"archive\".\"pg_stat_statements_query_1d\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"query_md5\" =~ /^${query_md5:regex}$/ AND \"query\" =~ /${filter:regex}/ AND \"time\" < now()-1d) AND $timeFilter GROUP BY time(1000d), \"query_md5\", \"query\")\nWHERE $timeFilter\nGROUP BY time(1000d), \"query_md5\"",
+          "query": "SELECT last(\"query\") as \"query\" FROM\n(SELECT last(\"calls_sum\") AS \"XXXXX\" FROM \"1d\".\"pg_stat_statements_query_10m\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/ AND \"query\" =~ /${filter:regex}/) AND $timeFilter AND \"time\" >= now()-24h GROUP BY time(1000d), \"queryid\", \"query\"),\n(SELECT last(\"calls_sum\") AS \"XXXXX\" FROM \"archive\".\"pg_stat_statements_query_1d\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"queryid\" =~ /^${queryid:regex}$/ AND \"query\" =~ /${filter:regex}/ AND \"time\" < now()-24h) AND $timeFilter GROUP BY time(1000d), \"queryid\", \"query\")\nWHERE $timeFilter\nGROUP BY time(1000d), \"queryid\"",
           "rawQuery": true,
           "refId": "C",
           "resultFormat": "table",
@@ -1709,7 +1701,7 @@
         {
           "id": "seriesToColumns",
           "options": {
-            "byField": "query_md5"
+            "byField": "queryid"
           }
         },
         {
@@ -1774,7 +1766,7 @@
         "name": "current",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "All",
             "value": "$__all"
           },
@@ -1805,7 +1797,7 @@
         "name": "detail",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "All",
             "value": "$__all"
           },
@@ -1975,7 +1967,7 @@
             "value": "10"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "20",
             "value": "20"
           },
@@ -1985,7 +1977,7 @@
             "value": "30"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "40",
             "value": "40"
           },
@@ -2085,16 +2077,16 @@
           ]
         },
         "datasource": "${db}",
-        "definition": "SELECT \"query_md5\", top(\"${TOP_by}\", ${TOP}) FROM \n(\nSELECT sum(\"calls\") AS \"Calls\", sum(\"duration\") AS \"Total\", sum(\"rows\") AS \"Rows\", sum(\"duration\")  / sum(\"calls\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_diff_1m_archive\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\", \"query_md5\"\n)",
+        "definition": "SELECT \"queryid\", top(\"${TOP_by}\", ${TOP}) FROM \n(\nSELECT sum(\"calls\") AS \"Calls\", sum(\"duration\") AS \"Total\", sum(\"rows\") AS \"Rows\", sum(\"duration\")  / sum(\"calls\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_diff_1m_archive\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\"\n)",
         "description": null,
         "error": null,
-        "hide": 2,
+        "hide": 0,
         "includeAll": true,
-        "label": "query_md5",
+        "label": "queryid",
         "multi": true,
-        "name": "query_md5",
+        "name": "queryid",
         "options": [],
-        "query": "SELECT \"query_md5\", top(\"${TOP_by}\", ${TOP}) FROM \n(\nSELECT sum(\"calls\") AS \"Calls\", sum(\"duration\") AS \"Total\", sum(\"rows\") AS \"Rows\", sum(\"duration\")  / sum(\"calls\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_diff_1m_archive\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\", \"query_md5\"\n)",
+        "query": "SELECT \"queryid\", top(\"${TOP_by}\", ${TOP}) FROM \n(\nSELECT sum(\"calls\") AS \"Calls\", sum(\"duration\") AS \"Total\", sum(\"rows\") AS \"Rows\", sum(\"duration\")  / sum(\"calls\") AS \"Mean\" FROM \"$archive\".\"pg_stat_statements_diff_1m_archive\" WHERE (\"datname\" =~ /^${datname:regex}$/ AND \"host\" =~ /^${host:regex}$/ AND \"usename\" =~ /^${usename:regex}$/) AND  $timeFilter GROUP BY \"host\", \"datname\", \"usename\", \"queryid\"\n)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -2137,5 +2129,5 @@
   "timezone": "",
   "title": "PostgreSQL Statistics",
   "uid": "pgstat",
-  "version": 25
+  "version": 6
 }
