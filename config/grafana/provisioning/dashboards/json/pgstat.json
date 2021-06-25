@@ -23,7 +23,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": 3,
-  "iteration": 1624631731352,
+  "iteration": 1624631731362,
   "links": [],
   "panels": [
     {
@@ -1220,7 +1220,7 @@
                   {
                     "targetBlank": false,
                     "title": "host: ${__data.fields[host]} (filter)",
-                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${datname:percentencode}&var-usename=${usename:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
                   }
                 ]
               },
@@ -1241,7 +1241,7 @@
                 "value": [
                   {
                     "title": "host: ${__data.fields[host]} + datname: ${__data.fields[datname]} (filter)",
-                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
+                    "url": "/d/pgstat?from=${__from}&to=${__to}&var-db=${db:percentencode}&var-host=${__data.fields[host]:percentencode}&var-datname=${__data.fields[datname]:percentencode}&var-usename=${usename:percentencode}&var-archive=${archive:percentencode}&var-new=${new:percentencode}&var-TOP=${TOP:percentencode}&var-TOP_by=${TOP_by:percentencode}"
                   }
                 ]
               },
@@ -2129,5 +2129,5 @@
   "timezone": "",
   "title": "PostgreSQL Statistics",
   "uid": "pgstat",
-  "version": 6
+  "version": 8
 }
