@@ -6,12 +6,14 @@ apiVersion: 1
 deleteDatasources:
   - name: "PostgreSQL Query: Stand-Demo-JMeter"
     orgId: 1
+  - name: "PostgreSQL Query: Demo"
+    orgId: 1
 
 # # list of datasources to insert/update depending
 # # on what's available in the database
 datasources:
    # <string, required> name of the datasource. Required
- - name: "PostgreSQL Query: Stand-Demo-JMeter"
+ - name: "PostgreSQL Query: Demo"
    # <string, required> datasource type. Required
    type: influxdb
    # <string, required> access mode. direct or proxy. Required
