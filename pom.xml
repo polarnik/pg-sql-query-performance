@@ -11,7 +11,7 @@
     <properties>
         <testId>${maven.build.timestamp}</testId>
         <!-- Test name -->
-        <jmx>sql_demo_test</jmx>
+        <jmx>influx_1_test</jmx>
         <influxdb.host>sql_monitor_influxdb</influxdb.host>
         <influxdb.port>8086</influxdb.port>
         <influxdb.database>jmeter</influxdb.database>
@@ -213,9 +213,9 @@
         	<id>Stable</id>
         	<properties>
         		<isStable>1</isStable>
-        		<duration>600000</duration>
-        		<tps>40.00</tps>
-        		<thread_count>50</thread_count>
+        		<duration>300</duration>
+        		<tps>10.00</tps>
+        		<thread_count>100</thread_count>
         		<title>Stability test</title>
         	</properties>
         </profile>
@@ -224,9 +224,9 @@
         	<id>MaxPerf</id>
         	<properties>
         		<isMaxPerf>1</isMaxPerf>
-        		<duration>900</duration>
-        		<tps>0.05</tps>
-        		<thread_count>200</thread_count>
+        		<duration>1800</duration>
+        		<tps>0.01</tps>
+        		<thread_count>100</thread_count>
         		<title>MaxPerf</title>
         	</properties>
         </profile>

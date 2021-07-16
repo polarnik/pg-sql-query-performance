@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.2'
 
 services:
 
@@ -26,12 +26,13 @@ services:
       - "./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro"
       - "./config/postgresql/grafana_db.sql:/sql.tmp/grafana_db.sql:ro"
       - "./config/postgresql/bookings.functions.sql:/sql.tmp/bookings.functions.sql:ro"
+    networks:
+      - sql-test-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready --dbname=postgres --username=test"]
       interval: 10s
       timeout: 5s
       retries: 20
-      start_period: 90s
 
 
   influxdb:
@@ -45,32 +46,48 @@ services:
     volumes:
       - influx-data:/var/lib/influxdb/
       - "./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro"
-      - "./config/influxdb/init.gatling.sh:/docker-entrypoint-initdb.d/init.gatling.sh:ro"
       - "./config/influxdb/init.jmeter.sh:/docker-entrypoint-initdb.d/init.jmeter.sh:ro"
-      - "./config/influxdb/init.telegraf_pg_activity_demo.sh:/docker-entrypoint-initdb.d/init.telegraf_pg_activity_demo.sh:ro"
+      - "./config/influxdb/init.gatling.sh:/docker-entrypoint-initdb.d/init.gatling.sh:ro"
+      - "./config/influxdb/init._internal.sh:/docker-entrypoint-initdb.d/init._internal.sh:ro"
+      - "./config/influxdb/init.jmeter_graphite.sh:/docker-entrypoint-initdb.d/init.jmeter_graphite.sh:ro"
       - "./config/influxdb/init.telegraf_pg_demo.sh:/docker-entrypoint-initdb.d/init.telegraf_pg_demo.sh:ro"
-    #ports:
-    #  - 8086:8086
-    #  - 2003:2003
+      - "./config/influxdb/init.telegraf_pg_activity_demo.sh:/docker-entrypoint-initdb.d/init.telegraf_pg_activity_demo.sh:ro"
+    ports:
+      - 8086:8086
+      - 2003:2003
+      - 2002:2002
+    networks:
+      - sql-test-network
     healthcheck:
       test: ["CMD-SHELL", "curl -XGET localhost:8086/health"]
       interval: 10s
       timeout: 10s
       retries: 30
-      start_period: 90s
+
+  clickhouse:
+    image: yandex/clickhouse-server:21.6
+    container_name: clickhouse
+    ports:
+      - 8123:8123
+      - 9000:9000
+    networks:
+      - sql-test-network
+    volumes:
+      - "./config/clickhouse/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh"
 
   telegraf:
     image: telegraf:1.18.3
     container_name: sql_monitor_telegraf
     restart: unless-stopped
     depends_on:
-      influxdb:
-        condition: service_healthy
+      - influxdb
     environment:
       - INFLUXDB_HOST=sql_monitor_influxdb
       - CONNECTION_STRING="postgres://telegraf_monitoring_user:pass@sql_monitor_postgres:5432/postgres"
       - PG_HOST=sql_monitor_postgres
       - STAND=demo
+    networks:
+      - sql-test-network
     volumes:
       - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
       - "./config/telegraf/telegraf.d/inputs.postgresql_extensible.conf:/etc/telegraf/telegraf.d/inputs.postgresql_extensible.conf:ro"
@@ -80,10 +97,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 40
-      start_period: 90s
 
   grafana:
-    image: grafana/grafana:8.0.2
+    image: grafana/grafana:8.0.3
     container_name: sql_monitor_grafana
     restart: unless-stopped
     depends_on:
@@ -94,6 +110,8 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_INSTALL_PLUGINS=
+    networks:
+      - sql-test-network
     volumes:
       - grafana-data:/var/lib/grafana
       - "./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro"
@@ -114,22 +132,18 @@ services:
     volumes:
       - "./src:/tmp/src:ro"
       - "./pom.xml:/tmp/pom.xml:ro"
+    networks:
+      - sql-test-network
     restart: "no"
-    command: "mvn clean verify -P jmeter,Stable -Dtps=1.0"
+    command: "sh -c 'mvn clean verify -P jmeter,MaxPerf -Dtps=1.0  -Djmx=influx_1_test '"
     ports:
       - 4445:4445
 
-
 networks:
-  default:
-    name: sql-monitor-network
+  sql-test-network:
 
 volumes:
   jmeter-m2:
-    name: sql-monitor-jmeter-m2
   influx-data:
-    name: sql-monitor-influx-data
   grafana-data:
-    name: sql-monitor-grafana-data
   postgresql-data:
-    name: sql-monitor-postgresql-data

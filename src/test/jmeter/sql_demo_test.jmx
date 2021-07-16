@@ -320,7 +320,7 @@
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_03_seqscan (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_03_seqscan (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_03_seqscan.html</stringProp>
               <boolProp name="TransactionController.parent">false</boolProp>
@@ -400,7 +400,7 @@
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_04_indexscan (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_04_indexscan (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_04_indexscan.html</stringProp>
@@ -469,7 +469,7 @@ SELECT * FROM bookings
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_05_bitmapscan (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_05_bitmapscan (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_05_bitmapscan.html</stringProp>
@@ -558,7 +558,10 @@ LIMIT 10
                 <stringProp name="variableNames"></stringProp>
               </JDBCSampler>
               <hashTree/>
-              <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true"/>
+              <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_05_bitmapscan: Кластеризация 2 (TC)" enabled="true">
+                <boolProp name="TransactionController.includeTimers">false</boolProp>
+                <boolProp name="TransactionController.parent">false</boolProp>
+              </TransactionController>
               <hashTree>
                 <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
                   <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
@@ -717,7 +720,10 @@ LIMIT 10
                 </JDBCSampler>
                 <hashTree/>
               </hashTree>
-              <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true"/>
+              <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_05_bitmapscan: Кластеризация 2-2 (TC)" enabled="true">
+                <boolProp name="TransactionController.includeTimers">false</boolProp>
+                <boolProp name="TransactionController.parent">false</boolProp>
+              </TransactionController>
               <hashTree>
                 <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="qpt_05_bitmapscan: Кластеризация 2" enabled="true">
                   <stringProp name="dataSource">DB_qpt_05_bitmapscan</stringProp>
@@ -863,7 +869,7 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_06_nestloop (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_06_nestloop (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_06_nestloop.html</stringProp>
@@ -1022,7 +1028,7 @@ WHERE book_date &gt; bookings.now() - INTERVAL &apos;2 months&apos;
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_07_hashjoin (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_07_hashjoin (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_07_hashjoin.html</stringProp>
@@ -1146,7 +1152,7 @@ LIMIT 100${NUMBER};</stringProp>
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_08_mergejoin (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_08_mergejoin (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_08_mergejoin.html</stringProp>
@@ -1285,7 +1291,7 @@ LIMIT 100;</stringProp>
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_10_profiling (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_10_profiling (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_10_profiling.html</stringProp>
@@ -1369,7 +1375,7 @@ LIMIT 1000;</stringProp>
           </hashTree>
           <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="qpt" enabled="true"/>
           <hashTree>
-            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_11_technics (TC)" enabled="true">
+            <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_11_technics (TC)" enabled="true">
               <boolProp name="TransactionController.includeTimers">false</boolProp>
               <boolProp name="TransactionController.parent">false</boolProp>
               <stringProp name="TestPlan.comments">https://edu.postgrespro.ru/qpt/qpt_11_technics.html</stringProp>
@@ -1452,7 +1458,7 @@ LIMIT 1000;</stringProp>
           </ConstantThroughputTimer>
           <hashTree/>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="qpt_transaction (TC)" enabled="true">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Запрос qpt_transaction (TC)" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
           <boolProp name="TransactionController.parent">false</boolProp>
         </TransactionController>
@@ -1560,7 +1566,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="310866836">Thread Group (user) - Stable 3</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="-64920728">qpt_03_seqscan (TC)</stringProp>
+              <stringProp name="-1445685083">Запрос qpt_03_seqscan (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1571,7 +1577,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="310866837">Thread Group (user) - Stable 4</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="1165705652">qpt_04_indexscan (TC)</stringProp>
+              <stringProp name="1396054961">Запрос qpt_04_indexscan (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1582,7 +1588,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="310866838">Thread Group (user) - Stable 5</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="-1383794186">qpt_05_bitmapscan (TC)</stringProp>
+              <stringProp name="1462067097">Запрос qpt_05_bitmapscan (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1593,7 +1599,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="310866839">Thread Group (user) - Stable 6</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="-1396781721">qpt_06_nestloop (TC)</stringProp>
+              <stringProp name="-1250803766">Запрос qpt_06_nestloop (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1604,7 +1610,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="310866840">Thread Group (user) - Stable 7</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="1945647852">qpt_07_hashjoin (TC)</stringProp>
+              <stringProp name="2091625807">Запрос qpt_07_hashjoin (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1615,7 +1621,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="310866841">Thread Group (user) - Stable 8</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="-1274823171">qpt_08_mergejoin (TC)</stringProp>
+              <stringProp name="-1044473862">Запрос qpt_08_mergejoin (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1626,7 +1632,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="1046937310">Thread Group (user) - Stable 10</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="-1789227838">qpt_10_profiling (TC)</stringProp>
+              <stringProp name="-1558878529">Запрос qpt_10_profiling (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
@@ -1637,7 +1643,7 @@ WHERE range &gt; 3000;</stringProp>
               <stringProp name="1046937311">Thread Group (user) - Stable 11</stringProp>
               <stringProp name="-1396247672">Timer: qpt (TC)</stringProp>
               <stringProp name="112181">qpt</stringProp>
-              <stringProp name="-437069540">qpt_11_technics (TC)</stringProp>
+              <stringProp name="-291091585">Запрос qpt_11_technics (TC)</stringProp>
             </collectionProp>
           </ModuleController>
           <hashTree/>
