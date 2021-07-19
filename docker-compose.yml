@@ -2,11 +2,8 @@ version: '3.2'
 
 services:
 
-
   db:
     image: postgres:10.16
-    container_name: sql_monitor_postgres
-    restart: always
     ports:
       - 5432:5432
     environment:
@@ -26,8 +23,6 @@ services:
       - "./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro"
       - "./config/postgresql/grafana_db.sql:/sql.tmp/grafana_db.sql:ro"
       - "./config/postgresql/bookings.functions.sql:/sql.tmp/bookings.functions.sql:ro"
-    networks:
-      - sql-test-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready --dbname=postgres --username=test"]
       interval: 10s
@@ -35,10 +30,25 @@ services:
       retries: 20
 
 
+  influxdb2:
+    image: influxdb:2.0.7
+    environment:
+      - INFLUXDB_REPORTING_DISABLED=true
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_ORG=qa_load
+      - DOCKER_INFLUXDB_INIT_BUCKET=jmeter
+      - DOCKER_INFLUXDB_INIT_MODE=upgrade
+      - LOG_LEVEL=debug
+    volumes_from:
+      - influxdb:ro
+    depends_on:
+      - influxdb
+    ports:
+      - 18086:8086
+
   influxdb:
     image: influxdb:1.8.6
-    container_name: sql_monitor_influxdb
-    restart: unless-stopped
     environment:
       - INFLUXDB_REPORTING_DISABLED=true
       - INFLUXDB_ADMIN_PASSWORD=password
@@ -56,8 +66,6 @@ services:
       - 8086:8086
       - 2003:2003
       - 2002:2002
-    networks:
-      - sql-test-network
     healthcheck:
       test: ["CMD-SHELL", "curl -XGET localhost:8086/health"]
       interval: 10s
@@ -66,28 +74,24 @@ services:
 
   clickhouse:
     image: yandex/clickhouse-server:21.6
-    container_name: clickhouse
     ports:
       - 8123:8123
       - 9000:9000
-    networks:
-      - sql-test-network
     volumes:
       - "./config/clickhouse/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh"
 
   telegraf:
     image: telegraf:1.18.3
-    container_name: sql_monitor_telegraf
-    restart: unless-stopped
     depends_on:
       - influxdb
     environment:
-      - INFLUXDB_HOST=sql_monitor_influxdb
-      - CONNECTION_STRING="postgres://telegraf_monitoring_user:pass@sql_monitor_postgres:5432/postgres"
-      - PG_HOST=sql_monitor_postgres
+      - INFLUXDB_HOST=influxdb
+      - INFLUXDB_PORT=8086
+      - CONNECTION_STRING="postgres://telegraf_monitoring_user:pass@db:5432/postgres"
+      - PG_HOST=db
+      - PG_USER=telegraf_monitoring_user
+      - PG_PASS=pass
       - STAND=demo
-    networks:
-      - sql-test-network
     volumes:
       - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
       - "./config/telegraf/telegraf.d/inputs.postgresql_extensible.conf:/etc/telegraf/telegraf.d/inputs.postgresql_extensible.conf:ro"
@@ -100,8 +104,6 @@ services:
 
   grafana:
     image: grafana/grafana:8.0.3
-    container_name: sql_monitor_grafana
-    restart: unless-stopped
     depends_on:
       - db
       - influxdb
@@ -109,9 +111,7 @@ services:
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_INSTALL_PLUGINS=
-    networks:
-      - sql-test-network
+      - GF_HOST_HOST=db
     volumes:
       - grafana-data:/var/lib/grafana
       - "./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro"
@@ -121,7 +121,6 @@ services:
       - 3000:3000
 
   jmeter:
-    container_name: sql_monitor_jmeter
     build:
       context: "./"
       dockerfile: "Dockerfile"
@@ -132,18 +131,20 @@ services:
     volumes:
       - "./src:/tmp/src:ro"
       - "./pom.xml:/tmp/pom.xml:ro"
-    networks:
-      - sql-test-network
     restart: "no"
-    command: "sh -c 'mvn clean verify -P jmeter,MaxPerf -Dtps=1.0  -Djmx=influx_1_test '"
+    environment:
+      - POSTGRESQL=db
+      - INFLUXDB_HOST=influxdb
+      - INFLUXDB_PORT=8086
+      - INFLUXDB_DB=jmeter
+    command: mvn clean verify -P jmeter,MaxPerf -Dtps=1.0  -Djmx=influx_1_test
     ports:
       - 4445:4445
 
-networks:
-  sql-test-network:
 
 volumes:
   jmeter-m2:
   influx-data:
+  influx-data2:
   grafana-data:
   postgresql-data:

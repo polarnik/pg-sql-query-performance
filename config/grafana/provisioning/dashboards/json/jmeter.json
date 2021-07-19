@@ -46,8 +46,8 @@
   "editable": true,
   "gnetId": 5496,
   "graphTooltip": 1,
-  "id": 3,
-  "iteration": 1625512029737,
+  "id": 1,
+  "iteration": 1626705132038,
   "links": [
     {
       "$$hashKey": "object:158",
@@ -13530,7 +13530,7 @@
         "query": "influxdb",
         "queryValue": "",
         "refresh": 1,
-        "regex": "/^Influx-.+/",
+        "regex": "/^JMeter.*/",
         "skipUrlSync": false,
         "type": "datasource"
       },
@@ -13547,7 +13547,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "30",
           "value": "30"
         },
@@ -13598,7 +13598,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "3",
           "value": "3"
         },
@@ -13679,7 +13679,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": "120",
           "value": "120"
         },
@@ -13740,9 +13740,10 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "PostgreSQL and Clickhouse",
-          "value": "PostgreSQL and Clickhouse"
+          "isNone": true,
+          "selected": true,
+          "text": "None",
+          "value": ""
         },
         "datasource": "$data_source",
         "definition": "select distinct(\"application\") FROM (SELECT first(\"count\") FROM /^$measurement_name$/ WHERE $timeFilter GROUP BY \"application\")",
@@ -13860,7 +13861,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -13891,7 +13892,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -13962,8 +13963,8 @@
     ]
   },
   "time": {
-    "from": "2021-07-03T19:02:00.000Z",
-    "to": "2021-07-03T19:35:00.000Z"
+    "from": "now-1h",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
