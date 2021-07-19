@@ -11,12 +11,17 @@
     <properties>
         <testId>${maven.build.timestamp}</testId>
         <!-- Test name -->
-        <jmx>influx_1_test</jmx>
-        <influxdb.host>sql_monitor_influxdb</influxdb.host>
-        <influxdb.port>8086</influxdb.port>
-        <influxdb.database>jmeter</influxdb.database>
-        <influxdb.username>none</influxdb.username>
-        <influxdb.password>none</influxdb.password>
+        <!--suppress UnresolvedMavenProperty -->
+        <jmx>${env.JMX}</jmx>
+        <!--suppress UnresolvedMavenProperty -->
+        <postgresql>${env.POSTGRESQL}</postgresql>
+        <!--suppress UnresolvedMavenProperty -->
+        <influxdb_host>${env.INFLUXDB_HOST}</influxdb_host>
+        <influxdb_port>8086</influxdb_port>
+        <!--suppress UnresolvedMavenProperty -->
+        <influxdb_database>${env.INFLUXDB_DB}</influxdb_database>
+        <influxdb_username>none</influxdb_username>
+        <influxdb_password>none</influxdb_password>
 
         <isStable>0</isStable>
 		<isMaxPerf>0</isMaxPerf>
@@ -130,9 +135,9 @@
                                 <testId>${testId}</testId>
                                 <data.dir>${project.basedir}/src/test/jmeter/data</data.dir>
 
-                                <influxdb.host>${influxdb.host}</influxdb.host>
-                                <influxdb.port>${influxdb.port}</influxdb.port>
-                                <influxdb.database>${influxdb.database}</influxdb.database>
+                                <influxdb_host>${influxdb_host}</influxdb_host>
+                                <influxdb_port>${influxdb_port}</influxdb_port>
+                                <influxdb_database>${influxdb_database}</influxdb_database>
 
                                 <isStable>${isStable}</isStable>
                                 <isMaxPerf>${isMaxPerf}</isMaxPerf>
@@ -140,8 +145,9 @@
                                 <tps>${tps}</tps>
                                 <thread_count>${thread_count}</thread_count>
                                 <title>${title}</title>
-                            </propertiesUser>
 
+                                <postgresql>${postgresql}</postgresql>
+                            </propertiesUser>
                             <propertiesJMeter>
                                 <jmeter.save.saveservice.thread_counts>true</jmeter.save.saveservice.thread_counts>
                                 <jmeter.save.saveservice.subresults>true</jmeter.save.saveservice.subresults>

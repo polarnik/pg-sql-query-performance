@@ -38,6 +38,11 @@
             <stringProp name="Argument.value">${__P(title,0)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+            <elementProp name="p-postgresql" elementType="Argument">
+              <stringProp name="Argument.name">p-postgresql</stringProp>
+              <stringProp name="Argument.value">${__P(postgresql,)}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
           <elementProp name="p-testId" elementType="Argument">
             <stringProp name="Argument.name">p-testId</stringProp>
             <stringProp name="Argument.value">${__P(testId,${__time(,)})}</stringProp>
@@ -77,7 +82,7 @@
         <stringProp name="connectionAge">5000</stringProp>
         <stringProp name="connectionProperties"></stringProp>
         <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_03_seqscan</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://${p-postgresql}:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_03_seqscan</stringProp>
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>

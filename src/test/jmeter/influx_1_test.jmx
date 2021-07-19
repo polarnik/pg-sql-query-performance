@@ -43,6 +43,26 @@
             <stringProp name="Argument.value">${__P(testId,${__time(,)})}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="p-postgresql" elementType="Argument">
+            <stringProp name="Argument.name">p-postgresql</stringProp>
+            <stringProp name="Argument.value">${__P(postgresql,)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-influxdb_host" elementType="Argument">
+            <stringProp name="Argument.name">p-influxdb_host</stringProp>
+            <stringProp name="Argument.value">${__P(influxdb_host,)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-influxdb_port" elementType="Argument">
+            <stringProp name="Argument.name">p-influxdb_port</stringProp>
+            <stringProp name="Argument.value">${__P(influxdb_port,8086)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="p-influxdb_database" elementType="Argument">
+            <stringProp name="Argument.name">p-influxdb_database</stringProp>
+            <stringProp name="Argument.value">${__P(influxdb_database,jmeter)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
         </collectionProp>
       </elementProp>
       <stringProp name="TestPlan.user_define_classpath"></stringProp>
@@ -77,7 +97,7 @@
         <stringProp name="connectionAge">5000</stringProp>
         <stringProp name="connectionProperties"></stringProp>
         <stringProp name="dataSource">DB_qpt_03_seqscan</stringProp>
-        <stringProp name="dbUrl">jdbc:postgresql://sql_monitor_postgres:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_03_seqscan</stringProp>
+        <stringProp name="dbUrl">jdbc:postgresql://${p-postgresql}:5432/demo?currentSchema=bookings&amp;tcpKeepAlive=true&amp;ApplicationName=qpt_03_seqscan</stringProp>
         <stringProp name="driver">org.postgresql.Driver</stringProp>
         <stringProp name="initQuery"></stringProp>
         <boolProp name="keepAlive">true</boolProp>
@@ -496,7 +516,7 @@
             </elementProp>
             <elementProp name="influxdbUrl" elementType="Argument">
               <stringProp name="Argument.name">influxdbUrl</stringProp>
-              <stringProp name="Argument.value">http://sql_monitor_influxdb:8086/write?db=jmeter</stringProp>
+              <stringProp name="Argument.value">http://${p-influxdb_host}:${p-influxdb_port}/write?db=${p-influxdb_database}</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="application" elementType="Argument">
@@ -548,6 +568,8 @@
         </elementProp>
         <stringProp name="classname">org.apache.jmeter.visualizers.backend.influxdb.InfluxdbBackendListenerClient</stringProp>
       </BackendListener>
+      <hashTree/>
+      <ConfigTestElement guiclass="PropertyControlGui" testclass="ConfigTestElement" testname="Property Display" enabled="true"/>
       <hashTree/>
     </hashTree>
   </hashTree>
