@@ -10,7 +10,7 @@ _paginate: false
 ---
 
 <!-- _class: lead2
-_footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-query-performance/), ссылка [на проект](https://github.com/polarnik/pg-sql-query-performance)'
+_footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-query-performance/index.perfconf.html), ссылка [на проект](https://github.com/polarnik/pg-sql-query-performance)'
 -->
 
 ![ w:300px ](themes/img/lead/perf.png)
