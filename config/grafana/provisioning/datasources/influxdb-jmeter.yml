@@ -4,11 +4,11 @@ apiVersion: 1
 # # list of datasources that should be deleted from the database
 # list of datasources that should be deleted from the database
 deleteDatasources:
-  - name: Stand-Demo-JMeter
-    orgId: 1
   - name: JMeter
     orgId: 1
   - name: JMeter2
+    orgId: 1
+  - name: JMeter3
     orgId: 1
 
 # # list of datasources to insert/update depending

@@ -2,8 +2,8 @@
 marp: true
 title: Из слона (PostgreSQL) муху (баги)
 description: Мониторинг, анализ и оптимизация SQL-запросов
-theme: vtb
-template: gaia
+theme: perfconf
+template: bespoke
 paginate: true
 _paginate: false
 
@@ -59,16 +59,14 @@ _footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-quer
 -->
 
 ---
-<!-- _class: main 
+<!-- _class: main
 -->
 
 # О чем доклад 
 
 ---
-<!-- _class: head 
--->
-![bg](#000)
-![](#fff)
+<!-- class: head -->
+
 # О мониторинге и оптимизации SQL-запросов и ...
 
 1) Как не раздуть из мухи слона в анализе производительности
@@ -79,10 +77,7 @@ _footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-quer
 4) Зачем и как выполнять трассировку SQL-запросов
 
 ---
-<!-- _class: head 
--->
-![bg](#000)
-![](#fff)
+
 ## __Как не раздуть из мухи слона в анализе производительности__
 
 - О моих ошибках, как инженера по тестированию производительности
@@ -101,8 +96,7 @@ _footer: 'Cсылка на [слайды](https://polarnik.github.io/pg-sql-quer
 - Пошаговое ускорения одного SQL-запроса и роль трассировки
 
 ---
-![bg](#000)
-![](#fff)
+
 > «Ценность любой практики зависит от ее контекста»
 
 Джем Канер, Джеймс Бах, Брайан Марик и Брет Петтичорд
@@ -128,14 +122,11 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 
 # 100 JVM работающих друг с другом и базой
 ## __На тестовом стенде__
-![bg](#000)
-![](#fff)
+
 ![bg right:40% h:700px](img/monitoring-5.svg)
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Узким местом была база данных
 
 - База данных выросла и стала узким местом, замедлилась
@@ -147,13 +138,11 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 - Медленные ответы сервисов
 
 ---
-![bg](#000)
-![](#fff)
+
 ![bg w:95% h:80%](img/sql-bottleneck.svg)
 
 ---
-![bg](#000)
-![](#fff)
+
 ![bg w:95% h:80%](img/cpu.svg)
 
 ![bg w:95% h:80%](img/sql-bottleneck.svg)
@@ -161,38 +150,33 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 ---
 
 ![bg](#000)
-![](#fff)
+
 
 ![bg w:95% h:75%](img/load.2.png)
 
 ---
 
 ![bg](#000)
-![](#fff)
+
 
 ![bg w:95% h:75%](img/load.6.png)
 
 
 ---
 
-![bg](#000)
-![](#fff)
+
 
 ![bg w:95% h:75%](img/sql-step.svg)
 
 ---
-![bg](#000)
-![](#fff)
+
 ![bg w:95% h:75%](img/sql-step-2.svg)
 
 
 
 
 ---
-<!-- _class: head -->
 
-![bg](#000)
-![](#fff)
 # Стал нужен источник метрик по SQL-запросам
 
 ## __Но не просто срез статистики для ручного сравнения и анализа, а ...__
@@ -206,8 +190,7 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 - с отображением интенсивности
 
 ---
-![bg](#000)
-![](#fff)
+
 
 ![bg w:95% h:75%](img/sql-step-3.svg)
 
@@ -245,9 +228,7 @@ Cem Kaner, James Bach, Brian Marick, Bret Pettich
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Demo-стенд
 
 - PostgreSQL
@@ -274,18 +255,16 @@ github.com/polarnik/pg-sql-query-performance
 
 ---
 
-<!-- _class: head -->
+
 ![bg](#000)
-![](#fff)
+
 # Иногда приходится тестировать на заглушках
 
 ![bg w:90% h:70%](img/sql-mock.svg)
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Если тестировать на заглушках
 
 ## __Мы найдем дефекты производительности__
@@ -301,18 +280,14 @@ github.com/polarnik/pg-sql-query-performance
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Иногда приходится тестировать на пустых БД
 
 ![bg w:90% h:70%](img/sql-empty.db.svg)
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Если тестировать на пустых базах данных
 ## __Мы найдем дефекты производительности__
 
@@ -345,9 +320,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Сделать лишнюю работу или получить отказ
 
 ## __Что может услышать инженер__
@@ -375,9 +348,7 @@ _footer: 'Изображение c сайта <a href="https://cdn.wallpapersafa
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Повышая приоритет непроверенных дефектов
 
 ## __Инженер:__
@@ -392,9 +363,7 @@ _footer: 'Изображение c сайта <a href="https://cdn.wallpapersafa
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Но есть проверенный способ изменить ситуацию
 
 ## __Что может сделать и сказать инженер__
@@ -420,20 +389,16 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 ![bg ](img/butterphant.jpg)
 
 ---
-![bg](#000)
-![](#fff)
+
 ![bg h:90%](img/sql-t-shape.svg)
 
 ---
-![bg](#000)
-![](#fff)
+
 ![bg h:90%](img/sql-t-shape-dev.svg)
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Используя непустые базы данных
 ## __Есть доклад по генерации данных: https://o.codefest.ru/lecture/1674__
 
@@ -441,9 +406,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # И оптимизируя SQL-запросы на тестовом стенде
 
 ## __Стенд нагрузки (большая БД с данными) позволяет оптимизировать__
@@ -463,9 +426,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Эффект будет и для дела и для репутации
 
 ## __Инженер:__
@@ -558,7 +519,13 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
+
+![bg](img/top.6.png)
+
+---
+
+<!-- _class: title -->
 
 # Колонка QueryID — ссылка на детали по запросу
 
@@ -632,7 +599,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # После оптимизации перепроверяю под нагрузкой
 
@@ -641,7 +608,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 ---
 
 
-<!-- _class: head -->
+
 
 # ⬇️ Средняя длительность (Mean time) снизится
 
@@ -651,7 +618,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # ⬇️ Shared Blk Hit, Shared Blk Read снизятся
 
@@ -661,14 +628,13 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 # А что с Total Time и Calls по запросу?
 
 ![bg](img/effect.5.png)
 
 ---
 
-<!-- _class: head -->
 
 # На Total Time и Calls по запросу не смотрим
 
@@ -697,7 +663,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # Такой код приведет к долгой транзакции
 
@@ -711,7 +677,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # Доска PostgreSQL Activity в Grafana покажет TOP 
 
@@ -720,7 +686,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # Колонка Sum только для сортировки 
 
@@ -728,7 +694,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # Выбирем признаки для поиска в исходниках
 
@@ -738,7 +704,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # Иногда текста запроса нет или он не помогает
 
@@ -748,7 +714,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # Пусть у нас есть уникальный запрос и логин
 
@@ -759,7 +725,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # По тексту запроса и логину находим исходники
 
@@ -767,7 +733,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
+
 
 # По исходникам определяем, что не так
 
@@ -785,9 +751,7 @@ _footer: 'Изображение с сайта <a href="https://i.imgur.com/VuyI
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Сокращаем ожидание, если транзакция нужна
 
 ```java
@@ -806,9 +770,7 @@ try {
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Переписываем код, если есть возможность
 
 ## __До переписывания: длительный вызов внутри транзакции__
@@ -828,9 +790,8 @@ try {
 ```
 
 ---
-![bg](#000)
-![](#fff)
-<!-- _class: head -->
+
+
 
 # Переписываем код, если есть возможность
 
@@ -848,9 +809,8 @@ if (...) {
 ```
 
 ---
-![bg](#000)
-![](#fff)
-<!-- _class: head -->
+
+
 
 # Настраиваем более короткие подключения к БД
 
@@ -866,7 +826,7 @@ ConfigMap:
 
 ---
 
-<!-- _class: head -->
+
 
 # ⬇️ Эффект оценим по статусам подключений
 
@@ -874,7 +834,7 @@ ConfigMap:
 
 ---
 
-<!-- _class: head -->
+
 
 # ⬇️ По суммарной длительности состояния
 
@@ -898,22 +858,19 @@ ConfigMap:
 -->
 
 ---
-![bg](#000)
-![](#fff)
+
 
 ![bg w:90%](img/sql-idle.svg)
 
 ---
-![bg](#000)
-![](#fff)
 
-<!-- _class: head -->
+
 
 # spring.datasource.hikari.maximumPoolSize=10...50
 
 ## __для server.tomcat.threads.max = 200__
 
-![bg w:90% brightness:0.1](img/sql-idle.svg)
+
 
 Проблема: 
 * В Tomcat по умолчанию  maxThreads = __200__ (потоков обработки)
@@ -928,16 +885,14 @@ ConfigMap:
 
 
 ---
-![bg](#000)
-![](#fff)
 
-<!-- _class: head -->
+
 
 # Задача — сократить пулы потоков
 
 ## __и spring.datasource.hikari.maximumPoolSize и server.tomcat.threads.max__
 
-![bg w:90% brightness:0.1](img/sql-idle.svg)
+
 
 Чтобы соединения быстрее возвращались в пул потоков HikariPool:
 
@@ -993,21 +948,20 @@ spring.datasource.hikari:
 # Блокировки и Blocked state
 
 ---
-<!-- _class: head -->
+
 
 # Как правило, причина в долгих запросах
 
-## __Ускоряем медленные запросы — решаются блокировки__
+## __Ускоряем медленные запросы__
 
 ![bg](img/top.4.png)
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+<!-- _class: title 
+-->
 # Детализацию хорошо показывает [PASH Viewer](https://github.com/dbacvetkov/PASH-Viewer)
 
-## __Аналог ASH Viewer, но только для PostgreSQL__
+## __Аналог ASH Viewer__
 
 ![bg h:70%](img/pash-viewer-screenshot-01.png)
 
@@ -1019,9 +973,7 @@ spring.datasource.hikari:
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # В InfluxDB все теги индексируются сразу
 
 ## __И основная задача в уменьшении этих индексов__
@@ -1063,8 +1015,7 @@ END;
 ---
 
 <!-- _class: title -->
-![bg](#000)
-![](#fff)
+
 # https://github.com/ polarnik/pg-sql-query-performance
 
 ## __Проект с демонстрацией__
@@ -1073,9 +1024,7 @@ END;
 
 ---
 
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Как запустить проект
 
 ```bash
@@ -1103,9 +1052,7 @@ open 'http://localhost:3000'
 # Для чего и как выполнять трассировку SQL-запросов
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Partial-индексы и вот это вот все
 
 ```sql
@@ -1125,9 +1072,7 @@ limit 10;
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Запрос в статистике
 
 ```sql
@@ -1145,9 +1090,7 @@ order by created_at desc
 limit $8;
 ```
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Первое предположение: добавить в индекс все
 
 ```sql
@@ -1166,9 +1109,7 @@ limit $8;
 ```
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Большой индекс, который не будет использован
 
 ```sql
@@ -1185,9 +1126,7 @@ using btree(user_id, status, category, channel,
 ```
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Меньший индекс, который будет использован
 
 ```sql
@@ -1207,9 +1146,7 @@ where status = 'NEW'
 ```
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Для заданных параметров фильтрации годится
 
 ```sql
@@ -1229,9 +1166,7 @@ where status = 'NEW'
 ```
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Немного перепишем запрос
 
 
@@ -1246,9 +1181,7 @@ order by created_at desc limit $8;
 ```
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Немного перепишем запрос
 
 
@@ -1266,9 +1199,7 @@ order by created_at desc limit $8;
 А потом мы что-нибудь придумаем
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Функцию coalesce тоже можно индексировать
 
 ```sql
@@ -1289,9 +1220,7 @@ where status = 'NEW'
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Сделаем из индекса аналог View
 
 ```sql
@@ -1312,9 +1241,7 @@ where status = 'NEW'
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Результат функции concat можно индексировать
 
 ```sql
@@ -1335,9 +1262,7 @@ where status = 'NEW'
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Все это стало возможно при знании параметров
 
 ```sql
@@ -1358,9 +1283,7 @@ where status = 'NEW'
 
 
 ---
-<!-- _class: head -->
-![bg](#000)
-![](#fff)
+
 # Чтобы узнать параметры запроса
 
 ## __Нужна трассировка приложения, интуиция или знания__
@@ -1387,10 +1310,9 @@ where status = 'NEW'
 
 
 ---
-<!-- _class: head -->
+
 # Трассировка (с параметрами)
-![bg](#000)
-![](#fff)
+
 - Коммерческие профайлеры [JProfiler](https://www.ej-technologies.com/products/jprofiler/overview.html), [YourKit](https://www.yourkit.com/java/profiler/features/)
 
 - [TRACE-логи](https://jdbc.postgresql.org/documentation/head/logging.html) PostgreSQL JDBC Driver
@@ -1401,10 +1323,8 @@ where status = 'NEW'
 - JDBC Proxy [P6Spy](https://github.com/p6spy) (нужно встраивать в сервис)
 
 ---
-<!-- _class: head -->
 # Мониторинг
-![bg](#000)
-![](#fff)
+
 - APM, Application Performance Monitoring-системы New Relic, Dynatrace
 - ELK + [логи приложения](https://www.playframework.com/documentation/2.8.x/AccessingAnSQLDatabase#How-to-configure-SQL-log-statement) с медленными SQL-запросами
 - [PgBadger](https://pgbadger.darold.net/) + [логи PostgreSQL](https://pgbadger.darold.net/documentation.html#POSTGRESQL-CONFIGURATION) с медленными SQL-запросами

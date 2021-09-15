@@ -2,7 +2,7 @@
 /*!
  * Marp / Marpit VTB theme.
  *
- * @theme vtb
+ * @theme perfconf
  * @auto-scaling true
  * @author Smirnov Viacheslav
  */
@@ -11,8 +11,15 @@
  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap');
  @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/github.min.css");
  
- 
- #p > svg.bespoke-marp-slide.bespoke-marp-active > foreignObject > section > div > figure {
+:root {
+    --bg-color: #051830;
+    --bg-color-half: #0518307d;
+    --main-bg-color: #002882;
+    --title-h1-color: #002882; 
+    --title-h2-color: #00AAFF;
+}
+
+#p > svg.bespoke-marp-slide.bespoke-marp-active > foreignObject > section > div > figure {
     font-family: 'Roboto';
 }
 
@@ -29,20 +36,285 @@ footer {
     bottom: 0;
 }
 
-body {
-    font-family: Roboto;
-  }
-
- section {
-    background-color: white;
+section {
+    background-color: var(--bg-color) ;
+    color: #fff !important;
     font-family: 'Roboto';
     padding: 0;
     font-size: 26pt;
  }
 
- section h1 a, section h2 a {
+
+
+section h1
+{
+    font-size: 140%;
+    letter-spacing: 1.1px;
+    letter-spacing: 1.1px;
+    position: relative;
+    height: 80px;
+
+    color: var(--title-h1-color);
+    margin: 0;
+    z-index: 3;
+    padding: 0;
+    padding-left: 30px;
+    padding-top: 10px;
+
+}
+
+section a, section h1 a, section h2 a {
     color: white;
- }
+    text-decoration-color: #667EB4;
+}
+
+section code {
+    font-family: 'JetBrains Mono', monospace;
+}
+section > p > code
+{
+    word-wrap: anywhere;
+}
+section pre, section > code, section > pre, section > p {
+    margin: 30px;
+}
+
+section ul, section ol {
+    margin: 26pt;
+}
+
+section table {
+    width: 94%;
+    text-align: left;
+    margin: 26pt;
+}
+
+section table thead {
+    background: #002882;
+    color: white;
+}
+
+
+section table tr th, section table tr td{
+    padding: 10px;
+}
+
+section table tr td {
+    border-style: solid;
+    border-color: gray;
+    border-width: 1px;
+}
+
+section blockquote {
+
+    background: linear-gradient(0.25turn, #002882, #33539B00);
+    border-bottom: 3px dashed #33539B;
+    border-top: 3px dashed #33539B;
+
+    /*font-style: italic;
+    line-height: 1.45;
+    padding: 10px 15px;*/
+    position: relative;
+    text-align: center;
+}
+
+section blockquote strike {
+    color: #a0a0a0;
+}
+
+/* Styling page number */
+section::after 
+{
+    width: calc(121px - 45px);
+    height: 40px;/*calc(39px - 12px);*/
+    z-index: 5;
+    padding: 0;
+    position: absolute;
+
+    color: #667EB4;
+    
+    background-size: 100%;
+    padding-right: 45px;
+    padding-top: 7px;
+    text-align: right;
+    font-size: 66%;
+}
+
+section li::marker {
+    color: #667EB4;
+}
+
+section li[data-bespoke-marp-fragment="active"]{
+    color: #667EB4;
+}
+
+section li[data-bespoke-marp-fragment="active"][data-bespoke-marp-current-fragment] {
+    color: white;
+}
+
+
+
+section em  {
+    opacity: 0.20;
+    font-style: normal;
+}
+
+
+section p > strong > em
+{
+    opacity: 1;
+    z-index: 1;
+}
+
+section.head2 p > em > strong::before, section.head2 p > strong > em::before
+{
+    content: ' ';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    
+    width: 0;
+    height: 0;
+    left: calc(460px - 1px);
+    border-top: 742px solid var(--bg-color);
+    border-right: 270px solid transparent;    
+    border-left: 2px solid var(--bg-color);
+    z-index: 2;
+    
+}
+
+section.head2 p > em > strong::after, section.head2 p > strong > em::after
+{
+    content: ' ';
+    position: absolute;
+    right: 100%;
+    top: 0;
+    bottom: 0;
+    left: 599px;
+    width: 6px;
+    height: 100%;
+    transform: skew(-20deg);
+    background: #002882;
+    overflow: hidden;
+    z-index: 2;
+}
+
+section.head2 p > em > strong > img, section.head2 p > strong > em > img
+{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    left: 461px;
+    height: 100%;
+  
+    z-index: 1;
+    
+}
+
+/*
+Титульная страница
+и завершающая страница с контактами
+*/
+
+/*
+Фоновые изображения, из шаблона ВТБ
+*/
+section.lead1 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead01.png");
+}
+section.lead1 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead01.png");
+}
+section.lead2 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead02.jpeg"); 
+}
+section.lead3 {
+    background-image: url("themes/img/lead/lead03.png"); 
+}
+section.lead4 {
+    background-image: url("themes/img/lead/lead04.png"); 
+}
+section.lead5 {
+    background-image: url("themes/img/lead/lead05.jpeg"); 
+}
+section.lead6 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead06.jpeg"); 
+}
+section.lead7 {
+    background-image: url("themes/img/lead/lead07.jpeg"); 
+}
+section.lead8 {
+    background-image: url("themes/img/lead/lead08.jpeg"); 
+}
+section.lead9 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead09.jpeg"); 
+}
+section.lead10 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead10.jpeg"); 
+}
+section.lead11 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead11.jpeg"); 
+}
+section.lead12 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead12.jpeg"); 
+}
+section.lead13 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead13.jpeg"); 
+}
+section.lead14 {
+    background-image: url("themes/img/lead/lead14.jpeg"); 
+}
+section.lead15 {
+    background-image: url("themes/img/lead/lead15.png"); 
+}
+section.lead16 {
+    background-image: url("themes/img/lead/lead16.jpeg"); 
+}
+section.lead17 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead02.jpeg"); 
+}
+section.lead18 {
+    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead18.svg"); 
+}
+section.lead19 {
+    background-image: url("themes/img/lead/lead19.png"); 
+}
+section.lead20 {
+    background-image: url("themes/img/lead/lead20.jpeg"); 
+}
+section.lead > *:first-child 
+{
+    margin-top: 0; 
+}
+
+
+section.lead1, 
+section.lead2, 
+section.lead5, 
+section.lead6, 
+section.lead9, 
+section.lead10, 
+section.lead11, 
+section.lead12, 
+section.lead13, 
+section.lead17, 
+section.lead18 
+{
+    padding: 0;
+    background-position: 95% 10%, right bottom;
+    background-repeat: no-repeat, no-repeat;
+    background-size: 15%, cover;
+    background-origin: padding-box, border-box;
+    color: white !important;
+    text-decoration-color: white !important;
+}
+
+
+
+
+/*
+Страницы с заголовками тем, вставляются в начале блока по одной теме
+*/ 
 
 section.main
 {
@@ -51,7 +323,7 @@ section.main
     background-repeat: no-repeat, no-repeat;
     background-size: 15%, cover;
     background-origin: padding-box, border-box;
-    background: #002882;
+    background: var(--main-bg-color);
     color: white;
 }
 
@@ -79,6 +351,8 @@ section.main:before
     background: #CCD4E6;
 }
 
+
+
 section.lead1 footer a, 
 section.lead2 footer a, 
 section.lead5 footer a, 
@@ -96,45 +370,10 @@ section.lead18 footer a
     text-decoration-color: white !important;
 }
 
-section.lead1, 
-section.lead2, 
-section.lead5, 
-section.lead6, 
-section.lead9, 
-section.lead10, 
-section.lead11, 
-section.lead12, 
-section.lead13, 
-section.lead17, 
-section.lead18 
-{
-    padding: 0;
-    background-position: 95% 10%, right bottom;
-    background-repeat: no-repeat, no-repeat;
-    background-size: 15%, cover;
-    background-origin: padding-box, border-box;
-    color: white !important;
-    text-decoration-color: white !important;
-}
 
 
 
-section h1
-{
-    font-size: 140%;
-    letter-spacing: 1.1px;
-    letter-spacing: 1.1px;
-    position: relative;
-    height: 80px;
 
-    color: #002882;
-    margin: 0;
-    z-index: 3;
-    padding: 0;
-    padding-left: 30px;
-    padding-top: 10px;
-
-}
 
 section.title h1,
 section.lead1 h1,
@@ -152,9 +391,9 @@ section.lead18 h1
     font-size: 140%;
     letter-spacing: 1.1px;
     position: absolute;
-    width: calc(585px - 30px);
+    width: calc(595px - 30px);
     height: calc(190px - 10px);
-    background: #002882;
+    background: var(--title-h1-color);
     color: #fff;
     margin: 0;
     z-index: 3;
@@ -184,10 +423,10 @@ section.lead18 h1:after
     bottom: 0;
     width: 0;
     height: 0;
-    left: calc(585px - 4px);
-    border-top: 190px solid #002882;
+    left: calc(595px - 4px);
+    border-top: 190px solid var(--title-h1-color);
     border-right: 69px solid transparent;    
-    border-left: 2px solid #002882;
+    border-left: 2px solid var(--title-h1-color);
 }
 
 
@@ -209,11 +448,11 @@ section.lead18 h1:before
     position: absolute;
     right: 100%;
     bottom: 0;
-    left: calc(585px + 32px);
+    left: calc(595px + 32px);
     width: 6px;
     height: 190px;
     transform: skew(-20deg);
-    background: #00AAFF;
+    background: var(--title-h2-color);
     overflow: hidden;
     z-index: -1;
 }
@@ -234,9 +473,9 @@ section.lead18 h2
 {
     font-size: 100%;
     position: absolute;
-    width: calc(585px - 24px - 30px);
+    width: calc(595px - 24px - 30px);
     height: 65px;
-    background: linear-gradient(0.25turn, #002882, #00AAFF);
+    background: linear-gradient(0.25turn, var(--title-h2-color), var(--title-h2-color));
     color: white;
     z-index: 3;
     padding: 0;
@@ -265,10 +504,10 @@ section.lead18 h2:after
     bottom: 0;
     width: 0;
     height: 0;
-    left: calc(585px - 24px - 4px);
-    border-top: 65px solid #00AAFF;
+    left: calc(595px - 24px - 4px);
+    border-top: 65px solid var(--title-h2-color);
     border-right: 23px solid transparent;
-    border-left: 2px solid #00AAFF;
+    border-left: 2px solid var(--title-h2-color);
 }
 
 section.head h2:before,
@@ -289,7 +528,7 @@ section.lead18 h2:before
     position: absolute;
     right: 100%;
     bottom: 0;
-    left: calc(585px - 24px + 8px);
+    left: calc(595px - 24px + 8px);
     width: 6px;
     height: 65px;
     transform: skew(-20deg);
@@ -300,6 +539,7 @@ section.lead18 h2:before
 
 section h2 strong, 
 section.head h2 strong, 
+section.head2 h2 strong, 
 section.title h2 strong, 
 section.lead1 h2 strong, 
 section.lead2 h2 strong, 
@@ -424,147 +664,7 @@ section.lead18 h3 strong
 
 
 
-section.lead1 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead01.png");
-}
-section.lead2 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead02.jpeg"); 
-}
-section.lead3 {
-    background-image: url("themes/img/lead/lead03.png"); 
-}
-section.lead4 {
-    background-image: url("themes/img/lead/lead04.png"); 
-}
-section.lead5 {
-    background-image: url("themes/img/lead/lead05.jpeg"); 
-}
-section.lead6 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead06.jpeg"); 
-}
-section.lead7 {
-    background-image: url("themes/img/lead/lead07.jpeg"); 
-}
-section.lead8 {
-    background-image: url("themes/img/lead/lead08.jpeg"); 
-}
-section.lead9 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead09.jpeg"); 
-}
-section.lead10 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead10.jpeg"); 
-}
-section.lead11 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead11.jpeg"); 
-}
-section.lead12 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead12.jpeg"); 
-}
-section.lead13 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead13.jpeg"); 
-}
-section.lead14 {
-    background-image: url("themes/img/lead/lead14.jpeg"); 
-}
-section.lead15 {
-    background-image: url("themes/img/lead/lead15.png"); 
-}
-section.lead16 {
-    background-image: url("themes/img/lead/lead16.jpeg"); 
-}
-section.lead17 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead02.jpeg"); 
-}
-section.lead18 {
-    background-image: url("themes/img/lead/logo.ligth.svg"), url("themes/img/lead/lead18.svg"); 
-}
-section.lead19 {
-    background-image: url("themes/img/lead/lead19.png"); 
-}
-section.lead20 {
-    background-image: url("themes/img/lead/lead20.jpeg"); 
-}
-section.lead > *:first-child 
-{
-    margin-top: 0; 
-}
 
-section
-{
-    padding: 0;
-}
-
-section code {
-    font-family: 'JetBrains Mono', monospace;
-}
-section > p > code
-{
-    word-wrap: anywhere;
-}
-section pre, section > code, section > pre, section > p {
-    margin: 30px;
-}
-
-section ul, section ol {
-    margin: 26pt;
-}
-
-section table {
-    width: 94%;
-    text-align: left;
-    margin: 26pt;
-}
-
-section table thead {
-    background: #002882;
-    color: white;
-}
-
-
-section table tr th, section table tr td{
-    padding: 10px;
-}
-
-section table tr td {
-    border-style: solid;
-    border-color: gray;
-    border-width: 1px;
-}
-
-section blockquote {
-
-    background: none repeat scroll 0 0 #fafafa;
-    border-bottom: 3px dashed #bababa;
-    border-top: 3px dashed #bababa;
-    color: #0A0A0A;
-    font-style: italic;
-    /*line-height: 1.45;
-    padding: 10px 15px;*/
-    position: relative;
-    text-align: center;
-}
-
-section blockquote strike {
-    color: #a0a0a0;
-}
-
-/* Styling page number */
-section::after 
-{
-    width: calc(121px - 45px);
-    height: 40px;/*calc(39px - 12px);*/
-    z-index: 5;
-    padding: 0;
-    position: absolute;
-
-    color: black;
-    
-    background-size: 100%;
-    padding-right: 45px;
-    padding-top: 7px;
-    text-align: right;
-    font-size: 66%;
-}
 section.title::after 
 {
     width: calc(121px - 45px);
@@ -584,13 +684,12 @@ section.title::after
     text-align: right;
 }
 
-section.head h1
+section.head h1, section.head2 h1
 {
     letter-spacing: 1.1px;
     position: relative;
     width: calc(1242px - 30px);
     height: calc(90px - 10px);
-    background: #002882;
     color: #fff;
     margin: 0;
     z-index: 3;
@@ -599,6 +698,20 @@ section.head h1
     padding-top: 10px;
     top: 0px;
 }
+section.head h1
+{
+
+    background: var(--bg-color);
+
+}
+section.head2 h1
+{
+
+    background: linear-gradient(0.25turn, var(--bg-color),var(--bg-color),var(--bg-color),var(--bg-color), #05183000);
+
+}
+
+
 section.head h1:after
 {
     content: "";
@@ -608,9 +721,9 @@ section.head h1:after
     width: 0;
     height: 0;
     left: calc(1242px - 4px);
-    border-top: 90px solid #002882;
+    border-top: 90px solid var(--bg-color);
     border-right: 32px solid transparent;    
-    border-left: 2px solid #002882;
+    border-left: 2px solid var(--bg-color);
 }
 section.head h1:before
 {
@@ -627,12 +740,15 @@ section.head h1:before
     z-index: -1;
 }
 
-section.head h2
+section.head h2, section.head2 h2
 {
     position: relative;
     width: calc(1242px - 25px - 30px);
     margin-top: 10px;
     top: 0px;
+}
+section.head2 h2 {
+    background: linear-gradient(0.25turn, var(--title-h1-color), transparent, transparent);
 }
 
 section.head h2:before 
@@ -650,5 +766,9 @@ span.hljs-keyword {
 }
 
 span.hljs-string {
-    
+    color: #BB965A;
+}
+
+span.hljs-number {
+    color: #CCD4E6;
 }

@@ -35,7 +35,7 @@
           </elementProp>
           <elementProp name="p-title" elementType="Argument">
             <stringProp name="Argument.name">p-title</stringProp>
-            <stringProp name="Argument.value">${p-title} (Thread: ${p-thread_count}, TPS: ${p-tps}, Duration: ${p-duration})</stringProp>
+            <stringProp name="Argument.value">${__P(title,)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="p-testId" elementType="Argument">

@@ -1,7 +1,7 @@
 #!/bin/bash -x
 
 
-#/c/Tools/marp/marp.exe --output "$(pwd)/slides.pdf" --allow-local-files --pdf --theme "$(pwd)/themes/vtb.css" -I "$(pwd)"
+#/c/Tools/marp/marp.exe --output "$(pwd)/slides.pdf" --allow-local-files --pdf --theme "$(pwd)/themes/perfconf.css" -I "$(pwd)/docs/index.perfconf.md"
 
 #/c/Tools/marp/marp.exe --output "$(pwd)/slides.pptx" --allow-local-files --pptx --theme "$(pwd)/themes/vtb.css" -I "$(pwd)"
 

@@ -34,18 +34,33 @@ services:
     image: influxdb:2.0.7
     environment:
       - INFLUXDB_REPORTING_DISABLED=true
-      - DOCKER_INFLUXDB_INIT_PASSWORD=password
       - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
       - DOCKER_INFLUXDB_INIT_ORG=qa_load
-      - DOCKER_INFLUXDB_INIT_BUCKET=jmeter
-      - DOCKER_INFLUXDB_INIT_MODE=upgrade
-      - LOG_LEVEL=debug
-    volumes_from:
-      - influxdb:ro
-    depends_on:
-      - influxdb
+      - DOCKER_INFLUXDB_INIT_BUCKET=bucket
+      - DOCKER_INFLUXDB_INIT_RETENTION=1w
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - log-level=debug
+      - V1_DB_NAME=jmeter2
+      - V1_RP_NAME=10d
+      - V1_AUTH_USERNAME=admin
+      - V1_AUTH_PASSWORD=password
+    volumes:
+      - influx-data:/var/lib/influxdb/
+      - type: volume
+        source: influx-data2
+        target: /var/lib/influxdb2/
+        volume:
+          nocopy: true
+      - "./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro"
+      - "./config/influxdb2/setup-v1.sh:/docker-entrypoint-initdb.d/setup-v1.sh:ro"
     ports:
       - 18086:8086
+    #command: "chown -R 1000:1000 /var/lib/influxdb/data/"
+    #command: "chown -R 1000:1000 /var/lib/influxdb/wal/"
+    #command: "ls -la /var/lib/influxdb/data/"
+
 
   influxdb:
     image: influxdb:1.8.6

@@ -35,7 +35,7 @@
           </elementProp>
           <elementProp name="p-title" elementType="Argument">
             <stringProp name="Argument.name">p-title</stringProp>
-            <stringProp name="Argument.value">${__P(title,0)}</stringProp>
+            <stringProp name="Argument.value">${__P(title,)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
             <elementProp name="p-postgresql" elementType="Argument">
