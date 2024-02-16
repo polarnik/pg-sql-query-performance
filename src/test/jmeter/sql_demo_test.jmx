@@ -1377,7 +1377,7 @@ WHERE range &gt; 3000;</stringProp>
             </elementProp>
             <elementProp name="influxdbUrl" elementType="Argument">
               <stringProp name="Argument.name">influxdbUrl</stringProp>
-              <stringProp name="Argument.value">http://sql_monitor_influxdb:8086/write?db=jmeter</stringProp>
+              <stringProp name="Argument.value">http://sql_monitor_influxdb:8086/write?db=jmeter&amp;u=admin&amp;p=password_123</stringProp>
               <stringProp name="Argument.metadata">=</stringProp>
             </elementProp>
             <elementProp name="application" elementType="Argument">

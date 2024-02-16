@@ -23,7 +23,7 @@ AS $$
       md5(query)::uuid::varchar(100) as query_md5,
       queryid,
       calls,
-      total_time,
+      total_exec_time as "total_time",
       rows,
       shared_blks_hit,
       shared_blks_read,

@@ -1,11 +1,20 @@
 #!/bin/sh -x
 
-influx <<-EOSQL
-CREATE DATABASE telegraf_pg_demo;
-CREATE DATABASE telegraf_pg_activity_demo;
-CREATE DATABASE jmeter;
-CREATE DATABASE gatling;
-EOSQL
+login="admin"
+password="password_123"
+echo "Create databases - Start"
+echo "1)"
+influx -type 'influxql' -execute "CREATE USER $login WITH PASSWORD '$password' WITH ALL PRIVILEGES;"
+echo "2)"
+influx -type 'influxql' -execute "CREATE DATABASE telegraf_pg_demo;"
+echo "3)"
+influx -type 'influxql' -execute "CREATE DATABASE telegraf_pg_activity_demo;"
+echo "4)"
+influx -type 'influxql' -execute "CREATE DATABASE jmeter;"
+echo "5)"
+influx -type 'influxql' -execute "CREATE DATABASE gatling;"
+echo "Create databases - Complete"
+
 
 influx <<-EOSQL
 CREATE RETENTION POLICY "autogen" ON "jmeter" DURATION 0s REPLICATION 1 SHARD DURATION 1d DEFAULT;
@@ -173,3 +182,4 @@ BEGIN
     GROUP BY host, usename, datname, time(10m, 0s)
 END;
 EOSQL
+

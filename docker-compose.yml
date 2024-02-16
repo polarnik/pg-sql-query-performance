@@ -4,9 +4,9 @@ services:
 
 
   db:
-    image: postgres:10.16
+    image: postgres:16.1
     container_name: sql_monitor_postgres
-    restart: always
+    restart: unless-stopped
     ports:
       - 5432:5432
     environment:
@@ -14,6 +14,12 @@ services:
       POSTGRES_USER: test
       POSTGRES_DB: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
+    entrypoint:
+      - /usr/bin/env
+      - bash
+      - --verbose
+      - -c
+      - "chmod +x /docker-entrypoint-initdb.d/run_dbdump.sh && docker-entrypoint.sh postgres"
     volumes:
       - postgresql-data:/var/lib/postgresql/data
       - "./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh"
@@ -27,11 +33,11 @@ services:
       - "./config/postgresql/grafana_db.sql:/sql.tmp/grafana_db.sql:ro"
       - "./config/postgresql/bookings.functions.sql:/sql.tmp/bookings.functions.sql:ro"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready --dbname=postgres --username=test"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
-      start_period: 90s
+      test: ["CMD-SHELL", "pg_isready --dbname=grafana --username=grafana --timeout=10"]
+      interval: 20s
+      timeout: 10s
+      retries: 2
+      start_period: 900s
 
 
   influxdb:
@@ -39,9 +45,9 @@ services:
     container_name: sql_monitor_influxdb
     restart: unless-stopped
     environment:
-      - INFLUXDB_REPORTING_DISABLED=true
-      - INFLUXDB_ADMIN_PASSWORD=password
-      - INFLUXDB_ADMIN_USER=admin
+      INFLUXDB_REPORTING_DISABLED: true
+      INFLUXDB_ADMIN_PASSWORD: password
+      INFLUXDB_ADMIN_USER: admin
     volumes:
       - influx-data:/var/lib/influxdb/
       - "./config/influxdb/influxdb.conf:/etc/influxdb/influxdb.conf:ro"
@@ -50,54 +56,92 @@ services:
     #  - 8086:8086
     #  - 2003:2003
     healthcheck:
-      test: ["CMD-SHELL", "curl -XGET localhost:8086/health"]
+      test: ["CMD-SHELL", "curl -S -s -XGET localhost:8086/health"]
       interval: 10s
       timeout: 10s
-      retries: 30
+      retries: 1
       start_period: 90s
 
   telegraf:
-    image: telegraf:1.18.3
+    image: telegraf:1.27.4
     container_name: sql_monitor_telegraf
     restart: unless-stopped
     depends_on:
       influxdb:
         condition: service_healthy
     environment:
-      - INFLUXDB_HOST=sql_monitor_influxdb
-      - CONNECTION_STRING="postgres://telegraf_monitoring_user:pass@sql_monitor_postgres:5432/postgres"
-      - PG_HOST=sql_monitor_postgres
-      - STAND=demo
+      INFLUXDB_HOST: sql_monitor_influxdb
+      CONNECTION_STRING: "postgres://telegraf_monitoring_user:pass@sql_monitor_postgres:5432/postgres"
+      PG_HOST: sql_monitor_postgres
+      STAND: demo
     volumes:
       - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
       - "./config/telegraf/telegraf.d/inputs.postgresql_extensible.conf:/etc/telegraf/telegraf.d/inputs.postgresql_extensible.conf:ro"
     command: "telegraf --config /etc/telegraf/telegraf.conf --config-directory /etc/telegraf/telegraf.d/"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -XGET localhost:8080"]
-      interval: 10s
-      timeout: 10s
-      retries: 40
-      start_period: 90s
 
   grafana:
-    image: grafana/grafana:8.0.2
+    image: grafana/grafana:10.3.1
     container_name: sql_monitor_grafana
     restart: unless-stopped
     depends_on:
-      - db
-      - influxdb
-      - telegraf
+      db:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
     environment:
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_INSTALL_PLUGINS=
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+      GF_SECURITY_admin_user: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS:
+      GF_FEATURE_TOGGLES_ENABLE: newNavigation
+      GF_DATABASE_TYPE: postgres
+      GF_DATABASE_HOST: sql_monitor_postgres:5432
+      GF_DATABASE_NAME: grafana
+      GF_DATABASE_USER: grafana
+      GF_DATABASE_PASSWORD: mypassword
+      GF_DATABASE_MAX_OPEN_CONN: 5
+      GF_DATABASE_INSTRUMENT_QUERIES: true
+      GF_ANALYTICS_ENABLED: false
+      GF_ANALYTICS_REPORTING_ENABLED: false
+      GF_ANALYTICS_CHECK_FOR_UPDATES: false
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: false
+      GF_SECURITY_DISABLE_GRAVATAR: true
+      GF_SECURITY_DISABLE_BRUTE_FORCE_LOGIN_PROTECTION: true
+      GF_SECURITY_ALLOW_EMBEDDING: true
+      GF_USERS_AUTO_ASSIGN_ORG_ROLE: Admin
+      GF_USERS_LOGIN_HINT: admin
+      GF_USERS_PASSWORD_HINT: admin
+      GF_USERS_ALLOW_ORG_CREATE: true
+      GF_AUTH_ANONYMOUS_ENABLED: true
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_NEWS_NEWS_FEED_ENABLED: false
+      GF_QUERY_CONCURRENT_QUERY_LIMIT: 5
+      GF_FEATURE_MANAGEMENT_ALLOW_EDITING: true
+      GF_CACHING_ENABLED: true
+      GF_DATAPROXY_TIMEOUT: 30
+      GF_DATAPROXY_MAX_CONNS_PER_HOST: 5
+      GF_DATAPROXY_MAX_IDLE_CONNECTIONS: 2
+      GF_DATAPROXY_ROW_LIMIT: 10000
+      GF_ANNOTATIONS_DASHBOARD_MAX_AGE: 1h
+      GF_ANNOTATIONS_DASHBOARD_MAX_ANNOTATIONS_TO_KEEP: 10000
+      GF_ANNOTATIONS_API_MAX_AGE: 1h
+      GF_ANNOTATIONS_API_MAX_ANNOTATIONS_TO_KEEP: 10000
+      GF_EXTERNAL_IMAGE_STORAGE_PROVIDER: local
+      GF_SQL_DATASOURCES_MAX_IDLE_CONNS_DEFAULT: 2
+      GF_SQL_DATASOURCES_MAX_OPEN_CONNS_DEFAULT: 5
     volumes:
       - grafana-data:/var/lib/grafana
       - "./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro"
       - "./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro"
-      - "./config/grafana/grafana.ini:/etc/grafana/grafana.ini:ro"
     ports:
-      - 3000:3000
+      - 3000:3000 # TCP Port
+      - 10000:10000 # gRPC Port
+    healthcheck:
+      test: ["CMD-SHELL", "wget localhost:3000/api/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 1
+      start_period: 90s
 
   jmeter:
     container_name: sql_monitor_jmeter

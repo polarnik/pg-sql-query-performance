@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/usr/bin/env bash
 
 set -e
 
@@ -44,19 +44,23 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 EOSQL
 
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_user.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_count.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle_in_transaction.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_waiting.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_statements.sql
+declare -A sqlarray
+sqlarray["/sql.tmp/monitoring_user.sql"]="$POSTGRES_DB"
+sqlarray["/sql.tmp/monitoring_stat_activity_count.sql"]="$POSTGRES_DB"
+sqlarray["/sql.tmp/monitoring_stat_activity_idle_in_transaction.sql"]="$POSTGRES_DB"
+sqlarray["/sql.tmp/monitoring_stat_activity_idle.sql"]="$POSTGRES_DB"
+sqlarray["/sql.tmp/monitoring_stat_activity_waiting.sql"]="$POSTGRES_DB"
+sqlarray["/sql.tmp/monitoring_stat_statements.sql"]="$POSTGRES_DB"
+sqlarray["/dbdump/demo.sql"]="$POSTGRES_DB"
+sqlarray["/sql.tmp/bookings.functions.sql"]="demo"
 
-echo "Create Monitoring Functions ... complete"
-
-echo "Restore Backup"
-
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /dbdump/demo.sql
-psql --username "$POSTGRES_USER" --dbname "demo" -f /sql.tmp/bookings.functions.sql
+for sqlFile in "${!sqlarray[@]}"
+do
+  database_name="${sqlarray[$sqlFile]}"
+  echo "Exec '$sqlFile' for database '${database_name}' - Start"
+  psql --username "$POSTGRES_USER" --dbname "${database_name}" -f "${sqlFile}"
+  echo "Exec '$sqlFile' for database '${database_name}' - Complete"
+done
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 
