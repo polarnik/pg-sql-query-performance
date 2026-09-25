@@ -1,12 +1,41 @@
-version: '3.8'
+# One Telegraf per monitored PostgreSQL instance, identical config (telegraf.d + sql/).
+# Env load order: .env.example (defaults) -> config/telegraf/env/dbN.env (instance name) -> .env.dbN (real DSN, gitignored).
+x-telegraf: &telegraf
+  image: telegraf:1.32
+  restart: unless-stopped
+  depends_on:
+    influxdb:
+      condition: service_healthy
+    db:
+      condition: service_healthy
+  environment:
+    - INFLUXDB_HOST=sql_monitor_influxdb
+  volumes:
+    - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
+    - "./config/telegraf/telegraf.d:/etc/telegraf/telegraf.d:ro"
+    - "./sql:/etc/telegraf/sql:ro"
+  command: "telegraf --config /etc/telegraf/telegraf.conf --config-directory /etc/telegraf/telegraf.d/"
+  healthcheck:
+    test: ["CMD-SHELL", "curl -XGET localhost:8080"]
+    interval: 10s
+    timeout: 10s
+    retries: 40
+    start_period: 90s
 
 services:
 
 
   db:
-    image: postgres:10.16
+    image: postgres:17
     container_name: sql_monitor_postgres
     restart: always
+    command: >-
+      postgres
+      -c shared_preload_libraries=pg_stat_statements,auto_explain
+      -c pg_stat_statements.track=all
+      -c pg_stat_statements.max=5000
+      -c track_io_timing=on
+      -c track_activity_query_size=4096
     ports:
       - 5432:5432
     environment:
@@ -18,11 +47,6 @@ services:
       - postgresql-data:/var/lib/postgresql/data
       - "./config/postgresql/run_dbdump.sh:/docker-entrypoint-initdb.d/run_dbdump.sh"
       - "./config/postgresql/monitoring_user.sql:/sql.tmp/monitoring_user.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_count.sql:/sql.tmp/monitoring_stat_activity_count.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_idle_in_transaction.sql:/sql.tmp/monitoring_stat_activity_idle_in_transaction.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_idle.sql:/sql.tmp/monitoring_stat_activity_idle.sql:ro"
-      - "./config/postgresql/monitoring_stat_activity_waiting.sql:/sql.tmp/monitoring_stat_activity_waiting.sql:ro"
-      - "./config/postgresql/monitoring_stat_statements.sql:/sql.tmp/monitoring_stat_statements.sql:ro"
       - "./config/postgresql/demo-small-20170815.sql:/dbdump/demo.sql:ro"
       - "./config/postgresql/grafana_db.sql:/sql.tmp/grafana_db.sql:ro"
       - "./config/postgresql/bookings.functions.sql:/sql.tmp/bookings.functions.sql:ro"
@@ -57,36 +81,52 @@ services:
       start_period: 90s
 
   telegraf:
-    image: telegraf:1.18.3
+    <<: *telegraf
     container_name: sql_monitor_telegraf
-    restart: unless-stopped
-    depends_on:
-      influxdb:
-        condition: service_healthy
-    environment:
-      - INFLUXDB_HOST=sql_monitor_influxdb
-      - CONNECTION_STRING="postgres://telegraf_monitoring_user:pass@sql_monitor_postgres:5432/postgres"
-      - PG_HOST=sql_monitor_postgres
-      - STAND=demo
-    volumes:
-      - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
-      - "./config/telegraf/telegraf.d/inputs.postgresql_extensible.conf:/etc/telegraf/telegraf.d/inputs.postgresql_extensible.conf:ro"
-    command: "telegraf --config /etc/telegraf/telegraf.conf --config-directory /etc/telegraf/telegraf.d/"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -XGET localhost:8080"]
-      interval: 10s
-      timeout: 10s
-      retries: 40
-      start_period: 90s
+    env_file:
+      - path: .env.example
+      - path: config/telegraf/env/db1.env
+      - path: .env.db1
+        required: false
+
+  telegraf-db2:
+    <<: *telegraf
+    container_name: sql_monitor_telegraf_db2
+    env_file:
+      - path: .env.example
+      - path: config/telegraf/env/db2.env
+      - path: .env.db2
+        required: false
+
+  telegraf-db3:
+    <<: *telegraf
+    container_name: sql_monitor_telegraf_db3
+    env_file:
+      - path: .env.example
+      - path: config/telegraf/env/db3.env
+      - path: .env.db3
+        required: false
+
+  telegraf-db4:
+    <<: *telegraf
+    container_name: sql_monitor_telegraf_db4
+    env_file:
+      - path: .env.example
+      - path: config/telegraf/env/db4.env
+      - path: .env.db4
+        required: false
 
   grafana:
-    image: grafana/grafana:8.0.2
+    image: grafana/grafana:11.3.0
     container_name: sql_monitor_grafana
     restart: unless-stopped
     depends_on:
-      - db
-      - influxdb
-      - telegraf
+      db:
+        condition: service_healthy
+      influxdb:
+        condition: service_started
+      telegraf:
+        condition: service_started
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -129,4 +169,4 @@ volumes:
   grafana-data:
     name: sql-monitor-grafana-data
   postgresql-data:
-    name: sql-monitor-postgresql-data
+    name: sql-monitor-postgresql17-data

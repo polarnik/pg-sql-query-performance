@@ -1,0 +1,555 @@
+{
+  "annotations": {},
+  "description": "Per-database object statistics (pg_stat_user_tables / pg_stat_user_indexes, top by size).",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "pg-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "No scans over the range, not unique / primary. Use a representative range (full test or \u2265 7 days). last_scan = 1970 means never scanned since stats reset.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_scan"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "size"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT * FROM ( SELECT spread(\"idx_scan\") AS \"scans_in_range\", last(\"idx_scan\") AS \"scans_total\", last(\"index_bytes\") AS \"size\", last(\"is_unique\") AS \"is_unique\", last(\"is_primary\") AS \"is_primary\", last(\"is_valid\") AS \"is_valid\", last(\"last_idx_scan_epoch\") * 1000 AS \"last_scan\" FROM \"pg_index_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"schemaname\", \"relname\", \"indexrelname\" ) WHERE \"scans_in_range\" = 0 AND \"is_primary\" = 0 AND \"is_unique\" = 0 GROUP BY *",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Unused indexes",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "is_valid = 0: failed CREATE INDEX CONCURRENTLY, drop and re-create.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "size"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"index_bytes\") AS \"size\", spread(\"idx_scan\") AS \"scans_in_range\", spread(\"idx_tup_read\") AS \"tup_read_in_range\", last(\"is_unique\") AS \"is_unique\", last(\"is_valid\") AS \"is_valid\" FROM \"pg_index_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"schemaname\", \"relname\", \"indexrelname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Indexes by size",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Large tables with many rows read by seq scans are missing-index candidates.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_seq_scan"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "seq_tup_read"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT spread(\"seq_scan\") AS \"seq_scans\", spread(\"seq_tup_read\") AS \"seq_tup_read\", spread(\"idx_scan\") AS \"idx_scans\", last(\"n_live_tup\") AS \"live_tup\", last(\"total_bytes\") AS \"total_size\", last(\"last_seq_scan_epoch\") * 1000 AS \"last_seq_scan\" FROM \"pg_table_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"schemaname\", \"relname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Seq-scan-heavy tables",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "dead_pct > 10 %: warning, > 20 %: critical. Old last_vacuum with many updates: autovacuum lags.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dead_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_vacuum"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_analyze"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dead_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 10
+                    },
+                    {
+                      "color": "red",
+                      "value": 20
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "dead_pct"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"n_dead_tup\") AS \"dead_tup\", last(\"dead_tup_pct\") AS \"dead_pct\", last(\"n_mod_since_analyze\") AS \"mod_since_analyze\", spread(\"n_tup_upd\") + spread(\"n_tup_del\") AS \"upd_del_in_range\", spread(\"autovacuum_count\") AS \"autovacuums_in_range\", last(\"last_any_vacuum_epoch\") * 1000 AS \"last_vacuum\", last(\"last_any_analyze_epoch\") * 1000 AS \"last_analyze\" FROM \"pg_table_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"schemaname\", \"relname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Dead tuples and vacuum",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 5,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 41
+          },
+          "id": 501,
+          "options": {
+            "content": "# Unused / missing indexes\n\n**Symptom.** Slow reads on large tables (missing index) or slow writes / high WAL and storage (too many unused indexes).\n\n**Where to look.** `pg-indexes` \u2192 *Unused indexes* table, *Seq-scan-heavy tables* table, *Index size* column.\n\n**How to interpret.**\n- Unused index: `spread(pg_index_stat.idx_scan) = 0` over a representative range (a full load test or \u2265 7 days),\n  `is_unique = 0`, `is_primary = 0`; `last_idx_scan_epoch` old or 0. Sort by `index_bytes`.\n- Missing index candidate: large `pg_table_stat.total_bytes` with high `spread(seq_tup_read)` and\n  `spread(seq_scan)` \u226b `spread(idx_scan)`.\n- `is_valid = 0` \u2192 a failed `CREATE INDEX CONCURRENTLY`; the index costs writes but is never used.\n- Stats are per database and per instance (replicas have their own counters).\n\n**Likely causes.** Indexes created for old features / ORM defaults, duplicate indexes (same leading columns),\nnew query patterns without a supporting index.\n\n**Actions.**\n1. Unused: confirm on all replicas, then `DROP INDEX CONCURRENTLY` (keep a rollback script).\n2. Invalid: `DROP INDEX CONCURRENTLY` and re-create.\n3. Missing: find the masks touching the table on `pg-statements` \u2192 `EXPLAIN` \u2192 `CREATE INDEX CONCURRENTLY`.\n\n**Related SQL.** `sql/database_index_stat.sql`, `sql/database_table_stat.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Unused / missing indexes",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 6,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 42
+          },
+          "id": 601,
+          "options": {
+            "content": "# Autovacuum lag / dead tuples\n\n**Symptom.** Tables and indexes grow without data growth, queries slow down, plans get worse (stale statistics).\n\n**Where to look.** `pg-indexes` \u2192 *Dead tuples / vacuum* table (dead %, last vacuum, last analyze).\n\n**How to interpret.**\n- `pg_table_stat.dead_tup_pct` > 10 %: warning; > 20 %: critical (default autovacuum threshold is 20 % + 50 rows).\n- `now - last_any_vacuum_epoch` large on a table with high `spread(n_tup_upd + n_tup_del)` \u2192 autovacuum cannot keep up.\n- `n_mod_since_analyze` large relative to `n_live_tup` \u2192 statistics are stale \u2192 bad plans.\n- `pg_activity_grouped` rows with `max_xact_age_s` high \u2192 vacuum is blocked by an old transaction\n  ([idle-in-transaction](idle-in-transaction.md)).\n\n**Likely causes.** High update/delete rate on big tables with default scale factors, long transactions holding\nthe xmin horizon, autovacuum throttled (`autovacuum_vacuum_cost_limit`), too few workers.\n\n**Actions.**\n1. Remove old transactions first.\n2. Per-table tuning: `ALTER TABLE ... SET (autovacuum_vacuum_scale_factor = 0.01, autovacuum_analyze_scale_factor = 0.02)`.\n3. Raise `autovacuum_vacuum_cost_limit` / workers (parameter group).\n4. Manual `VACUUM (ANALYZE)` in a quiet window; `pg_repack` for heavy bloat (DBA).\n\n**Related SQL.** `sql/database_table_stat.sql`, `sql/cluster_activity_grouped.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Autovacuum lag / dead tuples",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "pg-runbooks",
+    "postgresql"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL / Indexes and tables",
+  "uid": "pg-indexes"
+}

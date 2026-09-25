@@ -1,0 +1,66 @@
+applicationName: pg-telegraf
+projectName: jcp-perftest-common
+
+image:
+  repository: telegraf
+  tag: "1.32"
+  pullPolicy: IfNotPresent
+
+# InfluxDB 1.x the collectors write to (telegraf.conf uses http://$INFLUXDB_HOST:8086)
+influxdb:
+  host: influxdb
+  database: pg_monitoring
+
+# Environment tag on every metric
+env: perf
+
+# One Telegraf Deployment per monitored PostgreSQL instance (same telegraf.d + sql for all).
+# name        -> db_instance tag and Deployment suffix
+# existingSecret: Secret with keys PG_DSN (maintenance DB, cluster-wide metrics) and
+#                 PG_APP_DSN (application DB, table/index metrics). Recommended.
+# dsn / appDsn: only for dev stands - the chart then creates the Secret itself.
+instances:
+  - name: db1
+    existingSecret: pg-telegraf-db1
+#  - name: db2
+#    existingSecret: pg-telegraf-db2
+#  - name: dev
+#    dsn: "postgres://telegraf_monitoring_user:pass@postgres:5432/postgres?sslmode=disable&statement_timeout=5000"
+#    appDsn: "postgres://telegraf_monitoring_user:pass@postgres:5432/demo?sslmode=disable&statement_timeout=5000"
+
+# Generated pg-* dashboards as a ConfigMap picked up by the Grafana dashboards sidecar
+dashboards:
+  enabled: true
+  labels:
+    grafana_dashboard: "1"
+
+networkPolicy:
+  enabled: true
+  # Telegraf only initiates connections (PostgreSQL, InfluxDB, DNS); no ingress is needed.
+  policyTypes:
+    - Ingress
+  egress: []
+
+replicaCount: 1
+
+# telegraf user/group built into the official telegraf image
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  fsGroup: 999
+
+containerSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+  runAsGroup: 999
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi

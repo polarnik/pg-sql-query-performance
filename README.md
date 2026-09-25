@@ -11,6 +11,22 @@ docker-compose up
 
 Open Grafana: [http://localhost:3000](http://localhost:3000)
 
+## PostgreSQL 17 monitoring runbooks (Telegraf → InfluxDB → Grafana)
+
+No functions are created in the monitored databases: all metrics are plain `SELECT`s from `sql/*.sql`
+run by a `pg_monitor`-only user.
+
+```bash
+docker compose up -d db influxdb telegraf telegraf-db2 telegraf-db3 telegraf-db4 grafana
+make -C dashboards                                  # generate pg-* dashboards (Python 3.13, grafana-foundation-sdk)
+(cd dashboards && .venv/bin/python check_queries.py) # every panel query runs through Grafana
+```
+
+- Real instances: copy `.env.example` to `.env.db1..4` (gitignored) and set `PG_DSN` / `PG_APP_DSN`.
+- Dashboards: `pg-overview` → `pg-connections`, `pg-statements` → `pg-statement-detail`, `pg-indexes`.
+- Docs: `PLAN.md`, `TASKS.md`, `STATUS.md`, `DECISIONS.md`, `docs/metrics-catalog.md`, `docs/runbooks/`.
+- Kubernetes: `charts/pg-telegraf`.
+
 
 ## Stop
 

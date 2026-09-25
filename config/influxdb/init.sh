@@ -3,6 +3,7 @@
 influx <<-EOSQL
 CREATE DATABASE telegraf_pg_demo;
 CREATE DATABASE telegraf_pg_activity_demo;
+CREATE DATABASE pg_monitoring;
 CREATE DATABASE jmeter;
 CREATE DATABASE gatling;
 EOSQL
@@ -16,6 +17,8 @@ CREATE RETENTION POLICY "1d" ON "telegraf_pg_demo" DURATION 25h REPLICATION 1 SH
 
 CREATE RETENTION POLICY "archive" ON "telegraf_pg_activity_demo" DURATION 1000d REPLICATION 1 SHARD DURATION 1d;
 CREATE RETENTION POLICY "7d" ON "telegraf_pg_activity_demo" DURATION 7d REPLICATION 1 SHARD DURATION 1h DEFAULT;
+
+CREATE RETENTION POLICY "7d" ON "pg_monitoring" DURATION 7d REPLICATION 1 SHARD DURATION 1h DEFAULT;
 EOSQL
 
 echo "cq_1d_pg_stat_statements_diff_1m"
@@ -31,7 +34,7 @@ CREATE
 RESAMPLE FOR 2m
 BEGIN
     SELECT
-        non_negative_difference(first(total_time)) AS "duration",
+        non_negative_difference(first(total_exec_time)) AS "duration",
         non_negative_difference(first(calls)) AS calls,
         non_negative_difference(first(rows)) AS rows,
         non_negative_difference(first(shared_blks_hit)) AS shared_blks_hit,
@@ -42,7 +45,7 @@ BEGIN
         telegraf_pg_demo."1d".pg_stat_statements_diff_1m
     FROM
         telegraf_pg_demo."1d".pg_stat_statements
-    GROUP BY host, usename, datname, queryid, query_md5, "query", time(1m, 0s)
+    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1m, 0s)
 END;
 EOSQL
 
@@ -72,7 +75,7 @@ BEGIN
         telegraf_pg_demo."1d".pg_stat_statements_diff_1m
     WHERE
         calls > 0
-    GROUP BY host, usename, datname, queryid, query_md5, "query", time(1m, 0s)
+    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1m, 0s)
 END;
 EOSQL
 
@@ -94,7 +97,7 @@ BEGIN
         telegraf_pg_demo."1d".pg_stat_statements_query_10m
     FROM
         telegraf_pg_demo."1d".pg_stat_statements_diff_1m_active
-    GROUP BY host, usename, datname, queryid, query_md5, "query", time(10m, 0s)
+    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(10m, 0s)
 END;
 EOSQL
 
@@ -117,7 +120,7 @@ BEGIN
         telegraf_pg_demo."archive".pg_stat_statements_query_1d
     FROM
         telegraf_pg_demo."1d".pg_stat_statements_query_10m
-    GROUP BY host, usename, datname, queryid, query_md5, "query", time(1d, 0s)
+    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1d, 0s)
 END;
 EOSQL
 
@@ -148,7 +151,7 @@ BEGIN
         telegraf_pg_demo."archive".pg_stat_statements_diff_1m_archive
     FROM
         telegraf_pg_demo."1d".pg_stat_statements_diff_1m_active
-    GROUP BY host, usename, datname, queryid, query_md5, time(1m, 0s)
+    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1m, 0s)
 END;
 EOSQL
 
@@ -170,6 +173,6 @@ BEGIN
         telegraf_pg_demo."archive".pg_stat_statements_filters
     FROM
         telegraf_pg_demo."1d".pg_stat_statements_query_10m
-    GROUP BY host, usename, datname, time(10m, 0s)
+    GROUP BY host, db_instance, usename, datname, time(10m, 0s)
 END;
 EOSQL

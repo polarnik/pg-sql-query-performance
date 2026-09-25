@@ -1,0 +1,977 @@
+{
+  "annotations": {},
+  "description": "Connection limits and usage grouped by state, application and user. See docs/runbooks.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "pg-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "effective limit = max_connections - superuser_reserved_connections - reserved_connections (5 min sample).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "usage_pct"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"client_backends\") AS \"used\", last(\"effective_limit\") AS \"limit\", last(\"client_backends\") / last(\"effective_limit\") * 100 AS \"usage_pct\", last(\"max_connections\") AS \"max_connections\", last(\"superuser_reserved\") AS \"superuser_reserved\", last(\"reserved\") AS \"reserved\" FROM \"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Server limit usage",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "datconnlimit = -1 means unlimited: the server limit is used. peak = max over the time range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "peak_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "peak_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "peak_pct"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"numbackends\") AS \"used\", max(\"numbackends\") AS \"peak\", last(\"effective_conn_limit\") AS \"limit\", last(\"datconnlimit\") AS \"datconnlimit\", last(\"usage_pct\") AS \"usage_pct\", max(\"usage_pct\") AS \"peak_pct\" FROM \"pg_db_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Database limit usage",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "rolconnlimit = -1 means unlimited: the server limit is used.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "peak_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usage_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "peak_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "peak_pct"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"current\") AS \"used\", max(\"current\") AS \"peak\", last(\"effective_conn_limit\") AS \"limit\", last(\"rolconnlimit\") AS \"rolconnlimit\", last(\"usage_pct\") AS \"usage_pct\", max(\"usage_pct\") AS \"peak_pct\" FROM \"pg_role_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\", \"rolname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Role limit usage",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
+      "id": 4,
+      "interval": "15s",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"cnt\") FROM ( SELECT max(\"cnt\") AS \"cnt\" FROM \"pg_activity_grouped\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\", \"state\" fill(0)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Connections by state",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 5,
+      "interval": "30s",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT max(\"usage_pct\") FROM \"pg_db_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Database limit usage %",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "One row per (instance, database, user, application, state, wait event type) over the range. idle in transaction with a large oldest_xact_s is a leak.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "oldest_xact_s"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "oldest_state_s"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "avg_cnt"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "oldest_xact_s"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 60
+                    },
+                    {
+                      "color": "red",
+                      "value": 300
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "peak_cnt"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT max(\"cnt\") AS \"peak_cnt\", mean(\"cnt\") AS \"avg_cnt\", max(\"max_xact_age_s\") AS \"oldest_xact_s\", max(\"max_state_age_s\") AS \"oldest_state_s\" FROM \"pg_activity_grouped\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"application_name\", \"state\", \"wait_event_type\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Grouped connections",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Pool sizing view: many idle vs. few active per application means an oversized pool.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 34
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "peak_cnt"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"cnt\") AS \"peak_cnt\" FROM ( SELECT max(\"cnt\") AS \"cnt\" FROM \"pg_activity_grouped\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY * ) GROUP BY \"db_instance\", \"application_name\", \"usename\", \"state\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "By application and state",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 34
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "peak_cnt"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"cnt\") AS \"peak_cnt\" FROM ( SELECT max(\"cnt\") AS \"cnt\" FROM \"pg_activity_grouped\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY * ) GROUP BY \"db_instance\", \"usename\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "By user",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "id": 9,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 45
+          },
+          "id": 901,
+          "options": {
+            "content": "# Connection exhaustion\n\n**Symptom.** Application errors `FATAL: sorry, too many clients already`,\n`FATAL: too many connections for role \"...\"` / `... for database \"...\"`, or connection-pool timeouts.\n\n**Where to look.** `pg-connections` \u2192 *Limit usage* table (server / database / role rows), *Connections by state* time series.\n\n**How to interpret.**\n| usage | meaning |\n|---|---|\n| < 70 % | healthy |\n| 70\u201390 % | warning: little headroom for bursts, deploys or failover |\n| > 90 % | critical: new sessions will be rejected soon |\n- Server limit = `pg_settings_limits.effective_limit` (`max_connections - superuser_reserved - reserved`).\n- Per DB: `pg_db_limits.usage_pct` (`datconnlimit = -1` \u2192 server limit is used).\n- Per role: `pg_role_limits.usage_pct` (`rolconnlimit = -1` \u2192 server limit is used).\n- The limit that is hit first is the one with the highest `usage_pct`.\n\n**Likely causes.**\n- Pool `maxPoolSize \u00d7 number of app instances` > limit (see [pool misconfiguration](pool-misconfiguration.md)).\n- Leaked sessions: many `idle` / `idle in transaction` rows in `pg_activity_grouped` with a large `max_state_age_s`.\n- Slow queries hold connections longer \u2192 pools grow (see [slow query regression](slow-query-regression.md)).\n\n**Actions.**\n1. Find the top `(application_name, usename)` by `cnt` in `pg_activity_grouped`.\n2. If `idle` dominates \u2192 reduce pool size / `minimumIdle`, set `idle_session_timeout`.\n3. If `active` dominates \u2192 fix the slow statements; add a pooler (PgBouncer / RDS Proxy).\n4. Raise `max_connections` only as last resort (memory: `work_mem` \u00d7 active sessions).\n\n**Related SQL.** `sql/cluster_settings_limits.sql`, `sql/cluster_db_limits.sql`, `sql/cluster_role_limits.sql`, `sql/cluster_activity_grouped.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Connection exhaustion",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 10,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 46
+          },
+          "id": 1001,
+          "options": {
+            "content": "# Idle-in-transaction leaks\n\n**Symptom.** Growing lock waits, table bloat, autovacuum cannot clean rows, connections stuck in `idle in transaction`.\n\n**Where to look.** `pg-connections` \u2192 *Grouped connections* table filtered by `state =~ /idle in transaction/`,\ncolumn *Oldest xact age*.\n\n**How to interpret.**\n- `pg_activity_grouped.cnt` for `state = 'idle in transaction'` > 0 for more than a few seconds is suspicious.\n- `max_xact_age_s` > 60 s: warning; > 300 s: critical (holds back vacuum horizon and may hold locks).\n- `pg_db_stat.idle_in_transaction_time` rate shows total time spent idle inside transactions.\n- `pg_settings_limits.idle_in_transaction_session_timeout_ms = 0` means no server-side protection.\n\n**Likely causes.**\n- Application opens a transaction, then does remote calls / user think-time before commit.\n- Missing `commit` / `rollback` in error paths; ORM `autocommit=false` with long-lived sessions.\n- `idle in transaction (aborted)`: an error was ignored and the session was not rolled back.\n\n**Actions.**\n1. Identify `application_name` + `usename` with the largest `max_xact_age_s`.\n2. Fix transaction scope in the code; move external calls outside transactions.\n3. Set `idle_in_transaction_session_timeout` (e.g. 60 s) for the application role.\n4. Emergency: `SELECT pg_terminate_backend(pid)` for the offending sessions (DBA).\n\n**Related SQL.** `sql/cluster_activity_grouped.sql`, `sql/cluster_db_stat.sql`, `sql/cluster_settings_limits.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Idle-in-transaction leaks",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 11,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 47
+          },
+          "id": 1101,
+          "options": {
+            "content": "# Pool misconfiguration\n\n**Symptom.** Many connections are open but few are `active`; connection limits are approached although load is low.\n\n**Where to look.** `pg-connections` \u2192 *Grouped connections* table grouped by `application_name, usename, state`.\n\n**How to interpret.**\n- Ratio `idle / (active + idle)` per `application_name` in `pg_activity_grouped`:\n  > 80 % with total `cnt` > 50 \u2192 the pool is oversized.\n- `max_backend_age_s` very small and churning \u2192 pool does not reuse connections (connect-per-request).\n- `pg_role_limits.current` close to `effective_conn_limit` for a single application role.\n- `application_name = '(none)'` \u2192 clients do not set it; ask teams to set `ApplicationName` in the JDBC URL.\n\n**Likely causes.**\n- `maximumPoolSize` \u00d7 replicas larger than the DB can serve; `minimumIdle = maximumPoolSize`.\n- Several pools per service (per tenant / per datasource).\n- No pooler between many short-lived clients and the DB.\n\n**Actions.**\n1. Size pools: roughly `cores \u00d7 2\u20134` active connections per DB instance in total, split across services.\n2. Set `minimumIdle` lower than `maximumPoolSize`, `idleTimeout` / `maxLifetime` shorter than server timeouts.\n3. Introduce PgBouncer / RDS Proxy for many small clients.\n4. Set a `rolconnlimit` per application role to protect other applications.\n\n**Related SQL.** `sql/cluster_activity_grouped.sql`, `sql/cluster_role_limits.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Pool misconfiguration",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "pg-runbooks",
+    "postgresql"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL / Connections",
+  "uid": "pg-connections"
+}

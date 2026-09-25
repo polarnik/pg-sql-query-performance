@@ -1,0 +1,619 @@
+{
+  "annotations": {},
+  "description": "pg_stat_statements aggregated by query mask and by queryid. Counters use spread() over the range.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "pg-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Milliseconds of execution per second (\u2248 busy backends \u00d7 1000).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "interval": "5m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Execution time / s (all statements)",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "interval": "5m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"calls\"), 1s) AS \"d\" FROM \"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Calls / s (all statements)",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "One row per mask (IN-lists / VALUES collapsed). Click query_mask_md5 for variants and full text.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"variants\") AS \"variants\", last(\"query_mask_short\") AS \"query_mask\" FROM \"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Top query masks",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_md5 for the full text.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Mask detail",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"pg_stmt\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Top statements (queryid)",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "dealloc_in_range > 0: entries were evicted, raise pg_stat_statements.max. stats_reset inside the range: counters were reset.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stats_reset"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dealloc_in_range"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 100
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 5,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"entries\") AS \"entries\", last(\"max_entries\") AS \"max_entries\", last(\"dealloc\") AS \"dealloc\", spread(\"dealloc\") AS \"dealloc_in_range\", last(\"stats_reset_epoch\") * 1000 AS \"stats_reset\" FROM \"pg_stmt_info\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Statements health",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 6,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 41
+          },
+          "id": 601,
+          "options": {
+            "content": "# Slow query regression\n\n**Symptom.** Response time of an endpoint grows; DB CPU / IO grows without a matching increase in traffic.\n\n**Where to look.** `pg-statements` \u2192 *Top masks* table (sorted by total time over the range) \u2192\nclick `query_mask_md5` \u2192 `pg-statement-detail` (variants by `query_md5`, full text, calls / time series).\n\n**How to interpret.**\n- Over the range: `spread(total_exec_time)` = time spent, `spread(calls)` = executions,\n  mean = `spread(total_exec_time) / spread(calls)` (ms).\n- Compare the same mask for two ranges (before / after release): mean \u2191 with calls \u2248 \u2192 plan / data regression;\n  calls \u2191 with mean \u2248 \u2192 more traffic or an N+1 pattern.\n- `variants` of a mask \u226b 1 \u2192 the same statement shape is produced with different IN-list sizes etc.\n- `shared_blks_read` \u2191 \u2192 data no longer fits the cache ([cache hit drop](cache-hit-drop.md));\n  `temp_blks_written` \u2191 \u2192 sorts / hashes spill ([temp file spills](temp-file-spills.md)).\n- `rows / calls` \u2191 \u2192 the query returns more data (missing filter / pagination).\n\n**Likely causes.** New code path, changed plan (stale statistics, parameter sniffing on generic plans),\nmissing index, data growth, N+1 queries from the ORM.\n\n**Actions.**\n1. Take the full text from `pg_stmt_text` (detail board) and run `EXPLAIN (ANALYZE, BUFFERS)` on a copy.\n2. Check [autovacuum / analyze](autovacuum-lag.md) freshness of the involved tables.\n3. Check [indexes](unused-missing-indexes.md) for seq-scan-heavy tables involved.\n4. For N+1: batch the calls (`= ANY($1)`), which also collapses variants.\n\n**Related SQL.** `sql/cluster_stmt_mask.sql`, `sql/cluster_stmt.sql`, `sql/cluster_stmt_text.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Slow query regression",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 7,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 42
+          },
+          "id": 701,
+          "options": {
+            "content": "# pg_stat_statements reset / dealloc\n\n**Symptom.** Statement tables show negative or sudden drops, masks disappear, totals look too small.\n\n**Where to look.** `pg-statements` \u2192 *Statements health* row (dealloc, entries / max, last reset).\n\n**How to interpret.**\n- `pg_stmt_info.stats_reset_epoch` changed inside the range \u2192 counters were reset; `spread()` across the reset is wrong,\n  use a range that starts after the reset.\n- `pg_settings_limits.postmaster_start_epoch` changed \u2192 restart / failover, all counters restart from 0.\n- `spread(pg_stmt_info.dealloc)` > 0 \u2192 entries were evicted because `entries` reached `max_entries`\n  (`pg_stat_statements.max`); rare statements are lost and totals are underestimated.\n- `pg_stmt.stats_since_epoch` newer than the range start \u2192 that statement entry was (re)created inside the range.\n\n**Likely causes.** Someone called `pg_stat_statements_reset()`, instance restart / failover,\ntoo many distinct statements (unparameterized SQL, variable IN-lists, temp tables) with a small `pg_stat_statements.max`.\n\n**Actions.**\n1. Choose a time range that does not cross the reset / restart.\n2. If `dealloc` grows: raise `pg_stat_statements.max` (e.g. 10000) in the parameter group; parameterize SQL;\n   use `= ANY($1)` instead of variable IN-lists.\n3. Agree on a reset policy for perf tests (reset only at test start, record the time in the test report).\n\n**Related SQL.** `sql/cluster_stmt_info.sql`, `sql/cluster_settings_limits.sql`, `sql/cluster_stmt.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: pg_stat_statements reset / dealloc",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "pg-runbooks",
+    "postgresql"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL / Statements",
+  "uid": "pg-statements"
+}

@@ -1,0 +1,781 @@
+{
+  "annotations": {},
+  "description": "Start here: limits, throughput, cache, temp files, locks. Drill down via links in the tables.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "pg-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT max(\"usage\") FROM ( SELECT last(\"client_backends\") / last(\"effective_limit\") * 100 AS \"usage\" FROM \"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Max server connection usage",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT max(\"blocked\") FROM \"pg_locks_blocked\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Blocked sessions (peak)",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") FROM (SELECT spread(\"deadlocks\") AS \"d\" FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Deadlocks (range)",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"t\") FROM (SELECT spread(\"temp_bytes\") AS \"t\" FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Temp written (range)",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Counters over the selected time range (spread). Click an instance to open Connections.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cache_hit_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_bytes"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Connections",
+                    "url": "/d/pg-connections?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "commits"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT spread(\"xact_commit\") AS \"commits\", spread(\"xact_rollback\") AS \"rollbacks\", spread(\"blks_hit\") / (spread(\"blks_hit\") + spread(\"blks_read\")) * 100 AS \"cache_hit_pct\", spread(\"temp_files\") AS \"temp_files\", spread(\"temp_bytes\") AS \"temp_bytes\", spread(\"deadlocks\") AS \"deadlocks\", spread(\"sessions_killed\") AS \"sessions_killed\", last(\"numbackends\") AS \"backends\" FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Databases",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 6,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT non_negative_derivative(last(\"xact_commit\"), 1s) FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Commits / s",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Growth means the working set no longer fits shared_buffers / OS cache.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 7,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT non_negative_derivative(last(\"blks_read\"), 1s) FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Blocks read from disk / s",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "id": 8,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT non_negative_derivative(last(\"temp_bytes\"), 1s) FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Temp bytes / s",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "id": 9,
+      "interval": "15s",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT max(\"blocked\") FROM \"pg_locks_blocked\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Blocked sessions",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Configuration context. Links: Statements / Indexes for the instance.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "shared_buffers"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "work_mem"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statements",
+                    "url": "/d/pg-statements?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "version"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Indexes",
+                    "url": "/d/pg-indexes?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "id": 10,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"server_version_num\") AS \"version\", last(\"max_connections\") AS \"max_connections\", last(\"shared_buffers_bytes\") AS \"shared_buffers\", last(\"work_mem_bytes\") AS \"work_mem\", last(\"statement_timeout_ms\") AS \"statement_timeout_ms\", last(\"idle_in_transaction_session_timeout_ms\") AS \"idle_in_tx_timeout_ms\", last(\"pg_stat_statements_max\") AS \"pgss_max\" FROM \"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Instances",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "id": 11,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 37
+          },
+          "id": 1101,
+          "options": {
+            "content": "# Lock waits / blocking\n\n**Symptom.** Latency spikes, requests hang, `lock timeout` / deadlock errors.\n\n**Where to look.** `pg-overview` \u2192 *Blocked sessions* stat + time series; `pg-connections` \u2192 *Grouped connections*\nfiltered by `wait_event_type = 'Lock'`.\n\n**How to interpret.**\n- `pg_locks_blocked.blocked` > 0 for more than one sample (15 s) \u2192 real contention.\n- `pg_locks_blocked.max_wait_s` > 5 s: warning; > 30 s: critical.\n- `blocking` small and `blocked` large \u2192 one long transaction blocks many (lock queue).\n- `pg_db_stat.deadlocks` rate > 0 \u2192 deadlocks happen; check application lock ordering.\n\n**Likely causes.**\n- Long transactions holding row locks (see [idle-in-transaction](idle-in-transaction.md)).\n- DDL (`ALTER TABLE`, `CREATE INDEX` without `CONCURRENTLY`) during load.\n- Hot rows updated by many sessions (counters, status tables).\n- Inconsistent lock ordering \u2192 deadlocks.\n\n**Actions.**\n1. Find blockers (DBA): `SELECT pid, pg_blocking_pids(pid), state, query FROM pg_stat_activity WHERE wait_event_type = 'Lock';`\n2. Terminate the root blocker if it is idle in transaction.\n3. Run DDL with `lock_timeout` and `CONCURRENTLY`; schedule outside load windows.\n4. Redesign hot-row updates (batching, append-only, `SKIP LOCKED` queues).\n\n**Related SQL.** `sql/cluster_locks_blocked.sql`, `sql/cluster_activity_grouped.sql`, `sql/cluster_db_stat.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Lock waits / blocking",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 12,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 38
+          },
+          "id": 1201,
+          "options": {
+            "content": "# Cache hit drop / high reads\n\n**Symptom.** Read IOPS / latency on storage grows, queries become slower under the same load.\n\n**Where to look.** `pg-overview` \u2192 *Cache hit ratio* per database; `pg-statements` \u2192 *Top masks by shared_blks_read*.\n\n**How to interpret.**\n- Cache hit ratio = `\u0394blks_hit / (\u0394blks_hit + \u0394blks_read)` from `pg_db_stat` over the interval.\n  OLTP: > 99 % healthy, 95\u201399 % warning, < 95 % critical.\n- `pg_db_stat.blk_read_time` rate (needs `track_io_timing = on`) shows time spent waiting for reads.\n- Masks with the highest `spread(shared_blks_read)` in `pg_stmt_mask` are the reason.\n- `pg_settings_limits.shared_buffers_bytes` vs. hot data size (`pg_table_stat.total_bytes` of hot tables).\n\n**Likely causes.** Seq scans on large tables (missing index), data growth, bulk reports / exports during load,\nbloat ([autovacuum lag](autovacuum-lag.md)), too small `shared_buffers` / instance class.\n\n**Actions.**\n1. Open the top masks by reads \u2192 detail board \u2192 `EXPLAIN (ANALYZE, BUFFERS)`.\n2. Add / fix indexes ([indexes](unused-missing-indexes.md)); remove bloat.\n3. Move reports to a replica; schedule bulk jobs outside the test window.\n4. Size `shared_buffers` / instance memory for the working set.\n\n**Related SQL.** `sql/cluster_db_stat.sql`, `sql/cluster_stmt_mask.sql`, `sql/cluster_settings_limits.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Cache hit drop",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 13,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 39
+          },
+          "id": 1301,
+          "options": {
+            "content": "# Temp file spills\n\n**Symptom.** Sorts / hash joins / aggregates are slow, disk write IO spikes, `temp_bytes` grows.\n\n**Where to look.** `pg-overview` \u2192 *Temp bytes / files* per database; `pg-statements` \u2192 *Top masks by temp_blks_written*.\n\n**How to interpret.**\n- `pg_db_stat.temp_bytes` / `temp_files` rate > 0 under normal OLTP load is a smell; sustained MB/s is critical.\n- Masks with `spread(temp_blks_written)` > 0 in `pg_stmt_mask` are the statements that spill (1 block = 8 KiB).\n- `pg_settings_limits.work_mem_bytes` is the per-operation memory limit before spilling.\n\n**Likely causes.** Large `ORDER BY` / `DISTINCT` / `GROUP BY` / hash joins without selective filters,\nmissing index for ordering, `work_mem` too small for analytical queries.\n\n**Actions.**\n1. `EXPLAIN (ANALYZE, BUFFERS)` the spilling mask: look for `Sort Method: external merge` / `Batches > 1`.\n2. Add an index that provides the order or reduces rows early; add `LIMIT` / pagination.\n3. Raise `work_mem` only for the specific role / session (`ALTER ROLE ... SET work_mem`), not globally.\n\n**Related SQL.** `sql/cluster_db_stat.sql`, `sql/cluster_stmt_mask.sql`, `sql/cluster_settings_limits.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Temp file spills",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "pg-runbooks",
+    "postgresql"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL / Overview",
+  "uid": "pg-overview"
+}
