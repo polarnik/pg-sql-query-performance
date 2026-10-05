@@ -1,40 +1,64 @@
-#!/bin/sh -x
+#!/bin/sh
+# Databases, retention policies and continuous queries (D15).
+# Idempotent: runs from /docker-entrypoint-initdb.d on an empty volume and can be re-run on a live InfluxDB:
+#   docker exec sql_monitor_influxdb sh /docker-entrypoint-initdb.d/init.sh
+# INFLUX_ARGS: extra influx CLI flags (e.g. "-host influxdb -port 8086 -username u -password p").
+set -e
 
-influx <<-EOSQL
-CREATE DATABASE telegraf_pg_demo;
-CREATE DATABASE telegraf_pg_activity_demo;
-CREATE DATABASE pg_monitoring;
-CREATE DATABASE jmeter;
-CREATE DATABASE gatling;
-EOSQL
+q() {
+    # q <database> <statement>; -execute parses a single line only
+    influx ${INFLUX_ARGS} -database "$1" -execute "$(printf '%s' "$2" | tr '\n' ' ')"
+}
 
-influx <<-EOSQL
-CREATE RETENTION POLICY "autogen" ON "jmeter" DURATION 0s REPLICATION 1 SHARD DURATION 1d DEFAULT;
-CREATE RETENTION POLICY "autogen" ON "gatling" DURATION 0s REPLICATION 1 SHARD DURATION 1d DEFAULT;
+rp() {
+    # rp <database> <name> <duration> <shard duration> [DEFAULT]: CREATE if missing, otherwise ALTER to the same spec
+    if influx ${INFLUX_ARGS} -format csv -execute "SHOW RETENTION POLICIES ON \"$1\"" | grep -q "^$2,"; then
+        q "$1" "ALTER RETENTION POLICY \"$2\" ON \"$1\" DURATION $3 REPLICATION 1 SHARD DURATION $4 $5"
+    else
+        q "$1" "CREATE RETENTION POLICY \"$2\" ON \"$1\" DURATION $3 REPLICATION 1 SHARD DURATION $4 $5"
+    fi
+}
 
-CREATE RETENTION POLICY "archive" ON "telegraf_pg_demo" DURATION 1000d REPLICATION 1 SHARD DURATION 1d;
-CREATE RETENTION POLICY "1d" ON "telegraf_pg_demo" DURATION 25h REPLICATION 1 SHARD DURATION 1h DEFAULT;
+cq() {
+    # cq <database> <name> <RESAMPLE ... BEGIN ... END>: DROP (a no-op when missing) + CREATE
+    echo "$2"
+    q "$1" "DROP CONTINUOUS QUERY $2 ON $1"
+    q "$1" "CREATE CONTINUOUS QUERY $2 ON $1 $3"
+}
 
-CREATE RETENTION POLICY "archive" ON "telegraf_pg_activity_demo" DURATION 1000d REPLICATION 1 SHARD DURATION 1d;
-CREATE RETENTION POLICY "7d" ON "telegraf_pg_activity_demo" DURATION 7d REPLICATION 1 SHARD DURATION 1h DEFAULT;
+for db in telegraf_pg_demo telegraf_pg_activity_demo pg_monitoring jmeter gatling; do
+    q _internal "CREATE DATABASE $db"
+done
 
-CREATE RETENTION POLICY "7d" ON "pg_monitoring" DURATION 7d REPLICATION 1 SHARD DURATION 1h DEFAULT;
-EOSQL
+rp jmeter autogen 0s 1d DEFAULT
+rp gatling autogen 0s 1d DEFAULT
 
-echo "cq_1d_pg_stat_statements_diff_1m"
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-DROP
-    CONTINUOUS QUERY cq_1d_pg_stat_statements_diff_1m
-    ON telegraf_pg_demo ;
-EOSQL
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-CREATE
-    CONTINUOUS QUERY cq_1d_pg_stat_statements_diff_1m
-    ON telegraf_pg_demo
-RESAMPLE FOR 2m
+# classic boards (pgquery / pgstat / pgActivity): archive keeps the same 200d horizon as pg_monitoring."200d"
+rp telegraf_pg_demo archive 200d 1d
+rp telegraf_pg_demo 1d 25h 1h DEFAULT
+
+rp telegraf_pg_activity_demo archive 200d 1d
+rp telegraf_pg_activity_demo 7d 7d 1h DEFAULT
+
+rp pg_monitoring 7d 7d 1h DEFAULT
+
+# pg_monitoring."200d": 1h rollups of every measurement (D16); mounted outside initdb.d so it does not run twice
+PG_MONITORING_DOWNSAMPLE=${PG_MONITORING_DOWNSAMPLE:-/opt/influxdb-init/pg_monitoring_downsample.sh}
+if [ -f "$PG_MONITORING_DOWNSAMPLE" ]; then
+    INFLUX_ARGS="$INFLUX_ARGS" sh "$PG_MONITORING_DOWNSAMPLE"
+fi
+
+# Classic pg_stat_statements chain (telegraf.d/cluster_classic_boards.conf, 60s):
+#   1d.pg_stat_statements -> 1d.diff_1m -> 1d.diff_1m_active -> 1d.query_10m -> archive.query_1d / archive.filters
+#                                                            \-> archive.diff_1m_archive
+# host is stable (telegraf.conf hostname = PG_INSTANCE); toplevel is part of the pg_stat_statements key.
+STMT_TAGS="host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, toplevel"
+
+cq telegraf_pg_demo cq_1d_pg_stat_statements_diff_1m "
+RESAMPLE FOR 3m
 BEGIN
     SELECT
-        non_negative_difference(first(total_exec_time)) AS "duration",
+        non_negative_difference(first(total_exec_time)) AS \"duration\",
         non_negative_difference(first(calls)) AS calls,
         non_negative_difference(first(rows)) AS rows,
         non_negative_difference(first(shared_blks_hit)) AS shared_blks_hit,
@@ -42,137 +66,84 @@ BEGIN
         non_negative_difference(first(shared_blks_dirtied)) AS shared_blks_dirtied,
         non_negative_difference(first(shared_blks_written)) AS shared_blks_written
     INTO
-        telegraf_pg_demo."1d".pg_stat_statements_diff_1m
+        telegraf_pg_demo.\"1d\".pg_stat_statements_diff_1m
     FROM
-        telegraf_pg_demo."1d".pg_stat_statements
-    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1m, 0s)
-END;
-EOSQL
+        telegraf_pg_demo.\"1d\".pg_stat_statements
+    GROUP BY $STMT_TAGS, time(1m, 0s)
+END"
 
-echo "cq_1d_pg_stat_statements_diff_1m_active"
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-DROP
-    CONTINUOUS QUERY cq_1d_pg_stat_statements_diff_1m_active
-    ON telegraf_pg_demo ;
-EOSQL
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-CREATE
-    CONTINUOUS QUERY cq_1d_pg_stat_statements_diff_1m_active
-    ON telegraf_pg_demo
-RESAMPLE FOR 3m
+# InfluxQL has no HAVING: keep only the minutes with calls > 0
+cq telegraf_pg_demo cq_1d_pg_stat_statements_diff_1m_active "
+RESAMPLE FOR 4m
 BEGIN
     SELECT
-        first("duration") as "duration",
-        first(calls) as calls,
-        first(rows) as rows,
-        first(shared_blks_hit) as shared_blks_hit,
-        first(shared_blks_read) as shared_blks_read,
-        first(shared_blks_dirtied) as shared_blks_dirtied,
-        first(shared_blks_written) as shared_blks_written
+        first(\"duration\") AS \"duration\",
+        first(calls) AS calls,
+        first(rows) AS rows,
+        first(shared_blks_hit) AS shared_blks_hit,
+        first(shared_blks_read) AS shared_blks_read,
+        first(shared_blks_dirtied) AS shared_blks_dirtied,
+        first(shared_blks_written) AS shared_blks_written
     INTO
-        telegraf_pg_demo."1d".pg_stat_statements_diff_1m_active
+        telegraf_pg_demo.\"1d\".pg_stat_statements_diff_1m_active
     FROM
-        telegraf_pg_demo."1d".pg_stat_statements_diff_1m
+        telegraf_pg_demo.\"1d\".pg_stat_statements_diff_1m
     WHERE
         calls > 0
-    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1m, 0s)
-END;
-EOSQL
+    GROUP BY $STMT_TAGS, time(1m, 0s)
+END"
 
-echo "cq_1d_pg_stat_statements_query_10m"
-influx -database 'telegraf_pg_demo' -type 'influxql'  <<-EOSQL
-DROP
-    CONTINUOUS QUERY cq_1d_pg_stat_statements_query_10m
-    ON telegraf_pg_demo ;
-EOSQL
-influx -database 'telegraf_pg_demo' -type 'influxql'  <<-EOSQL
-CREATE     
-    CONTINUOUS QUERY cq_1d_pg_stat_statements_query_10m
-    ON telegraf_pg_demo
+cq telegraf_pg_demo cq_1d_pg_stat_statements_query_10m "
 RESAMPLE FOR 20m
 BEGIN
     SELECT
-        sum(calls) as calls_sum
+        sum(calls) AS calls_sum
     INTO
-        telegraf_pg_demo."1d".pg_stat_statements_query_10m
+        telegraf_pg_demo.\"1d\".pg_stat_statements_query_10m
     FROM
-        telegraf_pg_demo."1d".pg_stat_statements_diff_1m_active
-    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(10m, 0s)
-END;
-EOSQL
+        telegraf_pg_demo.\"1d\".pg_stat_statements_diff_1m_active
+    GROUP BY $STMT_TAGS, time(10m, 0s)
+END"
 
-
-echo "cq_archive_pg_stat_statements_query_1d"
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-DROP
-    CONTINUOUS QUERY cq_archive_pg_stat_statements_query_1d
-    ON telegraf_pg_demo
-EOSQL
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-CREATE
-    CONTINUOUS QUERY cq_archive_pg_stat_statements_query_1d
-    ON telegraf_pg_demo
-RESAMPLE EVERY 10m FOR 1d
+# hourly, not every 10m: each run rescans the whole day for every series (issue #4, memory)
+cq telegraf_pg_demo cq_archive_pg_stat_statements_query_1d "
+RESAMPLE EVERY 1h FOR 1d
 BEGIN
     SELECT
         sum(calls_sum) AS calls_sum
     INTO
-        telegraf_pg_demo."archive".pg_stat_statements_query_1d
+        telegraf_pg_demo.\"archive\".pg_stat_statements_query_1d
     FROM
-        telegraf_pg_demo."1d".pg_stat_statements_query_10m
-    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1d, 0s)
-END;
-EOSQL
+        telegraf_pg_demo.\"1d\".pg_stat_statements_query_10m
+    GROUP BY $STMT_TAGS, time(1d, 0s)
+END"
 
-
-
-echo "cq_archive_pg_stat_statements_diff_1m_archive"
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-DROP
-    CONTINUOUS QUERY cq_archive_pg_stat_statements_diff_1m_archive
-    ON telegraf_pg_demo ;
-EOSQL
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-
-CREATE
-    CONTINUOUS QUERY cq_archive_pg_stat_statements_diff_1m_archive
-    ON telegraf_pg_demo
-RESAMPLE FOR 4m
+cq telegraf_pg_demo cq_archive_pg_stat_statements_diff_1m_archive "
+RESAMPLE FOR 5m
 BEGIN
     SELECT
-        first("duration") as "duration",
-        first(calls) as calls,
-        first(rows) as rows,
-        first(shared_blks_hit) as shared_blks_hit,
-        first(shared_blks_read) as shared_blks_read,
-        first(shared_blks_dirtied) as shared_blks_dirtied,
-        first(shared_blks_written) as shared_blks_written
+        first(\"duration\") AS \"duration\",
+        first(calls) AS calls,
+        first(rows) AS rows,
+        first(shared_blks_hit) AS shared_blks_hit,
+        first(shared_blks_read) AS shared_blks_read,
+        first(shared_blks_dirtied) AS shared_blks_dirtied,
+        first(shared_blks_written) AS shared_blks_written
     INTO
-        telegraf_pg_demo."archive".pg_stat_statements_diff_1m_archive
+        telegraf_pg_demo.\"archive\".pg_stat_statements_diff_1m_archive
     FROM
-        telegraf_pg_demo."1d".pg_stat_statements_diff_1m_active
-    GROUP BY host, db_instance, usename, datname, queryid, query_md5, query_mask_md5, time(1m, 0s)
-END;
-EOSQL
+        telegraf_pg_demo.\"1d\".pg_stat_statements_diff_1m_active
+    GROUP BY $STMT_TAGS, time(1m, 0s)
+END"
 
-echo "cq_archive_pg_stat_statements_filters"
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-DROP
-    CONTINUOUS QUERY cq_archive_pg_stat_statements_filters
-    ON telegraf_pg_demo ;
-EOSQL
-influx -database 'telegraf_pg_demo' -type 'influxql' <<-EOSQL
-CREATE
-    CONTINUOUS QUERY cq_archive_pg_stat_statements_filters
-    ON telegraf_pg_demo
+cq telegraf_pg_demo cq_archive_pg_stat_statements_filters "
 RESAMPLE EVERY 5m FOR 20m
 BEGIN
     SELECT
         sum(calls_sum) AS calls_sum
     INTO
-        telegraf_pg_demo."archive".pg_stat_statements_filters
+        telegraf_pg_demo.\"archive\".pg_stat_statements_filters
     FROM
-        telegraf_pg_demo."1d".pg_stat_statements_query_10m
+        telegraf_pg_demo.\"1d\".pg_stat_statements_query_10m
     GROUP BY host, db_instance, usename, datname, time(10m, 0s)
-END;
-EOSQL
+END"

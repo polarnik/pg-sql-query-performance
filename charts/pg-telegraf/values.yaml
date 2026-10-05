@@ -11,6 +11,24 @@ influxdb:
   host: influxdb
   database: pg_monitoring
 
+# Optional post-install/upgrade hook Job: creates RP "200d" and the 1h downsampling CQs in influxdb.database
+# (files/influxdb/pg_monitoring_downsample.sh, DECISIONS.md D16). Idempotent; the raw RP "7d" must exist.
+influxdbInit:
+  enabled: false
+  image: influxdb:1.8.6
+  port: 8086
+  # true: also roll up the raw 7d history once (each run)
+  backfill: false
+  # Secret with keys INFLUX_USERNAME / INFLUX_PASSWORD (admin, needed for CREATE RETENTION POLICY); empty = no auth
+  existingSecret: ""
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
 # Environment tag on every metric
 env: perf
 

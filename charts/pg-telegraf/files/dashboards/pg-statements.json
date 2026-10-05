@@ -1,6 +1,6 @@
 {
   "annotations": {},
-  "description": "pg_stat_statements aggregated by query mask and by queryid. Counters use spread() over the range.",
+  "description": "pg_stat_statements totals by datname / db_instance / usename (pg_stmt_totals, all entries) and top-N by query mask and by queryid. Click datname / db_instance / usename to filter the board.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -22,28 +22,37 @@
   ],
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Breakdown: datname / db_instance / usename",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "influxdb",
         "uid": "pg-monitoring"
       },
-      "description": "Milliseconds of execution per second (\u2248 busy backends \u00d7 1000).",
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "fillOpacity": 10
-          },
           "unit": "ms"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 4,
+        "w": 4,
         "x": 0,
-        "y": 0
+        "y": 1
       },
-      "id": 1,
-      "interval": "5m",
+      "id": 2,
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -52,7 +61,1075 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Total exec time",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 3,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"calls\") AS \"calls\" FROM (SELECT non_negative_difference(last(\"calls\")) AS \"calls\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Calls",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 4,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Mean time",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 5,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"rows\") AS \"rows\" FROM (SELECT non_negative_difference(last(\"rows\")) AS \"rows\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Rows",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 6,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"blks_hit\") AS \"blks_hit\", sum(\"blks_read\") AS \"blks_read\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Cache hit %",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "pg_stat_statements entries at the end of the range (compare with pg_stat_statements.max).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 7,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\")",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Statements (entries)",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board. statements = pg_stat_statements entries at the end of the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blk_read_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hit_ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_hit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "statements"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"datname\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\") GROUP BY \"datname\"",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Totals by datname",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board. statements = pg_stat_statements entries at the end of the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blk_read_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hit_ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_hit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "statements"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"datname\", \"db_instance\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\") GROUP BY \"datname\", \"db_instance\"",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Totals by datname + db_instance",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board. statements = pg_stat_statements entries at the end of the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blk_read_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hit_ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_hit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "statements"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usename"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"datname\", \"usename\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\") GROUP BY \"datname\", \"usename\"",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Totals by datname + usename",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "All statements (pg_stmt_totals) per datname. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 40,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__field.labels.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "id": 11,
+      "interval": "5m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "alias": "$tag_datname",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"datname\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Exec time / s by datname",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "All statements (pg_stmt_totals) per usename. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 40,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__field.labels.usename}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "id": 12,
+      "interval": "5m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "alias": "$tag_usename",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"usename\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Exec time / s by usename",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 13,
+      "panels": [],
+      "title": "Top query masks / statements",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "All statements (pg_stmt_totals) per db_instance. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 14,
+      "interval": "5m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "alias": "$tag_db_instance",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -68,7 +1145,7 @@
         "type": "influxdb",
         "uid": "pg-monitoring"
       },
-      "description": "",
+      "description": "All statements (pg_stmt_totals) per db_instance. Click a series to filter the board.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -76,25 +1153,44 @@
           },
           "unit": "ops"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 38
       },
-      "id": 2,
+      "id": 15,
       "interval": "5m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
         {
+          "alias": "$tag_db_instance",
           "datasource": {
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"calls\"), 1s) AS \"d\" FROM \"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"calls\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -110,7 +1206,7 @@
         "type": "influxdb",
         "uid": "pg-monitoring"
       },
-      "description": "One row per mask (IN-lists / VALUES collapsed). Click query_mask_md5 for variants and full text.",
+      "description": "One row per mask (IN-lists / VALUES collapsed). Click query_mask_md5 for variants and full text. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -165,6 +1261,57 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usename"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "query_mask_md5"
             },
             "properties": [
@@ -173,7 +1320,7 @@
                 "value": [
                   {
                     "title": "Statement detail",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -185,9 +1332,9 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 46
       },
-      "id": 3,
+      "id": 16,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -212,7 +1359,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"variants\") AS \"variants\", last(\"query_mask_short\") AS \"query_mask\" FROM \"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\"",
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"variants\") AS \"variants\", last(\"query_mask_short\") AS \"query_mask\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -242,7 +1389,7 @@
         "type": "influxdb",
         "uid": "pg-monitoring"
       },
-      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_md5 for the full text.",
+      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_md5 for the full text. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -297,6 +1444,57 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usename"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "query_md5"
             },
             "properties": [
@@ -305,7 +1503,7 @@
                 "value": [
                   {
                     "title": "Statement detail",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -322,7 +1520,7 @@
                 "value": [
                   {
                     "title": "Mask detail",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -334,9 +1532,9 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 60
       },
-      "id": 4,
+      "id": 17,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -361,7 +1559,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"pg_stmt\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -447,9 +1645,9 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 72
       },
-      "id": 5,
+      "id": 18,
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -458,7 +1656,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT last(\"entries\") AS \"entries\", last(\"max_entries\") AS \"max_entries\", last(\"dealloc\") AS \"dealloc\", spread(\"dealloc\") AS \"dealloc_in_range\", last(\"stats_reset_epoch\") * 1000 AS \"stats_reset\" FROM \"pg_stmt_info\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
+          "query": "SELECT last(\"entries\") AS \"entries\", last(\"max_entries\") AS \"max_entries\", last(\"dealloc\") AS \"dealloc\", spread(\"dealloc\") AS \"dealloc_in_range\", last(\"stats_reset_epoch\") * 1000 AS \"stats_reset\" FROM \"$rp\".\"pg_stmt_info\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -489,9 +1687,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 78
       },
-      "id": 6,
+      "id": 19,
       "panels": [
         {
           "fieldConfig": {
@@ -502,9 +1700,9 @@
             "h": 14,
             "w": 24,
             "x": 0,
-            "y": 41
+            "y": 79
           },
-          "id": 601,
+          "id": 1901,
           "options": {
             "content": "# Slow query regression\n\n**Symptom.** Response time of an endpoint grows; DB CPU / IO grows without a matching increase in traffic.\n\n**Where to look.** `pg-statements` \u2192 *Top masks* table (sorted by total time over the range) \u2192\nclick `query_mask_md5` \u2192 `pg-statement-detail` (variants by `query_md5`, full text, calls / time series).\n\n**How to interpret.**\n- Over the range: `spread(total_exec_time)` = time spent, `spread(calls)` = executions,\n  mean = `spread(total_exec_time) / spread(calls)` (ms).\n- Compare the same mask for two ranges (before / after release): mean \u2191 with calls \u2248 \u2192 plan / data regression;\n  calls \u2191 with mean \u2248 \u2192 more traffic or an N+1 pattern.\n- `variants` of a mask \u226b 1 \u2192 the same statement shape is produced with different IN-list sizes etc.\n- `shared_blks_read` \u2191 \u2192 data no longer fits the cache ([cache hit drop](cache-hit-drop.md));\n  `temp_blks_written` \u2191 \u2192 sorts / hashes spill ([temp file spills](temp-file-spills.md)).\n- `rows / calls` \u2191 \u2192 the query returns more data (missing filter / pagination).\n\n**Likely causes.** New code path, changed plan (stale statistics, parameter sniffing on generic plans),\nmissing index, data growth, N+1 queries from the ORM.\n\n**Actions.**\n1. Take the full text from `pg_stmt_text` (detail board) and run `EXPLAIN (ANALYZE, BUFFERS)` on a copy.\n2. Check [autovacuum / analyze](autovacuum-lag.md) freshness of the involved tables.\n3. Check [indexes](unused-missing-indexes.md) for seq-scan-heavy tables involved.\n4. For N+1: batch the calls (`= ANY($1)`), which also collapses variants.\n\n**Related SQL.** `sql/cluster_stmt_mask.sql`, `sql/cluster_stmt.sql`, `sql/cluster_stmt_text.sql`.\n",
             "mode": "markdown"
@@ -525,9 +1723,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 41
+        "y": 79
       },
-      "id": 7,
+      "id": 20,
       "panels": [
         {
           "fieldConfig": {
@@ -538,9 +1736,9 @@
             "h": 14,
             "w": 24,
             "x": 0,
-            "y": 42
+            "y": 80
           },
-          "id": 701,
+          "id": 2001,
           "options": {
             "content": "# pg_stat_statements reset / dealloc\n\n**Symptom.** Statement tables show negative or sudden drops, masks disappear, totals look too small.\n\n**Where to look.** `pg-statements` \u2192 *Statements health* row (dealloc, entries / max, last reset).\n\n**How to interpret.**\n- `pg_stmt_info.stats_reset_epoch` changed inside the range \u2192 counters were reset; `spread()` across the reset is wrong,\n  use a range that starts after the reset.\n- `pg_settings_limits.postmaster_start_epoch` changed \u2192 restart / failover, all counters restart from 0.\n- `spread(pg_stmt_info.dealloc)` > 0 \u2192 entries were evicted because `entries` reached `max_entries`\n  (`pg_stat_statements.max`); rare statements are lost and totals are underestimated.\n- `pg_stmt.stats_since_epoch` newer than the range start \u2192 that statement entry was (re)created inside the range.\n\n**Likely causes.** Someone called `pg_stat_statements_reset()`, instance restart / failover,\ntoo many distinct statements (unparameterized SQL, variable IN-lists, temp tables) with a small `pg_stat_statements.max`.\n\n**Actions.**\n1. Choose a time range that does not cross the reset / restart.\n2. If `dealloc` grows: raise `pg_stat_statements.max` (e.g. 10000) in the parameter group; parameterize SQL;\n   use `= ANY($1)` instead of variable IN-lists.\n3. Agree on a reset policy for perf tests (reset only at test start, record the time in the test report).\n\n**Related SQL.** `sql/cluster_stmt_info.sql`, `sql/cluster_settings_limits.sql`, `sql/cluster_stmt.sql`.\n",
             "mode": "markdown"
@@ -566,6 +1764,38 @@
   "templating": {
     "list": [
       {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "selected": true,
+          "text": "7d",
+          "value": "7d"
+        },
+        "description": "7d: raw points; 200d: 1h rollups (use ranges of days or more)",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Retention",
+        "multi": false,
+        "name": "rp",
+        "options": [
+          {
+            "selected": true,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "200d",
+            "value": "200d"
+          }
+        ],
+        "query": "7d,200d",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
         "allValue": ".*",
         "auto": false,
         "auto_count": 30,
@@ -580,7 +1810,7 @@
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\"",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,
@@ -601,7 +1831,28 @@
         "label": "Database",
         "multi": true,
         "name": "datname",
-        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "User",
+        "multi": true,
+        "name": "usename",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_stmt_totals\" WITH KEY = \"usename\" WHERE db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

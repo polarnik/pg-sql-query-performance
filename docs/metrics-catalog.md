@@ -24,6 +24,7 @@ PostgreSQL 17 as a user that only has `pg_monitor` (see `config/postgresql/monit
 | `pg_db_stat` | `sql/cluster_db_stat.sql` | cluster | 60s | datname | xact_commit, xact_rollback, blks_read, blks_hit, tup_*, temp_files, temp_bytes, deadlocks, conflicts, blk_read_time, blk_write_time, session_time, active_time, idle_in_transaction_time, sessions*, stats_reset_epoch | ≤10 |
 | `pg_stmt` | `sql/cluster_stmt.sql` | cluster | 5m | usename, datname, queryid, toplevel, query_md5, query_mask_md5 | calls, total_exec_time, plans, total_plan_time, rows, shared_blks_*, local_blks_read, temp_blks_*, shared_blk_*_time, temp_blk_*_time, wal_bytes, stats_since_epoch, query_short | ≤400 (grows with churn) |
 | `pg_stmt_mask` | `sql/cluster_stmt_mask.sql` | cluster | 5m | usename, datname, query_mask_md5 | variants, calls, total_exec_time, rows, shared_blks_*, temp_blks_*, shared_blk_*_time, query_mask_short | ≤400 |
+| `pg_stmt_totals` | `sql/cluster_stmt_totals.sql` | cluster | 5m | usename, datname | statements (entries), calls, total_exec_time, rows, shared_blks_hit, shared_blks_read, temp_blks_written, shared_blk_read_time — summed over **all** entries (no top-N) | users × databases (demo: 15) |
 | `pg_stmt_text` | `sql/cluster_stmt_text.sql` | cluster | 30m | query_md5, query_mask_md5 | queryid, query (≤10000), query_mask (≤10000) | ≤400 |
 | `pg_stmt_info` | `sql/cluster_stmt_info.sql` | cluster | 5m | — | dealloc, stats_reset_epoch, entries, max_entries | 1 |
 | `pg_table_stat` | `sql/database_table_stat.sql` | database | 5m | datname, schemaname, relname | seq_scan, seq_tup_read, idx_scan, idx_tup_fetch, n_tup_*, n_live_tup, n_dead_tup, dead_tup_pct, n_mod_since_analyze, n_ins_since_vacuum, *vacuum_count, *analyze_count, last_seq_scan_epoch, last_idx_scan_epoch, last_any_vacuum_epoch, last_any_analyze_epoch, total_bytes, table_bytes, indexes_bytes | ≤300 per DB |
@@ -35,10 +36,30 @@ Classic boards (`pgActivity` / `pgquery` / `pgstat`): `pg_stat_statements` (`sql
 Influx DBs `INFLUX_DB_STATEMENTS` / `INFLUX_DB_ACTIVITY`; docker-compose only (not shipped by `charts/pg-telegraf`).
 No input uses inline `sqlquery`: every query is a `script = "/etc/telegraf/sql/<file>.sql"`.
 
+`pg_stmt_totals` feeds the Breakdown row of `pg-statements` (by datname / datname+db_instance / datname+usename).
+It is not a sum of `pg_stmt_mask`: top-N tables are a subset, their totals are always ≤ Breakdown totals.
+Increase over the range = `sum(non_negative_difference(last(x)))` per series, then `sum` per breakdown (D14);
+evicted entries (`pg_stmt_info.dealloc`) make the sum drop, such steps are ignored.
+
 ## Cardinality budget
-- Per instance with one app DB: ≈ 1 + 10 + 50 + 300 + 10 + 10 + 3×400 + 1 + 300 + 500 ≈ **2.4k** series.
+- Per instance with one app DB: ≈ 1 + 10 + 50 + 300 + 10 + 10 + 3×400 + 20 + 1 + 300 + 500 ≈ **2.4k** series.
 - 4 instances ≈ 10k; with top-N churn over the retention window keep **`SHOW SERIES CARDINALITY` < 20k** per Influx DB.
 - Levers if the budget is exceeded: lower top-N (200 → 100), shorter retention for `pg_stmt*`, drop `usename` from `pg_stmt_mask`.
+
+## Retention policies (`pg_monitoring`, D16)
+| RP | resolution | duration | written by |
+|---|---|---|---|
+| `7d` (DEFAULT) | raw (15s … 30m, see interval) | 7d | Telegraf |
+| `200d` | 1h | 200d, shard 7d | CQ `cq_200d_<measurement>` (`config/influxdb/pg_monitoring_downsample.sh`) |
+
+- Same measurement and field names in both RPs; `200d` drops the tags `host`, `server`, `db`.
+- Aggregation per 1h: cumulative counters, settings, `*_epoch`, sizes and text → `last()`, so increases are computed
+  the same way as on raw data (`non_negative_difference(last())`). Gauges → `max()`: `pg_activity_grouped` (all fields,
+  plus `cnt_mean` = `mean(cnt)`), `pg_locks_blocked`, `numbackends`, `usage_pct`, `current`, `client_backends`,
+  `n_dead_tup`, `dead_tup_pct`.
+- Apply / re-apply on a running InfluxDB (idempotent; `BACKFILL=1` also rolls up the raw 7d):
+  `docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitoring_downsample.sh`.
+- `200d` ≈ ⅓ of the `7d` series (no `host` churn): ≈ 5.9k series on the demo stand.
 
 ## Mask rules (`pg_stmt`, `pg_stmt_mask`, `pg_stmt_text`)
 1. `\s+` → one space.

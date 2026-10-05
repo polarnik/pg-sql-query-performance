@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from grafana_foundation_sdk.builders import dashboard, table, text, timeseries, stat
+from grafana_foundation_sdk.builders import common, dashboard, table, text, timeseries, stat
 from grafana_foundation_sdk.cog import builder as cogbuilder
 from grafana_foundation_sdk.cog import variants as cogvariants
 from grafana_foundation_sdk.cog.encoder import JSONEncoder
@@ -34,29 +34,45 @@ UID_INDEXES = "pg-indexes"
 # InfluxQL filters shared by all panels
 F_INSTANCE = 'db_instance =~ /^$db_instance$/'
 F_DATNAME = 'datname =~ /^$datname$/'
+F_USENAME = 'usename =~ /^$usename$/'
+
+# Variables kept by self-filter links (order = order in the URL)
+FILTER_VARS = ("db_instance", "datname", "usename")
+
+# Retention policies of pg_monitoring (DECISIONS.md D16): raw 7d (default) or 1h rollups for 200d
+RETENTION_POLICIES = ("7d", "200d")
+
+
+def src(measurement: str) -> str:
+    """FROM target in the retention policy selected by the `rp` variable."""
+    return f'"$rp"."{measurement}"'
 
 
 class _InfluxQLQuery(cogvariants.Dataquery):
-    def __init__(self, ref_id: str, query: str, result_format: str) -> None:
+    def __init__(self, ref_id: str, query: str, result_format: str, alias: str = "") -> None:
         self.ref_id = ref_id
         self.query = query
         self.result_format = result_format
+        self.alias = alias
 
     def to_json(self) -> dict[str, Any]:
-        return {
+        data = {
             "refId": self.ref_id,
             "datasource": {"type": DATASOURCE.type_val, "uid": DATASOURCE.uid},
             "query": self.query,
             "rawQuery": True,
             "resultFormat": self.result_format,
         }
+        if self.alias:
+            data["alias"] = self.alias
+        return data
 
 
 class InfluxQL(cogbuilder.Builder[cogvariants.Dataquery]):
-    """Raw InfluxQL target. result_format: 'table' or 'time_series'."""
+    """Raw InfluxQL target. result_format: 'table' or 'time_series'; alias: legend, e.g. '$tag_datname'."""
 
-    def __init__(self, query: str, ref_id: str = "A", result_format: str = "table") -> None:
-        self._q = _InfluxQLQuery(ref_id, " ".join(query.split()), result_format)
+    def __init__(self, query: str, ref_id: str = "A", result_format: str = "table", alias: str = "") -> None:
+        self._q = _InfluxQLQuery(ref_id, " ".join(query.split()), result_format, alias)
 
     def build(self) -> cogvariants.Dataquery:
         return self._q
@@ -66,13 +82,58 @@ def where(*filters: str) -> str:
     return " AND ".join(("$timeFilter",) + filters)
 
 
+def increase_query(fields: dict[str, str], measurement: str, filters: tuple[str, ...], group_by: tuple[str, ...] = (),
+                   series: tuple[str, ...] = ("db_instance", "datname", "usename"), step: str = "5m",
+                   extra: dict[str, str] | None = None) -> str:
+    """Increase of cumulative counters over $timeFilter, summed per breakdown (DECISIONS.md D14b).
+
+    fields: alias -> source counter. Inner query: non_negative_difference(last()) per series and step
+    (resets / dealloc drops are ignored); outer query: sum() per `group_by`.
+    extra:  alias -> expression over the summed aliases, e.g. {"mean_ms": 'sum("total_ms") / sum("calls")'}.
+    """
+    inner = ", ".join(f'non_negative_difference(last("{counter}")) AS "{alias}"' for alias, counter in fields.items())
+    outer = [f'sum("{alias}") AS "{alias}"' for alias in fields]
+    outer += [f'{expr} AS "{alias}"' for alias, expr in (extra or {}).items()]
+    tags = ", ".join(f'"{t}"' for t in series)
+    query = (f'SELECT {", ".join(outer)} FROM ('
+             f'SELECT {inner} FROM {src(measurement)} WHERE {where(*filters)} '
+             f'GROUP BY time({step}), {tags} fill(none))')
+    if group_by:
+        query += " GROUP BY " + ", ".join(f'"{t}"' for t in group_by)
+    return query
+
+
+def last_sum_query(field: str, measurement: str, filters: tuple[str, ...], group_by: tuple[str, ...] = (),
+                   series: tuple[str, ...] = ("db_instance", "datname", "usename")) -> str:
+    """Gauge (not a counter): last value per series over $timeFilter, summed per `group_by`."""
+    tags = ", ".join(f'"{t}"' for t in series)
+    query = (f'SELECT sum("{field}") AS "{field}" FROM ('
+             f'SELECT last("{field}") AS "{field}" FROM {src(measurement)} WHERE {where(*filters)} GROUP BY {tags})')
+    if group_by:
+        query += " GROUP BY " + ", ".join(f'"{t}"' for t in group_by)
+    return query
+
+
 # ---------------------------------------------------------------- variables
+def var_rp() -> dashboard.CustomVariable:
+    """Retention policy: 7d = raw points (5m for statements), 200d = 1h rollups. Must be the first variable."""
+    default = RETENTION_POLICIES[0]
+    return (
+        dashboard.CustomVariable("rp")
+        .label("Retention")
+        .description("7d: raw points; 200d: 1h rollups (use ranges of days or more)")
+        .values(",".join(RETENTION_POLICIES))
+        .current(dm.VariableOption(text=default, value=default, selected=True))
+        .options([dm.VariableOption(text=rp, value=rp, selected=rp == default) for rp in RETENTION_POLICIES])
+    )
+
+
 def var_instance() -> dashboard.QueryVariable:
     return (
         dashboard.QueryVariable("db_instance")
         .label("Instance")
         .datasource(DATASOURCE)
-        .query('SHOW TAG VALUES FROM "pg_db_limits" WITH KEY = "db_instance"')
+        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "db_instance"')
         .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
         .sort(dm.VariableSort.ALPHABETICAL_ASC)
         .multi(True)
@@ -86,7 +147,21 @@ def var_datname() -> dashboard.QueryVariable:
         dashboard.QueryVariable("datname")
         .label("Database")
         .datasource(DATASOURCE)
-        .query('SHOW TAG VALUES FROM "pg_db_limits" WITH KEY = "datname" WHERE ' + F_INSTANCE)
+        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "datname" WHERE ' + F_INSTANCE)
+        .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
+        .sort(dm.VariableSort.ALPHABETICAL_ASC)
+        .multi(True)
+        .include_all(True)
+        .all_value(".*")
+    )
+
+
+def var_usename() -> dashboard.QueryVariable:
+    return (
+        dashboard.QueryVariable("usename")
+        .label("User")
+        .datasource(DATASOURCE)
+        .query(f'SHOW TAG VALUES FROM {src("pg_stmt_totals")} WITH KEY = "usename" WHERE ' + F_INSTANCE + " AND " + F_DATNAME)
         .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
         .sort(dm.VariableSort.ALPHABETICAL_ASC)
         .multi(True)
@@ -101,9 +176,30 @@ def var_textbox(name: str, label: str, default: str = ".*") -> dashboard.TextBox
 
 
 def drill_url(uid: str, **vars_from_fields: str) -> str:
-    """URL to another board, carrying the time range and the given variables from row fields."""
+    """URL to another board, carrying the time range, the retention policy and the given variables from row fields."""
     params = "&".join(f"var-{var}=${{__data.fields.{field}}}" for var, field in vars_from_fields.items())
-    return f"/d/{uid}?${{__url_time_range}}&{params}"
+    return f"/d/{uid}?${{__url_time_range}}&${{rp:queryparam}}&{params}"
+
+
+def self_filter_url(uid: str, **values: str) -> str:
+    """URL to `uid` (usually the same board) that sets the given variables and keeps the other FILTER_VARS.
+
+    values: variable -> interpolated value (e.g. '${__data.fields.datname}'). Variables not in `values`
+    are carried as-is via ${var:queryparam} (multi-value and All are preserved) - DECISIONS.md D14c.
+    """
+    params = [f"var-{var}={values[var]}" if var in values else f"${{{var}:queryparam}}" for var in FILTER_VARS]
+    params += [f"var-{var}={value}" for var, value in values.items() if var not in FILTER_VARS]
+    return f"/d/{uid}?${{__url_time_range}}&${{rp:queryparam}}&" + "&".join(params)
+
+
+def field_filter_url(uid: str, *fields: str) -> str:
+    """Table cell link: filter `uid` by the row values of `fields` (column name == variable name)."""
+    return self_filter_url(uid, **{f: f"${{__data.fields.{f}}}" for f in fields})
+
+
+def series_filter_url(uid: str, *labels: str) -> str:
+    """Time series data link: filter `uid` by the series tag values (label name == variable name)."""
+    return self_filter_url(uid, **{label: f"${{__field.labels.{label}}}" for label in labels})
 
 
 # ---------------------------------------------------------------- layout
@@ -152,7 +248,7 @@ def _organize(exclude: list[str], rename: dict[str, str] | None = None) -> dm.Da
 
 def table_panel(
     title: str,
-    query: str,
+    query: str | list[str],
     description: str = "",
     w: int = 24,
     h: int = 9,
@@ -168,13 +264,13 @@ def table_panel(
     links:      column -> (title, url)  per-cell data link
     thresholds: column -> (warning, critical), colored background
     wrap:       columns with wrapped long text (query text)
+    query:      one query or several (refId A, B, ...), rows are merged by equal tag columns
     """
+    panel = table.Panel().title(title).description(description).datasource(DATASOURCE)
+    for i, q in enumerate([query] if isinstance(query, str) else query):
+        panel = panel.with_target(InfluxQL(q, ref_id=chr(ord("A") + i)))
     panel = (
-        table.Panel()
-        .title(title)
-        .description(description)
-        .datasource(DATASOURCE)
-        .with_target(InfluxQL(query))
+        panel
         .with_transformation(dm.DataTransformerConfig(id_val="merge", options={}))
         .with_transformation(_organize(["Time"]))
         .grid_pos(dm.GridPos(h=h, w=w, x=0, y=0))
@@ -221,19 +317,26 @@ class _SortBy(cogbuilder.Builder[common_models.TableSortByFieldState]):
 
 
 def timeseries_panel(title: str, query: str, unit: str = "short", description: str = "",
-                     w: int = 12, h: int = 8, interval: str = "") -> timeseries.Panel:
+                     w: int = 12, h: int = 8, interval: str = "", stacked: bool = False,
+                     links: list[tuple[str, str]] | None = None, alias: str = "") -> timeseries.Panel:
+    """links: (title, url) data links on every series (url may use ${__field.labels.<tag>})."""
     panel = (
         timeseries.Panel()
         .title(title)
         .description(description)
         .datasource(DATASOURCE)
-        .with_target(InfluxQL(query, result_format="time_series"))
+        .with_target(InfluxQL(query, result_format="time_series", alias=alias))
         .unit(unit)
         .fill_opacity(10)
         .grid_pos(dm.GridPos(h=h, w=w, x=0, y=0))
     )
     if interval:
         panel = panel.interval(interval)
+    if stacked:
+        panel = panel.stacking(common.StackingConfig().mode(common_models.StackingMode.NORMAL)).fill_opacity(40)
+    if links:
+        panel = panel.override_by_regexp(".*", [dm.DynamicConfigValue(
+            id_val="links", value=[{"title": t, "url": u} for t, u in links])])
     return panel
 
 

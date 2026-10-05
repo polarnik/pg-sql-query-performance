@@ -65,7 +65,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT max(\"usage\") FROM ( SELECT last(\"client_backends\") / last(\"effective_limit\") * 100 AS \"usage\" FROM \"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\")",
+          "query": "SELECT max(\"usage\") FROM ( SELECT last(\"client_backends\") / last(\"effective_limit\") * 100 AS \"usage\" FROM \"$rp\".\"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\")",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -120,7 +120,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT max(\"blocked\") FROM \"pg_locks_blocked\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/",
+          "query": "SELECT max(\"blocked\") FROM \"$rp\".\"pg_locks_blocked\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -175,7 +175,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM (SELECT spread(\"deadlocks\") AS \"d\" FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\")",
+          "query": "SELECT sum(\"d\") FROM (SELECT spread(\"deadlocks\") AS \"d\" FROM \"$rp\".\"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\")",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -213,7 +213,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"t\") FROM (SELECT spread(\"temp_bytes\") AS \"t\" FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\")",
+          "query": "SELECT sum(\"t\") FROM (SELECT spread(\"temp_bytes\") AS \"t\" FROM \"$rp\".\"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\")",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -268,7 +268,7 @@
                 "value": [
                   {
                     "title": "Connections",
-                    "url": "/d/pg-connections?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-connections?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -307,7 +307,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"xact_commit\") AS \"commits\", spread(\"xact_rollback\") AS \"rollbacks\", spread(\"blks_hit\") / (spread(\"blks_hit\") + spread(\"blks_read\")) * 100 AS \"cache_hit_pct\", spread(\"temp_files\") AS \"temp_files\", spread(\"temp_bytes\") AS \"temp_bytes\", spread(\"deadlocks\") AS \"deadlocks\", spread(\"sessions_killed\") AS \"sessions_killed\", last(\"numbackends\") AS \"backends\" FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\"",
+          "query": "SELECT spread(\"xact_commit\") AS \"commits\", spread(\"xact_rollback\") AS \"rollbacks\", spread(\"blks_hit\") / (spread(\"blks_hit\") + spread(\"blks_read\")) * 100 AS \"cache_hit_pct\", spread(\"temp_files\") AS \"temp_files\", spread(\"temp_bytes\") AS \"temp_bytes\", spread(\"deadlocks\") AS \"deadlocks\", spread(\"sessions_killed\") AS \"sessions_killed\", last(\"numbackends\") AS \"backends\" FROM \"$rp\".\"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY \"db_instance\", \"datname\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -363,7 +363,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT non_negative_derivative(last(\"xact_commit\"), 1s) FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "query": "SELECT non_negative_derivative(last(\"xact_commit\"), 1s) FROM \"$rp\".\"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -405,7 +405,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT non_negative_derivative(last(\"blks_read\"), 1s) FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "query": "SELECT non_negative_derivative(last(\"blks_read\"), 1s) FROM \"$rp\".\"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -447,7 +447,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT non_negative_derivative(last(\"temp_bytes\"), 1s) FROM \"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "query": "SELECT non_negative_derivative(last(\"temp_bytes\"), 1s) FROM \"$rp\".\"pg_db_stat\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -489,7 +489,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT max(\"blocked\") FROM \"pg_locks_blocked\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
+          "query": "SELECT max(\"blocked\") FROM \"$rp\".\"pg_locks_blocked\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ GROUP BY time($__interval), \"db_instance\", \"datname\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -544,7 +544,7 @@
                 "value": [
                   {
                     "title": "Statements",
-                    "url": "/d/pg-statements?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -561,7 +561,7 @@
                 "value": [
                   {
                     "title": "Indexes",
-                    "url": "/d/pg-indexes?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-indexes?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -584,7 +584,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT last(\"server_version_num\") AS \"version\", last(\"max_connections\") AS \"max_connections\", last(\"shared_buffers_bytes\") AS \"shared_buffers\", last(\"work_mem_bytes\") AS \"work_mem\", last(\"statement_timeout_ms\") AS \"statement_timeout_ms\", last(\"idle_in_transaction_session_timeout_ms\") AS \"idle_in_tx_timeout_ms\", last(\"pg_stat_statements_max\") AS \"pgss_max\" FROM \"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
+          "query": "SELECT last(\"server_version_num\") AS \"version\", last(\"max_connections\") AS \"max_connections\", last(\"shared_buffers_bytes\") AS \"shared_buffers\", last(\"work_mem_bytes\") AS \"work_mem\", last(\"statement_timeout_ms\") AS \"statement_timeout_ms\", last(\"idle_in_transaction_session_timeout_ms\") AS \"idle_in_tx_timeout_ms\", last(\"pg_stat_statements_max\") AS \"pgss_max\" FROM \"$rp\".\"pg_settings_limits\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -728,6 +728,38 @@
   "templating": {
     "list": [
       {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "selected": true,
+          "text": "7d",
+          "value": "7d"
+        },
+        "description": "7d: raw points; 200d: 1h rollups (use ranges of days or more)",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Retention",
+        "multi": false,
+        "name": "rp",
+        "options": [
+          {
+            "selected": true,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "200d",
+            "value": "200d"
+          }
+        ],
+        "query": "7d,200d",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
         "allValue": ".*",
         "auto": false,
         "auto_count": 30,
@@ -742,7 +774,7 @@
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\"",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,
@@ -763,7 +795,7 @@
         "label": "Database",
         "multi": true,
         "name": "datname",
-        "query": "SHOW TAG VALUES FROM \"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

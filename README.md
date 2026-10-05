@@ -26,6 +26,64 @@ make -C dashboards                                  # generate pg-* dashboards (
 - Dashboards: `pg-overview` → `pg-connections`, `pg-statements` → `pg-statement-detail`, `pg-indexes`.
 - Docs: `PLAN.md`, `TASKS.md`, `STATUS.md`, `DECISIONS.md`, `docs/metrics-catalog.md`, `docs/runbooks/`.
 - Kubernetes: `charts/pg-telegraf`.
+- Retention (`DECISIONS.md` D15, D16): `pg_monitoring."7d"` keeps raw points, `pg_monitoring."200d"` keeps 1h rollups
+  (continuous queries). Dashboards have a `Retention` variable (`7d` / `200d`).
+- `config/influxdb/init.sh` runs only on an empty InfluxDB volume. To apply RPs / CQs to an existing InfluxDB
+  (idempotent, safe to re-run):
+
+```bash
+docker compose up -d influxdb                                                          # mounts the downsampling script
+docker exec sql_monitor_influxdb sh /docker-entrypoint-initdb.d/init.sh                # all DBs, RPs and CQs
+docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitoring_downsample.sh  # + roll up the raw 7d
+```
+
+- External InfluxDB (Helm): `--set influxdbInit.enabled=true` (optionally `influxdbInit.backfill=true`,
+  `influxdbInit.existingSecret=<secret with INFLUX_USERNAME / INFLUX_PASSWORD>`) runs the same script as a
+  post-install/upgrade hook Job against `influxdb.host`. Or run it manually:
+  `INFLUX_ARGS="-host <influx> -port 8086" sh config/influxdb/pg_monitoring_downsample.sh`.
+
+## Нагрузка на jmeter-java-dsl (Kotlin)
+
+Те же сценарии, что в `src/test/jmeter/sql_demo_test.jmx` (эталон, профиль `jmeter` не менялся), описаны на
+[jmeter-java-dsl](https://abstracta.github.io/jmeter-java-dsl/guide/#jdbc-and-databases-interactions)
+в `src/test/kotlin/qa/load/sql`:
+
+| Файл | Что там |
+|---|---|
+| `LoadProfile.kt` | **интенсивность**: множитель к `-Dtps` для каждого сценария |
+| `scenarios/Qpt03SeqScan.kt … Qpt11Technics.kt`, `QptTransaction.kt` | SQL-запросы сценария (название + текст) |
+| `pools/Pools.kt` | пулы: `ApplicationName`, пользователь, `poolMax`, autocommit |
+| `SqlDemoPlan.kt` | сборка плана: thread group на сценарий + пейсинг |
+
+С jmx совпадают `ApplicationName` и пользователи пулов, тексты SQL байт в байт (`queryid` в `pg_stat_statements`),
+типы запросов, названия запросов и транзакций, Backend Listener InfluxDB.
+
+#### Интенсивность
+
+Каждый сценарий (Stable) работает в своей thread group, одна итерация = одна транзакция (все запросы сценария по разу).
+Темп сценария = `tps × множитель` транзакций в секунду на всю группу (Constant Throughput Timer).
+Все множители `1.0` = как в jmx; `0.1` = в 10 раз реже; `0` = сценарий выключен.
+Менять можно в `LoadProfile.kt` или без правки кода: `-Drate.qpt_11_technics=0.1 -Drate.qpt_04_indexscan=5`.
+Потолок сценария — `thread_count / время транзакции` (qpt_11 ~0.5 с × 50 потоков ≈ 100 TPS).
+
+```bash
+mvn verify -P jmeter-dsl,Stable -Dtps=1.0          # сценарии qpt_03..qpt_11 + transaction + пул qpt_idle
+mvn verify -P jmeter-dsl,MaxPerf                   # MaxPerf
+docker compose --profile dsl up jmeter-dsl         # внутри sql-monitor-network, метрики в InfluxDB
+```
+
+Из IDE / с хоста (PostgreSQL на `localhost:5432`, порт InfluxDB наружу не открыт):
+
+```bash
+mvn -P jmeter-dsl test -Dtest=SqlDemoSmokeTest -Ddb.host=localhost -Dinfluxdb.enabled=false   # каждый запрос 1 раз, 0 ошибок
+mvn -P jmeter-dsl,Stable verify -Dduration=60 -Dthread_count=5 -Dtps=1.0 -Ddb.host=localhost -Dinfluxdb.enabled=false
+mvn -P jmeter-dsl,Stable test -Ddsl.exportOnly=true   # только сохранить target/jmeter-dsl/sql_demo_test.dsl.jmx
+```
+
+Параметры: `isStable`, `isMaxPerf`, `duration` (секунды), `tps`, `thread_count`, `title`, `testId` (как в jmx),
+`rate.<id сценария>` (множитель, см. выше), `db.host` (`sql_monitor_postgres`), `db.port`, `db.name`, `db.password`,
+`influxdb.host/port/database`, `influxdb.enabled`.
+Результаты: `target/jmeter-dsl/results/*.jtl`, HTML-отчёт `target/jmeter-dsl/report/`.
 
 
 ## Stop

@@ -39,3 +39,43 @@
   (`sqlquery` is not used anywhere). The classic-board input moved from `config/telegraf/legacy.d/` to
   `config/telegraf/telegraf.d/cluster_classic_boards.conf` + `sql/cluster_stat_*.sql`; it runs for all instances in
   docker-compose (identical Telegraf services) and is excluded from `charts/pg-telegraf` by `sync-files.sh`.
+- **D14 Statements breakdown (pg-statements):**
+  - (a) Totals come from a separate measurement `pg_stmt_totals` = `pg_stat_statements` aggregated in PG by
+    `(usename, datname)` over **all** entries. The breakdowns by datname and by datname+db_instance are derived in InfluxQL.
+    Rejected: summing `pg_stmt_mask` (top-N only, understates totals, jumps when the top-N set changes); three
+    measurements (triple collection and cardinality).
+  - (b) Increase over the range = subquery `non_negative_difference(last(x))` per series and `GROUP BY time(5m)`,
+    then outer `sum()` per breakdown. Not `spread()`: a stats reset or dealloc would produce huge or negative values.
+  - (c) Click-to-filter = data link to the same board (`/d/pg-statements?${__url_time_range}&var-<x>=${__data.fields.<x>}`),
+    other variables are kept via `${<var>:queryparam}`. Ad-hoc filters don't work with raw InfluxQL, and table
+    "Filter for value" filters only one panel. New variable `usename` (multi, All = `.*`) is applied to `pg_stmt*`.
+- **D15 Classic CQ chain kept and fixed** (`config/influxdb/init.sh`, used only by `pgquery`/`pgstat`):
+  - (a) `host` = `${PG_INSTANCE}` (`telegraf.conf` `hostname`) instead of the container ID; every re-created container
+    used to start new series (10 `host` values for 4 instances), breaking the 1m deltas and piling up archive series.
+  - (b) `toplevel` added to the GROUP BY of the statement CQs (`pg_stat_statements` key = userid, dbid, queryid, toplevel).
+  - (c) `query_1d`: `RESAMPLE EVERY 1h FOR 1d` (was every 10m — rescans a whole day per run, cf. issue #4 memory);
+    `FOR` 3m/4m/5m for the 1m CQs (margin over `flush_interval = 60s`).
+  - (d) `archive` RP on `telegraf_pg_demo` / `telegraf_pg_activity_demo`: 1000d → 200d (same horizon as D16);
+    data older than 200d is dropped.
+  - (e) `init.sh` is idempotent (RP: CREATE if missing else ALTER; CQ: DROP + CREATE) and can be re-run on a live
+    InfluxDB: `docker exec sql_monitor_influxdb sh /docker-entrypoint-initdb.d/init.sh`. `influx -execute` parses one
+    line only → statements are collapsed to one line. `DROP CONTINUOUS QUERY` on a missing CQ is a no-op in 1.8.6.
+  - (f) Known, not fixed: legacy boards reference measurements that nothing writes — `pg_stat_statements_analyse`,
+    `pg_stat_statements_query_md5`, `pg_stat_statements_diff` (`pgquery.json`, `pgstat.json`, `pgActivity.json`).
+- **D16 Downsampling `pg_monitoring."7d"` → `"200d"` at 1h** (`config/influxdb/pg_monitoring_downsample.sh`, called by `init.sh`):
+  - (a) One CQ per measurement (13), `RESAMPLE EVERY 1h FOR 2h`, explicit tag list without `host/server/db`,
+    **same field names** as in `7d` → dashboards only switch the RP. RP `200d` is not DEFAULT, shard 7d.
+  - (b) Counters are stored as `last()` (not as hourly increases): the existing `increase_query`
+    (`non_negative_difference(last())`, D14b) works unchanged on 1h points, including resets and dealloc.
+    Rejected: storing `non_negative_difference` per hour (a new field set, breaks on top-N gaps inside the CQ window).
+  - (c) Gauges use `max()` so peaks are not averaged away; `pg_activity_grouped` also gets `cnt_mean`.
+  - (d) `BACKFILL=1` runs the same SELECTs over the raw history in hour-aligned day chunks (a split 1h bucket would
+    be overwritten by a partial `max()`). Verified: stored 1h values = direct 1h rollup of `7d`
+    (`pg_stmt_totals` calls 1 581 662 = 1 581 662).
+  - (e) Known limitation: at 1h resolution an increase over a range misses the part of the first bucket
+    (≤ 1h of a 200d range); points arriving > 2h late are not rolled up.
+  - (f) Dashboards: custom variable `rp` (`7d` default | `200d`, first variable), every query reads
+    `FROM "$rp"."<measurement>"` (`builder/common.py::src`), links carry `${rp:queryparam}`. On `200d` use ranges of
+    days: increases/rates need ≥ 2 hourly points. `check_queries.py` runs every panel for both RPs.
+  - (g) Kubernetes: optional hook Job `influxdbInit.enabled` (default false) runs the same script against
+    `influxdb.host` (`files/influxdb/` via `sync-files.sh`); the target DB must already have RP `7d`.

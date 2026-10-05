@@ -1,0 +1,65 @@
+{{- if .Values.influxdbInit.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "helm.fullname" . }}-influxdb-init"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+data:
+  pg_monitoring_downsample.sh: |
+    {{- .Files.Get "files/influxdb/pg_monitoring_downsample.sh" | nindent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "helm.fullname" . }}-influxdb-init"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "helm.labels" . | nindent 8 }}
+      annotations:
+        checksum/script: {{ .Files.Get "files/influxdb/pg_monitoring_downsample.sh" | sha256sum }}
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+      containers:
+        - name: influxdb-init
+          image: {{ .Values.influxdbInit.image | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          command: ["sh", "/scripts/pg_monitoring_downsample.sh"]
+          env:
+            - name: INFLUX_ARGS
+              value: {{ printf "-host %s -port %v" .Values.influxdb.host .Values.influxdbInit.port | quote }}
+            - name: INFLUX_DB_MONITORING
+              value: {{ .Values.influxdb.database | quote }}
+            - name: BACKFILL
+              value: {{ ternary "1" "0" .Values.influxdbInit.backfill | quote }}
+          {{- with .Values.influxdbInit.existingSecret }}
+          envFrom:
+            - secretRef:
+                name: {{ . }}
+          {{- end }}
+          {{- with .Values.influxdbInit.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+      volumes:
+        - name: scripts
+          configMap:
+            name: "{{ include "helm.fullname" . }}-influxdb-init"
+{{- end }}
