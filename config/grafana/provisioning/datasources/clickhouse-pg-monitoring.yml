@@ -1,0 +1,26 @@
+apiVersion: 1
+
+# ClickHouse copy of the pg_monitoring measurements (Telegraf outputs.sql, dual write) for the generated ch-* dashboards.
+# The uid is referenced from code. Read-only access: user `reader` (SELECT on pg_monitoring.*, readonly=2 profile).
+# $CH_* come from the grafana container env (.env.example -> .env.clickhouse).
+# queryTimeout must stay <= 56: the plugin sends max_execution_time = queryTimeout + 4 and reader_profile caps it at 60 (code 452 otherwise).
+datasources:
+ - name: "PostgreSQL Monitoring (ClickHouse)"
+   uid: pg-monitoring-ch
+   type: grafana-clickhouse-datasource
+   access: proxy
+   orgId: 1
+   # never default: this file sorts first and would otherwise take the default from the InfluxDB datasources
+   isDefault: false
+   editable: false
+   jsonData:
+     host: $CH_HOST
+     port: 9000
+     protocol: native
+     secure: false
+     username: $CH_READER_USER
+     defaultDatabase: pg_monitoring
+     dialTimeout: "10"
+     queryTimeout: "55"
+   secureJsonData:
+     password: $CH_READER_PASSWORD

@@ -166,10 +166,17 @@ services:
         condition: service_started
       telegraf:
         condition: service_started
+      clickhouse:
+        condition: service_healthy
+    # CH_HOST / CH_READER_USER / CH_READER_PASSWORD are expanded in provisioning/datasources/clickhouse-pg-monitoring.yml.
+    env_file:
+      - path: .env.example
+      - path: .env.clickhouse
+        required: false
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_INSTALL_PLUGINS=
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
     volumes:
       - grafana-data:/var/lib/grafana
       - "./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro"
