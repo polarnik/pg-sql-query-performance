@@ -78,6 +78,11 @@ class InfluxQL(cogbuilder.Builder[cogvariants.Dataquery]):
         return self._q
 
 
+def influx_target(query: str, ref_id: str, kind: str, alias: str = "") -> InfluxQL:
+    """Panel target factory (kind: 'table' / 'timeseries'); ch-* boards pass their own (builder/clickhouse.py)."""
+    return InfluxQL(query, ref_id=ref_id, result_format="time_series" if kind == "timeseries" else "table", alias=alias)
+
+
 def where(*filters: str) -> str:
     return " AND ".join(("$timeFilter",) + filters)
 
@@ -175,13 +180,17 @@ def var_textbox(name: str, label: str, default: str = ".*") -> dashboard.TextBox
     return dashboard.TextBoxVariable(name).label(label).default_value(default)
 
 
-def drill_url(uid: str, **vars_from_fields: str) -> str:
+# URL part carried by every link of the pg-* boards (the ch-* boards have no `rp` and pass keep="")
+KEEP_RP = "&${rp:queryparam}"
+
+
+def drill_url(uid: str, keep: str = KEEP_RP, **vars_from_fields: str) -> str:
     """URL to another board, carrying the time range, the retention policy and the given variables from row fields."""
     params = "&".join(f"var-{var}=${{__data.fields.{field}}}" for var, field in vars_from_fields.items())
-    return f"/d/{uid}?${{__url_time_range}}&${{rp:queryparam}}&{params}"
+    return f"/d/{uid}?${{__url_time_range}}{keep}&{params}"
 
 
-def self_filter_url(uid: str, **values: str) -> str:
+def self_filter_url(uid: str, keep: str = KEEP_RP, **values: str) -> str:
     """URL to `uid` (usually the same board) that sets the given variables and keeps the other FILTER_VARS.
 
     values: variable -> interpolated value (e.g. '${__data.fields.datname}'). Variables not in `values`
@@ -189,34 +198,35 @@ def self_filter_url(uid: str, **values: str) -> str:
     """
     params = [f"var-{var}={values[var]}" if var in values else f"${{{var}:queryparam}}" for var in FILTER_VARS]
     params += [f"var-{var}={value}" for var, value in values.items() if var not in FILTER_VARS]
-    return f"/d/{uid}?${{__url_time_range}}&${{rp:queryparam}}&" + "&".join(params)
+    return f"/d/{uid}?${{__url_time_range}}{keep}&" + "&".join(params)
 
 
-def field_filter_url(uid: str, *fields: str) -> str:
+def field_filter_url(uid: str, *fields: str, keep: str = KEEP_RP) -> str:
     """Table cell link: filter `uid` by the row values of `fields` (column name == variable name)."""
-    return self_filter_url(uid, **{f: f"${{__data.fields.{f}}}" for f in fields})
+    return self_filter_url(uid, keep, **{f: f"${{__data.fields.{f}}}" for f in fields})
 
 
-def series_filter_url(uid: str, *labels: str) -> str:
+def series_filter_url(uid: str, *labels: str, keep: str = KEEP_RP) -> str:
     """Time series data link: filter `uid` by the series tag values (label name == variable name)."""
-    return self_filter_url(uid, **{label: f"${{__field.labels.{label}}}" for label in labels})
+    return self_filter_url(uid, keep, **{label: f"${{__field.labels.{label}}}" for label in labels})
 
 
 # ---------------------------------------------------------------- layout
-def base_dashboard(uid: str, title: str, description: str) -> dashboard.Dashboard:
+def base_dashboard(uid: str, title: str, description: str, tag: str = TAG,
+                   links_title: str = "PostgreSQL runbooks", extra_tags: tuple[str, ...] = ()) -> dashboard.Dashboard:
     return (
         dashboard.Dashboard(title)
         .uid(uid)
         .description(description)
-        .tags([TAG, "postgresql"])
+        .tags([tag, "postgresql", *extra_tags])
         .time("now-3h", "now")
         .refresh("1m")
         .timezone("browser")
         .editable()
         .link(
-            dashboard.DashboardLink("PostgreSQL runbooks")
+            dashboard.DashboardLink(links_title)
             .type(dm.DashboardLinkType.DASHBOARDS)
-            .tags([TAG])
+            .tags([tag])
             .as_dropdown(True)
             .include_vars(True)
             .keep_time(True)
@@ -257,6 +267,8 @@ def table_panel(
     links: dict[str, tuple[str, str]] | None = None,
     thresholds: dict[str, tuple[float, float]] | None = None,
     wrap: list[str] | None = None,
+    datasource: dm.DataSourceRef = DATASOURCE,
+    target=influx_target,
 ) -> table.Panel:
     """Table from one InfluxQL query (resultFormat=table).
 
@@ -266,9 +278,9 @@ def table_panel(
     wrap:       columns with wrapped long text (query text)
     query:      one query or several (refId A, B, ...), rows are merged by equal tag columns
     """
-    panel = table.Panel().title(title).description(description).datasource(DATASOURCE)
+    panel = table.Panel().title(title).description(description).datasource(datasource)
     for i, q in enumerate([query] if isinstance(query, str) else query):
-        panel = panel.with_target(InfluxQL(q, ref_id=chr(ord("A") + i)))
+        panel = panel.with_target(target(q, chr(ord("A") + i), "table"))
     panel = (
         panel
         .with_transformation(dm.DataTransformerConfig(id_val="merge", options={}))
@@ -318,14 +330,15 @@ class _SortBy(cogbuilder.Builder[common_models.TableSortByFieldState]):
 
 def timeseries_panel(title: str, query: str, unit: str = "short", description: str = "",
                      w: int = 12, h: int = 8, interval: str = "", stacked: bool = False,
-                     links: list[tuple[str, str]] | None = None, alias: str = "") -> timeseries.Panel:
+                     links: list[tuple[str, str]] | None = None, alias: str = "",
+                     datasource: dm.DataSourceRef = DATASOURCE, target=influx_target) -> timeseries.Panel:
     """links: (title, url) data links on every series (url may use ${__field.labels.<tag>})."""
     panel = (
         timeseries.Panel()
         .title(title)
         .description(description)
-        .datasource(DATASOURCE)
-        .with_target(InfluxQL(query, result_format="time_series", alias=alias))
+        .datasource(datasource)
+        .with_target(target(query, "A", "timeseries", alias))
         .unit(unit)
         .fill_opacity(10)
         .grid_pos(dm.GridPos(h=h, w=w, x=0, y=0))
@@ -341,13 +354,14 @@ def timeseries_panel(title: str, query: str, unit: str = "short", description: s
 
 
 def stat_panel(title: str, query: str, unit: str = "short", description: str = "",
-               w: int = 6, h: int = 4, warn: float | None = None, crit: float | None = None) -> stat.Panel:
+               w: int = 6, h: int = 4, warn: float | None = None, crit: float | None = None,
+               datasource: dm.DataSourceRef = DATASOURCE, target=influx_target) -> stat.Panel:
     panel = (
         stat.Panel()
         .title(title)
         .description(description)
-        .datasource(DATASOURCE)
-        .with_target(InfluxQL(query))
+        .datasource(datasource)
+        .with_target(target(query, "A", "table"))
         .unit(unit)
         .grid_pos(dm.GridPos(h=h, w=w, x=0, y=0))
     )

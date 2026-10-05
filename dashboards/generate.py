@@ -1,4 +1,4 @@
-"""Generate all pg-* dashboards into config/grafana/provisioning/dashboards/json/."""
+"""Generate all pg-* (InfluxDB) and ch-* (ClickHouse) dashboards into config/grafana/provisioning/dashboards/json/."""
 import importlib
 import sys
 
@@ -10,6 +10,11 @@ BOARDS = {
     "statements": "pg-statements.json",
     "statement_detail": "pg-statement-detail.json",
     "indexes": "pg-indexes.json",
+    "ch_overview": "ch-overview.json",
+    "ch_connections": "ch-connections.json",
+    "ch_statements": "ch-statements.json",
+    "ch_statement_detail": "ch-statement-detail.json",
+    "ch_indexes": "ch-indexes.json",
 }
 
 
