@@ -5,6 +5,8 @@ PostgreSQL 17 as a user that only has `pg_monitor` (see `config/postgresql/monit
 
 - Global tags on every metric: `db_instance` (`PG_INSTANCE`), `env` (`PG_ENV`), `host`; routing tags
   `db_and_stand` / `retention_policy` are consumed by the output and not stored.
+- Storage: InfluxDB `pg_monitoring` (`pg-*` boards) **and** ClickHouse `pg_monitoring.<measurement>` (`ch-*` boards),
+  see [ClickHouse tables](#clickhouse-tables-pg_monitoring-d17d18).
 - **Scope `cluster`** = collected once per instance through the maintenance DB (`postgres`, where the
   `pg_stat_statements` extension is created). **Scope `database`** = one connection per app database.
 - Counters are cumulative since `stats_reset` / `stats_since`: tables use `spread()` (or `last()-first()`)
@@ -60,6 +62,41 @@ evicted entries (`pg_stmt_info.dealloc`) make the sum drop, such steps are ignor
 - Apply / re-apply on a running InfluxDB (idempotent; `BACKFILL=1` also rolls up the raw 7d):
   `docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitoring_downsample.sh`.
 - `200d` ≈ ⅓ of the `7d` series (no `host` churn): ≈ 5.9k series on the demo stand.
+
+## ClickHouse tables (`pg_monitoring`, D17–D18)
+The same 13 measurements are also written by `[[outputs.sql]]` (`config/telegraf/telegraf.d/output_clickhouse.conf`)
+into ClickHouse database `pg_monitoring`, one table per measurement, **table name = measurement name**.
+Source of truth for columns, types and codecs: `config/clickhouse/init/01_schema.sql` (a column missing there fails the
+whole insert of that table → add new SQL fields to the schema first).
+
+- Common columns in every table: `time DateTime64(3)`, `db_instance`, `env`, `server`, `db` (`LowCardinality(String)`).
+  Not stored: `db_and_stand`, `retention_policy`, `host` (`tagexclude` on the output).
+- Tags (columns from the measurements table above) → `LowCardinality(String)`, except the md5 / id keys
+  `query_md5`, `query_mask_md5`, `queryid` → `String`. Fields: integer → `Int64`, float → `Float64`, text → `String`.
+- No `Nullable`: every column has `DEFAULT 0` / `''` (NULL `usage_pct`, empty `datname` → default).
+- `PARTITION BY toYYYYMMDD(time)` (except `pg_stmt_text`), `TTL toDateTime(time) + INTERVAL 30 DAY`, no rollups.
+
+| table | engine | ORDER BY (after `db_instance`) | notes |
+|---|---|---|---|
+| `pg_settings_limits` | MergeTree | `time` | one row per instance |
+| `pg_stmt_info` | MergeTree | `time` | one row per instance; `stats_reset_epoch`, `dealloc` |
+| `pg_db_limits` | MergeTree | `datname, time` | |
+| `pg_role_limits` | MergeTree | `rolname, time` | |
+| `pg_activity_grouped` | MergeTree | `datname, usename, application_name, state, wait_event_type, time` | gauges |
+| `pg_locks_blocked` | MergeTree | `datname, time` | gauges |
+| `pg_db_stat` | MergeTree | `datname, time` | cumulative counters |
+| `pg_stmt` | MergeTree | `datname, usename, query_mask_md5, query_md5, queryid, toplevel, time` | `query_short` = `String` field |
+| `pg_stmt_mask` | MergeTree | `datname, usename, query_mask_md5, time` | `query_mask_short` = `String` field |
+| `pg_stmt_totals` | MergeTree | `datname, usename, time` | all entries, no top-N |
+| `pg_stmt_text` | ReplacingMergeTree(time), not partitioned | `query_md5` | latest `query` / `query_mask` per md5; read with `argMax(…, time)` / `FINAL` |
+| `pg_table_stat` | MergeTree | `datname, schemaname, relname, time` | |
+| `pg_index_stat` | MergeTree | `datname, schemaname, relname, indexrelname, time` | |
+
+- Counters stay cumulative: `ch-*` boards compute increases as the sum of positive steps per series (never negative,
+  resets / dealloc handled, D20c) instead of InfluxQL `spread()` / `non_negative_difference()`.
+- Check row counts per table and instance (as `reader`):
+  `docker exec sql_monitor_clickhouse clickhouse-client --user reader --password reader -q "SELECT count(), uniq(db_instance) FROM pg_monitoring.pg_stmt_mask"`.
+- Users: `writer` (Telegraf, `INSERT, SELECT`), `reader` (Grafana datasource `pg-monitoring-ch`, `SELECT`, readonly), `admin` (D19).
 
 ## Mask rules (`pg_stmt`, `pg_stmt_mask`, `pg_stmt_text`)
 1. `\s+` → one space.

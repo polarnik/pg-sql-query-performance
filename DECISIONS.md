@@ -79,3 +79,62 @@
     days: increases/rates need ≥ 2 hourly points. `check_queries.py` runs every panel for both RPs.
   - (g) Kubernetes: optional hook Job `influxdbInit.enabled` (default false) runs the same script against
     `influxdb.host` (`files/influxdb/` via `sync-files.sh`); the target DB must already have RP `7d`.
+- **D17 ClickHouse dual write** (`config/telegraf/telegraf.d/output_clickhouse.conf`): the same 4 Telegraf services get a
+  second output `[[outputs.sql]]` (`driver = "clickhouse"`) next to the unchanged `[[outputs.influxdb]]`.
+  Rationale: no regression for InfluxDB / `pg-*` boards, and the two storages can be compared on the same points.
+  - (a) `namepass` = the 13 `pg_monitoring` measurements; the classic-board input (D13) stays InfluxDB-only.
+    `tagexclude = ["db_and_stand", "retention_policy", "host"]` on the output only: InfluxDB routing (D9) keeps working,
+    `host` = `db_instance` is redundant.
+  - (b) DSN `tcp://${CH_HOST}:9000?username=…&password=…&database=pg_monitoring&read_timeout=60&write_timeout=60`.
+    Telegraf 1.32.3 bundles clickhouse-go v1: `clickhouse://user:pass@host` ignores the credentials
+    (`default: Authentication failed`).
+  - (c) `table_exists_template = "SELECT 1 FROM {TABLE} LIMIT 1"`: Telegraf never creates tables (writer has no DDL).
+    An unknown column fails the whole insert of that table → tag / field names must match the schema
+    (checked against `telegraf --test`).
+  - (d) Image `clickhouse/clickhouse-server:24.8` (LTS); native 9000 for Telegraf and Grafana, HTTP 8123 for checks;
+    ports are not published. `x-telegraf` and Grafana `depends_on: clickhouse: service_healthy`; the healthcheck logs in
+    as `writer` (not only `/ping`), so Telegraf does not start before `02_users.sh` has run (cold-start restart loop).
+  - (e) Batching: Telegraf `metric_batch_size` (unchanged) + `async_insert` in the writer profile. On a ClickHouse
+    restart Telegraf buffers up to `metric_buffer_limit` and catches up.
+- **D18 One wide typed table per measurement** (`config/clickhouse/init/01_schema.sql`, database `pg_monitoring`,
+  table name = measurement name), created ahead by the init SQL (`IF NOT EXISTS`, safe to re-run).
+  Rationale: typed columns, good compression and fast reads; rejected: a generic `(name, tags Map, fields Map)` table.
+  - (a) Tags → `LowCardinality(String)`; fields: integer → `Int64`, float8 → `Float64`, text → `String`; types follow
+    `sql/*.sql`. No `Nullable`: every column has a `DEFAULT` (`0` / `''`), so a missing field or empty
+    `datname` / `usename` is stored as the default.
+  - (b) Codecs: `time` `DoubleDelta`, integers `T64`, floats `Gorilla`, text `ZSTD(3)`, all + `ZSTD`.
+  - (c) `PARTITION BY toYYYYMMDD(time)`; `ORDER BY` starts with `db_instance` + the dashboard filter columns, then
+    `time` (settings snapshots: `(db_instance, time)`; objects: `(db_instance, datname, schemaname, relname[, indexrelname], time)`).
+  - (d) `pg_stmt_text` = `ReplacingMergeTree(time) ORDER BY (db_instance, query_md5)`, no partitioning: only the latest
+    text per md5 is kept; reads use `argMax(…, time)` / `FINAL`.
+  - (e) Raw data only, `TTL toDateTime(time) + INTERVAL 30 DAY`; no rollups / materialized views (unlike D16).
+    Change with `ALTER TABLE … MODIFY TTL`.
+- **D19 Three ClickHouse users, least privilege** (`config/clickhouse/init/02_users.sh`, SQL-driven access control):
+  - (a) `admin` = container user (`CLICKHOUSE_USER/PASSWORD` from `CH_ADMIN_USER/PASSWORD`,
+    `CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1`); replaces the ClickHouse `default` user; full access incl. access management.
+  - (b) `writer` (Telegraf): `GRANT INSERT, SELECT ON pg_monitoring.*` (SELECT for `table_exists_template`), profile
+    `writer_profile`: `async_insert=1`, `wait_for_async_insert=1`, `async_insert_busy_timeout_ms=1000`. No DDL / DROP.
+  - (c) `reader` (Grafana): `GRANT SELECT ON pg_monitoring.*`, profile `reader_profile`: `readonly=2 CONST`,
+    `max_execution_time=30 MAX 60`, `max_memory_usage=2e9`, `max_result_rows=1e6`, `max_rows_to_read=1e9`.
+  - (d) Passwords from env: `.env.example` (local defaults) → git-ignored `.env.clickhouse` (ClickHouse, Grafana) /
+    `.env.dbN` (Telegraf). The script is idempotent (`CREATE … IF NOT EXISTS` + `ALTER`, `REVOKE ALL` + `GRANT`),
+    so a re-run also applies new passwords.
+  - (e) Grafana datasource `config/grafana/provisioning/datasources/clickhouse-pg-monitoring.yml`: uid `pg-monitoring-ch`,
+    type `grafana-clickhouse-datasource` (`GF_INSTALL_PLUGINS`, downloaded at start → needs internet), native 9000,
+    user `reader`, `queryTimeout = 55`: the plugin sends `max_execution_time = queryTimeout + 4`, and 56+ exceeds the
+    reader cap of 60.
+- **D20 `ch-*` boards** (`dashboards/ch_*.py` + `dashboards/builder/clickhouse.py`), the `pg-*` boards are not touched:
+  - (a) UIDs `ch-overview`, `ch-connections`, `ch-statements`, `ch-statement-detail`, `ch-indexes`; titles
+    `PostgreSQL (ClickHouse) / …`; tags `ch-runbooks`, `clickhouse` (own runbook dropdown). Same panels, variables
+    (`db_instance`, `datname`, `usename`, `query_mask_md5` / `query_md5`), runbook rows and drill links as `pg-*`;
+    no `rp` variable (no rollups, D18e).
+  - (b) `ClickHouseSQL` Dataquery: `{rawSql, editorType: "sql", format, queryType}`, `format` 0 = timeseries, 1 = table.
+    Filters: `$__timeFilter(time)`, `$__conditionalAll(col IN (${var:singlequote}), $var)` (no commas inside),
+    textbox variables via `match(col, '^(…)$')`.
+  - (c) Counter increase (replaces `spread()` / `non_negative_difference`, D4, D14b) = sum of the positive steps per
+    series (`lagInFrame`) → never negative. Per-entry counters count the new value after a reset; `pg_stmt_totals`
+    sums ignore drops (dealloc, as in D14b). Rates per bucket use the same steps divided by the time delta.
+  - (d) Inner aliases are named `c_*`: ClickHouse resolves an alias equal to a column name inside other expressions
+    (code 184, nested aggregate).
+  - (e) `check_queries.py --clickhouse` runs every variable and panel query through Grafana `/api/ds/query` on
+    `pg-monitoring-ch` (= as `reader`), once with all variables = All and once with the first value of each.

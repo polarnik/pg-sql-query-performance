@@ -17,15 +17,17 @@ No functions are created in the monitored databases: all metrics are plain `SELE
 run by a `pg_monitor`-only user.
 
 ```bash
-docker compose up -d db influxdb telegraf telegraf-db2 telegraf-db3 telegraf-db4 grafana
-make -C dashboards                                  # generate pg-* dashboards (Python 3.13, grafana-foundation-sdk)
+docker compose up -d clickhouse db influxdb telegraf telegraf-db2 telegraf-db3 telegraf-db4 grafana
+make -C dashboards                                  # generate pg-* + ch-* dashboards (Python 3.13, grafana-foundation-sdk)
 (cd dashboards && .venv/bin/python check_queries.py) # every panel query runs through Grafana
 ```
 
 - Real instances: copy `.env.example` to `.env.db1..4` (gitignored) and set `PG_DSN` / `PG_APP_DSN`.
-- Dashboards: `pg-overview` → `pg-connections`, `pg-statements` → `pg-statement-detail`, `pg-indexes`.
+- Dashboards: `pg-overview` → `pg-connections`, `pg-statements` → `pg-statement-detail`, `pg-indexes` (InfluxDB);
+  the same set as `ch-*` on ClickHouse (see [ClickHouse](#clickhouse-dual-write-decisionsmd-d17d20)).
+- ClickHouse settings: `CH_*` variables in `.env.example`, real passwords in the gitignored `.env.clickhouse`.
 - Docs: `PLAN.md`, `TASKS.md`, `STATUS.md`, `DECISIONS.md`, `docs/metrics-catalog.md`, `docs/runbooks/`.
-- Kubernetes: `charts/pg-telegraf`.
+- Kubernetes: `charts/pg-telegraf` (InfluxDB output only, no ClickHouse).
 - Retention (`DECISIONS.md` D15, D16): `pg_monitoring."7d"` keeps raw points, `pg_monitoring."200d"` keeps 1h rollups
   (continuous queries). Dashboards have a `Retention` variable (`7d` / `200d`).
 - `config/influxdb/init.sh` runs only on an empty InfluxDB volume. To apply RPs / CQs to an existing InfluxDB
@@ -41,6 +43,41 @@ docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitori
   `influxdbInit.existingSecret=<secret with INFLUX_USERNAME / INFLUX_PASSWORD>`) runs the same script as a
   post-install/upgrade hook Job against `influxdb.host`. Or run it manually:
   `INFLUX_ARGS="-host <influx> -port 8086" sh config/influxdb/pg_monitoring_downsample.sh`.
+
+### ClickHouse (dual write, `DECISIONS.md` D17–D20)
+
+Telegraf writes the same 13 `pg_monitoring` measurements to InfluxDB **and** ClickHouse (`[[outputs.sql]]`,
+`config/telegraf/telegraf.d/output_clickhouse.conf`). `docker compose up` starts the `clickhouse` service
+(`clickhouse/clickhouse-server:24.8`, volume `sql-monitor-clickhouse-data`) automatically: on an empty volume
+`config/clickhouse/init/01_schema.sql` creates the 13 tables (30-day TTL) and `02_users.sh` the users.
+Telegraf and Grafana wait until ClickHouse is healthy.
+
+```bash
+docker compose up -d clickhouse db influxdb telegraf telegraf-db2 telegraf-db3 telegraf-db4 grafana
+make -C dashboards                                                 # also writes ch-*.json
+(cd dashboards && .venv/bin/python check_queries.py --clickhouse)  # every ch-* panel SQL as reader, via Grafana
+curl -s -u admin:admin http://localhost:3000/api/datasources/uid/pg-monitoring-ch/health
+docker exec sql_monitor_clickhouse clickhouse-client --user admin --password admin -q "SHOW TABLES FROM pg_monitoring"
+```
+
+| user | used by | rights |
+|---|---|---|
+| `admin` (`CH_ADMIN_USER`) | operator | everything, incl. access management (replaces `default`) |
+| `writer` (`CH_WRITER_USER`) | Telegraf, native port 9000 | `INSERT, SELECT` on `pg_monitoring.*`, async inserts |
+| `reader` (`CH_READER_USER`) | Grafana datasource `pg-monitoring-ch` | `SELECT` on `pg_monitoring.*`, `readonly=2`, ≤ 60 s / 2 GB / 1M rows |
+
+- Env: `CH_HOST`, `CH_ADMIN_USER` / `CH_ADMIN_PASSWORD`, `CH_WRITER_USER` / `CH_WRITER_PASSWORD`,
+  `CH_READER_USER` / `CH_READER_PASSWORD`. `.env.example` has local defaults only; put real passwords into the
+  gitignored `.env.clickhouse` (ClickHouse, Grafana) and `.env.db1..4` (Telegraf, same writer password).
+- Users are created only on the first start (empty volume). To apply changed passwords to an existing volume:
+  `docker exec -e CLICKHOUSE_USER=admin -e CLICKHOUSE_PASSWORD=admin sql_monitor_clickhouse bash /docker-entrypoint-initdb.d/02_users.sh`
+  (idempotent; use your `CH_ADMIN_*` values).
+- Dashboards (tags `clickhouse`, `ch-runbooks`; titles `PostgreSQL (ClickHouse) / …`): `ch-overview` → `ch-connections`,
+  `ch-statements` → `ch-statement-detail`, `ch-indexes`. Same variables and drill-down as the `pg-*` boards;
+  ClickHouse keeps raw data for 30 days, so there is no `Retention` variable.
+- Grafana downloads the `grafana-clickhouse-datasource` plugin at start (`GF_INSTALL_PLUGINS`): it needs internet
+  access, otherwise the `ch-*` boards show "plugin not found".
+- ClickHouse ports 8123 / 9000 are not published; use `docker exec … clickhouse-client` or uncomment `ports`.
 
 ## Нагрузка на jmeter-java-dsl (Kotlin)
 

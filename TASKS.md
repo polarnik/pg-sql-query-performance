@@ -65,3 +65,39 @@
 - Output: chart/manifests; one Telegraf deployment per instance from a values list; DSN in Secrets.
 - DoD: manifests render.
 - Verify: `charts/pg-telegraf/sync-files.sh --check && helm lint charts/pg-telegraf && helm template t charts/pg-telegraf | kubectl apply --dry-run=client --validate=false -f -`
+
+## T9 ClickHouse service, schema, users — ✓
+- Goal: `docker compose up clickhouse` brings up `pg_monitoring` with 13 tables and users `admin` / `writer` / `reader` (D18, D19).
+- Input: T5 measurements (`sql/*.sql` field types).
+- Output: compose `clickhouse` service (24.8, volume `sql-monitor-clickhouse-data`, healthcheck as `writer`),
+  `config/clickhouse/init/01_schema.sql`, `02_users.sh`, `config/clickhouse/config.d/low-resources.xml`, `CH_*` in `.env.example`.
+- DoD: 13 tables; `SHOW GRANTS` = least privilege; `reader` cannot INSERT / CREATE, `writer` cannot DROP.
+- Verify: `docker exec sql_monitor_clickhouse clickhouse-client --user admin --password admin -q "SELECT count() FROM system.tables WHERE database = 'pg_monitoring'; SHOW GRANTS FOR writer; SHOW GRANTS FOR reader"`
+
+## T10 Telegraf dual write to ClickHouse — ✓
+- Goal: all 4 Telegraf instances write the 13 measurements to InfluxDB **and** ClickHouse (D17).
+- Input: T9 schema.
+- Output: `config/telegraf/telegraf.d/output_clickhouse.conf` (`[[outputs.sql]]`, `namepass`, `tagexclude`); `x-telegraf` `depends_on: clickhouse`.
+- DoD: every table has rows for 4 `db_instance`; no `outputs.sql` errors in Telegraf logs; InfluxDB unchanged (T5 verify).
+- Verify: `for t in pg_activity_grouped pg_locks_blocked pg_db_limits pg_role_limits pg_db_stat pg_settings_limits pg_stmt_info pg_stmt pg_stmt_mask pg_stmt_totals pg_stmt_text pg_table_stat pg_index_stat; do docker exec sql_monitor_clickhouse clickhouse-client --user reader --password reader -q "SELECT '$t', count(), uniq(db_instance) FROM pg_monitoring.$t"; done`
+
+## T11 Grafana ClickHouse datasource — ✓
+- Goal: healthy datasource `pg-monitoring-ch` connecting as `reader` (D19e).
+- Input: T9 users.
+- Output: `GF_INSTALL_PLUGINS=grafana-clickhouse-datasource`, `config/grafana/provisioning/datasources/clickhouse-pg-monitoring.yml`.
+- DoD: health API returns OK.
+- Verify: `curl -s -u admin:admin http://localhost:3000/api/datasources/uid/pg-monitoring-ch/health`
+
+## T12 ch-* boards — ✓
+- Goal: `ch-overview`, `ch-connections`, `ch-statements`, `ch-statement-detail`, `ch-indexes` on ClickHouse with the same
+  variables, runbook rows and drill-down as `pg-*` (D20).
+- Input: T11 datasource, T6/T7 builder.
+- Output: `dashboards/builder/clickhouse.py`, `dashboards/ch_*.py`, `config/grafana/provisioning/dashboards/json/ch-*.json`, `check_queries.py --clickhouse`.
+- DoD: generator writes 5 `ch-*.json`, `pg-*.json` unchanged; every variable / panel query runs as `reader` without errors.
+- Verify: `make -C dashboards && docker restart sql_monitor_grafana && (cd dashboards && .venv/bin/python check_queries.py --clickhouse)` (exit 0)
+
+## T13 ClickHouse docs — ✓
+- Goal: docs describe the ClickHouse path, users and boards.
+- Output: `DECISIONS.md` D17–D20, `TASKS.md` T9–T13, `STATUS.md`, `docs/metrics-catalog.md` (ClickHouse tables), `README.md`.
+- DoD: every new file / variable / board is mentioned at least once.
+- Verify: `grep -c "pg-monitoring-ch\|ch-statements" README.md DECISIONS.md docs/metrics-catalog.md`
