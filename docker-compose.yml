@@ -8,6 +8,8 @@ x-telegraf: &telegraf
       condition: service_healthy
     db:
       condition: service_healthy
+    clickhouse:
+      condition: service_healthy
   environment:
     - INFLUXDB_HOST=sql_monitor_influxdb
   volumes:
@@ -111,7 +113,7 @@ services:
     #  - 8123:8123
     #  - 9000:9000
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:8123/ping || exit 1"]
+      test: ["CMD-SHELL", "clickhouse-client --host 127.0.0.1 --user \"${CH_WRITER_USER:-writer}\" --password \"${CH_WRITER_PASSWORD:-writer}\" -q 'SELECT 1' >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 30
