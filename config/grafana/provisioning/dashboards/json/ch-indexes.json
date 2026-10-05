@@ -1,0 +1,578 @@
+{
+  "annotations": {},
+  "description": "Per-database object statistics (pg_stat_user_tables / pg_stat_user_indexes, top by size). Source: ClickHouse pg_monitoring (dual write).",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ch-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks (ClickHouse)",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "No scans over the range, not unique / primary. Use a representative range (full test or \u2265 7 days). last_scan = 1970 means never scanned since stats reset.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_scan"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "size"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, datname, schemaname, relname, indexrelname, c_scans_in_range AS scans_in_range, c_scans_total AS scans_total, c_size AS size, c_is_unique AS is_unique, c_is_primary AS is_primary, c_is_valid AS is_valid, c_last_scan AS last_scan FROM (SELECT env, db_instance, datname, schemaname, relname, indexrelname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time)))) AS c_scans_in_range, argMax(idx_scan, time) AS c_scans_total, argMax(index_bytes, time) AS c_size, argMax(is_unique, time) AS c_is_unique, argMax(is_primary, time) AS c_is_primary, argMax(is_valid, time) AS c_is_valid, argMax(last_idx_scan_epoch, time) * 1000 AS c_last_scan FROM pg_monitoring.pg_index_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, schemaname, relname, indexrelname) WHERE scans_in_range = 0 AND is_primary = 0 AND is_unique = 0",
+          "refId": "A"
+        }
+      ],
+      "title": "Unused indexes",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "is_valid = 0: failed CREATE INDEX CONCURRENTLY, drop and re-create.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "size"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, datname, schemaname, relname, indexrelname, c_size AS size, c_scans_in_range AS scans_in_range, c_tup_read_in_range AS tup_read_in_range, c_is_unique AS is_unique, c_is_valid AS is_valid FROM (SELECT env, db_instance, datname, schemaname, relname, indexrelname, argMax(index_bytes, time) AS c_size, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time)))) AS c_scans_in_range, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(idx_tup_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(idx_tup_read)), groupArray(time)))) AS c_tup_read_in_range, argMax(is_unique, time) AS c_is_unique, argMax(is_valid, time) AS c_is_valid FROM pg_monitoring.pg_index_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, schemaname, relname, indexrelname)",
+          "refId": "A"
+        }
+      ],
+      "title": "Indexes by size",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Large tables with many rows read by seq scans are missing-index candidates.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_seq_scan"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "seq_tup_read"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, datname, schemaname, relname, c_seq_scans AS seq_scans, c_seq_tup_read AS seq_tup_read, c_idx_scans AS idx_scans, c_live_tup AS live_tup, c_total_size AS total_size, c_last_seq_scan AS last_seq_scan FROM (SELECT env, db_instance, datname, schemaname, relname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(seq_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(seq_scan)), groupArray(time)))) AS c_seq_scans, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(seq_tup_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(seq_tup_read)), groupArray(time)))) AS c_seq_tup_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time)))) AS c_idx_scans, argMax(n_live_tup, time) AS c_live_tup, argMax(total_bytes, time) AS c_total_size, argMax(last_seq_scan_epoch, time) * 1000 AS c_last_seq_scan FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, schemaname, relname)",
+          "refId": "A"
+        }
+      ],
+      "title": "Seq-scan-heavy tables",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "dead_pct > 10 %: warning, > 20 %: critical. Old last_vacuum with many updates: autovacuum lags.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dead_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_vacuum"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_analyze"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dead_pct"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 10
+                    },
+                    {
+                      "color": "red",
+                      "value": 20
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 30
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "dead_pct"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, datname, schemaname, relname, c_dead_tup AS dead_tup, c_dead_pct AS dead_pct, c_mod_since_analyze AS mod_since_analyze, c_upd_in_range AS upd_in_range, c_del_in_range AS del_in_range, c_autovacuums_in_range AS autovacuums_in_range, c_last_vacuum AS last_vacuum, c_last_analyze AS last_analyze, upd_in_range + del_in_range AS upd_del_in_range FROM (SELECT env, db_instance, datname, schemaname, relname, argMax(n_dead_tup, time) AS c_dead_tup, argMax(dead_tup_pct, time) AS c_dead_pct, argMax(n_mod_since_analyze, time) AS c_mod_since_analyze, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_upd)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_upd)), groupArray(time)))) AS c_upd_in_range, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_del)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_del)), groupArray(time)))) AS c_del_in_range, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(autovacuum_count)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(autovacuum_count)), groupArray(time)))) AS c_autovacuums_in_range, argMax(last_any_vacuum_epoch, time) * 1000 AS c_last_vacuum, argMax(last_any_analyze_epoch, time) * 1000 AS c_last_analyze FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, schemaname, relname)",
+          "refId": "A"
+        }
+      ],
+      "title": "Dead tuples and vacuum",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 5,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 41
+          },
+          "id": 501,
+          "options": {
+            "content": "# Unused / missing indexes\n\n**Symptom.** Slow reads on large tables (missing index) or slow writes / high WAL and storage (too many unused indexes).\n\n**Where to look.** `pg-indexes` \u2192 *Unused indexes* table, *Seq-scan-heavy tables* table, *Index size* column.\n\n**How to interpret.**\n- Unused index: `spread(pg_index_stat.idx_scan) = 0` over a representative range (a full load test or \u2265 7 days),\n  `is_unique = 0`, `is_primary = 0`; `last_idx_scan_epoch` old or 0. Sort by `index_bytes`.\n- Missing index candidate: large `pg_table_stat.total_bytes` with high `spread(seq_tup_read)` and\n  `spread(seq_scan)` \u226b `spread(idx_scan)`.\n- `is_valid = 0` \u2192 a failed `CREATE INDEX CONCURRENTLY`; the index costs writes but is never used.\n- Stats are per database and per instance (replicas have their own counters).\n\n**Likely causes.** Indexes created for old features / ORM defaults, duplicate indexes (same leading columns),\nnew query patterns without a supporting index.\n\n**Actions.**\n1. Unused: confirm on all replicas, then `DROP INDEX CONCURRENTLY` (keep a rollback script).\n2. Invalid: `DROP INDEX CONCURRENTLY` and re-create.\n3. Missing: find the masks touching the table on `pg-statements` \u2192 `EXPLAIN` \u2192 `CREATE INDEX CONCURRENTLY`.\n\n**Related SQL.** `sql/database_index_stat.sql`, `sql/database_table_stat.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Unused / missing indexes",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 6,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 42
+          },
+          "id": 601,
+          "options": {
+            "content": "# Autovacuum lag / dead tuples\n\n**Symptom.** Tables and indexes grow without data growth, queries slow down, plans get worse (stale statistics).\n\n**Where to look.** `pg-indexes` \u2192 *Dead tuples / vacuum* table (dead %, last vacuum, last analyze).\n\n**How to interpret.**\n- `pg_table_stat.dead_tup_pct` > 10 %: warning; > 20 %: critical (default autovacuum threshold is 20 % + 50 rows).\n- `now - last_any_vacuum_epoch` large on a table with high `spread(n_tup_upd + n_tup_del)` \u2192 autovacuum cannot keep up.\n- `n_mod_since_analyze` large relative to `n_live_tup` \u2192 statistics are stale \u2192 bad plans.\n- `pg_activity_grouped` rows with `max_xact_age_s` high \u2192 vacuum is blocked by an old transaction\n  ([idle-in-transaction](idle-in-transaction.md)).\n\n**Likely causes.** High update/delete rate on big tables with default scale factors, long transactions holding\nthe xmin horizon, autovacuum throttled (`autovacuum_vacuum_cost_limit`), too few workers.\n\n**Actions.**\n1. Remove old transactions first.\n2. Per-table tuning: `ALTER TABLE ... SET (autovacuum_vacuum_scale_factor = 0.01, autovacuum_analyze_scale_factor = 0.02)`.\n3. Raise `autovacuum_vacuum_cost_limit` / workers (parameter group).\n4. Manual `VACUUM (ANALYZE)` in a quiet window; `pg_repack` for heavy bloat (DBA).\n\n**Related SQL.** `sql/database_table_stat.sql`, `sql/cluster_activity_grouped.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Autovacuum lag / dead tuples",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "ch-runbooks",
+    "postgresql",
+    "clickhouse"
+  ],
+  "templating": {
+    "list": [
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) ORDER BY db_instance",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) ORDER BY datname",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL (ClickHouse) / Indexes and tables",
+  "uid": "ch-indexes"
+}

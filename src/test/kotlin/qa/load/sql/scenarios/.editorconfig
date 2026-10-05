@@ -1,0 +1,3 @@
+# SQL texts keep trailing spaces of sql_demo_test.jmx (query text / query_md5 in pg_stat_statements)
+[*.kt]
+trim_trailing_whitespace = false

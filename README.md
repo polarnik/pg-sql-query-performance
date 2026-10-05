@@ -11,6 +11,173 @@ docker-compose up
 
 Open Grafana: [http://localhost:3000](http://localhost:3000)
 
+## PostgreSQL 17 monitoring runbooks (Telegraf → InfluxDB → Grafana)
+
+No functions are created in the monitored databases: all metrics are plain `SELECT`s from `sql/*.sql`
+run by a `pg_monitor`-only user.
+
+```bash
+docker compose up -d clickhouse db influxdb telegraf grafana
+make -C dashboards                                  # generate pg-* + ch-* dashboards (Python 3.13, grafana-foundation-sdk)
+(cd dashboards && .venv/bin/python check_queries.py) # every panel query runs through Grafana
+```
+
+- One Telegraf (`sql_monitor_telegraf`) monitors all instances (`DECISIONS.md` D21), see
+  [Monitored instances](#monitored-instances-one-telegraf-for-n-databases).
+- Dashboards: `pg-overview` → `pg-connections`, `pg-statements` → `pg-statement-detail`, `pg-indexes` (InfluxDB);
+  the same set as `ch-*` on ClickHouse (see [ClickHouse](#clickhouse-dual-write-decisionsmd-d17d20)).
+- ClickHouse settings: `CH_*` variables in `.env.example`, real passwords in the gitignored `.env.clickhouse`.
+- Docs: `PLAN.md`, `TASKS.md`, `STATUS.md`, `DECISIONS.md`, `docs/metrics-catalog.md`, `docs/runbooks/`.
+- Kubernetes: `charts/pg-telegraf` (InfluxDB output only, no ClickHouse).
+- Retention (`DECISIONS.md` D15, D16): `pg_monitoring."7d"` keeps raw points, `pg_monitoring."200d"` keeps 1h rollups
+  (continuous queries). Dashboards have a `Retention` variable (`7d` / `200d`).
+- `config/influxdb/init.sh` runs only on an empty InfluxDB volume. To apply RPs / CQs to an existing InfluxDB
+  (idempotent, safe to re-run):
+
+```bash
+docker compose up -d influxdb                                                          # mounts the downsampling script
+docker exec sql_monitor_influxdb sh /docker-entrypoint-initdb.d/init.sh                # all DBs, RPs and CQs
+docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitoring_downsample.sh  # + roll up the raw 7d
+```
+
+- External InfluxDB (Helm): `--set influxdbInit.enabled=true` (optionally `influxdbInit.backfill=true`,
+  `influxdbInit.existingSecret=<secret with INFLUX_USERNAME / INFLUX_PASSWORD>`) runs the same script as a
+  post-install/upgrade hook Job against `influxdb.host`. Or run it manually:
+  `INFLUX_ARGS="-host <influx> -port 8086" sh config/influxdb/pg_monitoring_downsample.sh`.
+
+### Monitored instances (one Telegraf for N databases)
+
+All connection settings live in one env file: `.env.example` (local demo: 4 instances `demo-db1..4` on the same
+PostgreSQL), real values in the gitignored `.env.dbs` (loaded after `.env.example`, last wins).
+
+```bash
+PG_INSTANCES=DB1,DB2,DB3,DB4   # ids: letters, digits, _
+DB1_INSTANCE=demo-db1          # tags db_instance / host / server of this instance
+DB1_DSN=postgres://telegraf_monitoring_user:...@host:5432/postgres?sslmode=disable&statement_timeout=5000
+DB1_APP_DSN=postgres://telegraf_monitoring_user:...@host:5432/demo?sslmode=disable&statement_timeout=5000
+DB1_ENV=stage                  # optional `env` tag of this instance, default PG_ENV
+# DB2_* .. DB4_*; PG_ENV (default env), INFLUX_DB_*, CH_* are set once for all instances
+```
+
+- `config/telegraf/inputs.d/*.conf` are input templates with `${PG_DSN}`, `${PG_APP_DSN}`, `${PG_INSTANCE}`, `${PG_ENV}`
+  (tags `db_instance`, `host`, `env` are set per input, not in `global_tags`).
+  `config/telegraf/entrypoint.sh` renders them once per id into the tmpfs `/etc/telegraf/rendered.d`
+  (`db1__cluster_activity.conf`, … with `${DB1_DSN}`, …: passwords are expanded by Telegraf, not written to files),
+  copies the static outputs of `config/telegraf/telegraf.d` and starts one `telegraf`.
+- New instance: add the id to `PG_INSTANCES` and its `<ID>_INSTANCE` / `<ID>_DSN` / `<ID>_APP_DSN`, then
+  `docker compose up -d telegraf`. A missing variable stops the container with `entrypoint: DB3_DSN is not set …`.
+- New metric: edit the template in `inputs.d` once, it applies to every instance.
+- Check without starting the agent:
+
+```bash
+docker compose run --rm --no-deps telegraf sh /etc/telegraf/entrypoint.sh --render-only  # list rendered files
+docker compose run --rm --no-deps telegraf sh /etc/telegraf/entrypoint.sh --test         # gather every input once
+```
+
+### Env filter and env comparison boards (`DECISIONS.md` D22, D23)
+
+- Every generated `pg-*` / `ch-*` board has an `Env` variable (the `env` tag = `<ID>_ENV` / `PG_ENV`, multi, All);
+  `Instance` lists the instances of the selected envs. `env` is part of every series key: with Env = All the tables
+  have an `env` column and two envs with the same instance name are never summed. Links carry `var-env`.
+- Env comparison: the same Instance in two envs, **Env A left, Env B right**, every table sorted descending.
+  Variables: `Env A`, `Env B` (sorted descending, so the default differs from Env A), `Instance` (single value),
+  `Database` (default All); `pg-cmp-*` also `Retention`. The `Env compare` links dropdown keeps them.
+
+| board (InfluxDB / ClickHouse) | what it compares |
+|---|---|
+| `pg-cmp-tables` / `ch-cmp-tables` | row count Δ (B − A, Δ %, sorted by \|Δ\|), tables of one env only, rows / sizes, seq scans and DML with share % of the env total |
+| `pg-cmp-indexes` / `ch-cmp-indexes` | indexes of one env only (new / missing), changed unique / primary / valid flags, scans with share %, unused, sizes |
+| `pg-cmp-statements` / `ch-cmp-statements` | query masks by total time / calls with share %, masks of one env only, mean time Δ; md5 → statement detail of that env |
+| `pg-cmp-schema` / `ch-cmp-schema` | one schema (+ table regex): the above for its tables and indexes; opened from the schemaname / relname cells |
+
+- Share % (of the env total) normalizes activity: the load differs between envs, the ordering stays by absolute value.
+- Objects are collected as top-N (300 tables / 500 indexes / 200 statements): "only in" may mean "outside the
+  top-N" of the other env; use a short range for composition checks (dropped objects stay inside the range).
+- Check with an instance present in both envs (single-value variables otherwise take the first option):
+
+```bash
+(cd dashboards && CHECK_VARS=env_a=perf,env_b=prod,db_instance=facade .venv/bin/python check_queries.py --only=cmp)
+(cd dashboards && CHECK_VARS=env_a=perf,env_b=prod,db_instance=facade .venv/bin/python check_queries.py --clickhouse --only=cmp)
+```
+
+### ClickHouse (dual write, `DECISIONS.md` D17–D20)
+
+Telegraf writes the same 13 `pg_monitoring` measurements to InfluxDB **and** ClickHouse (`[[outputs.sql]]`,
+`config/telegraf/telegraf.d/output_clickhouse.conf`). `docker compose up` starts the `clickhouse` service
+(`clickhouse/clickhouse-server:24.8`, volume `sql-monitor-clickhouse-data`) automatically: on an empty volume
+`config/clickhouse/init/01_schema.sql` creates the 13 tables (30-day TTL) and `02_users.sh` the users.
+Telegraf and Grafana wait until ClickHouse is healthy.
+
+```bash
+docker compose up -d clickhouse db influxdb telegraf grafana
+make -C dashboards                                                 # also writes ch-*.json
+(cd dashboards && .venv/bin/python check_queries.py --clickhouse)  # every ch-* panel SQL as reader, via Grafana
+curl -s -u admin:admin http://localhost:3000/api/datasources/uid/pg-monitoring-ch/health
+docker exec sql_monitor_clickhouse clickhouse-client --user admin --password admin -q "SHOW TABLES FROM pg_monitoring"
+```
+
+| user | used by | rights |
+|---|---|---|
+| `admin` (`CH_ADMIN_USER`) | operator | everything, incl. access management (replaces `default`) |
+| `writer` (`CH_WRITER_USER`) | Telegraf, native port 9000 | `INSERT, SELECT` on `pg_monitoring.*`, async inserts |
+| `reader` (`CH_READER_USER`) | Grafana datasource `pg-monitoring-ch` | `SELECT` on `pg_monitoring.*`, `readonly=2`, ≤ 60 s / 2 GB / 1M rows |
+
+- Env: `CH_HOST`, `CH_ADMIN_USER` / `CH_ADMIN_PASSWORD`, `CH_WRITER_USER` / `CH_WRITER_PASSWORD`,
+  `CH_READER_USER` / `CH_READER_PASSWORD`. `.env.example` has local defaults only; put real passwords into the
+  gitignored `.env.clickhouse` (ClickHouse, Grafana) and `.env.dbs` (Telegraf, same writer password).
+- Users are created only on the first start (empty volume). To apply changed passwords to an existing volume:
+  `docker exec -e CLICKHOUSE_USER=admin -e CLICKHOUSE_PASSWORD=admin sql_monitor_clickhouse bash /docker-entrypoint-initdb.d/02_users.sh`
+  (idempotent; use your `CH_ADMIN_*` values).
+- Dashboards (tags `clickhouse`, `ch-runbooks`; titles `PostgreSQL (ClickHouse) / …`): `ch-overview` → `ch-connections`,
+  `ch-statements` → `ch-statement-detail`, `ch-indexes`. Same variables and drill-down as the `pg-*` boards;
+  ClickHouse keeps raw data for 30 days, so there is no `Retention` variable.
+- Grafana downloads the `grafana-clickhouse-datasource` plugin at start (`GF_INSTALL_PLUGINS`): it needs internet
+  access, otherwise the `ch-*` boards show "plugin not found".
+- ClickHouse ports 8123 / 9000 are not published; use `docker exec … clickhouse-client` or uncomment `ports`.
+
+## Нагрузка на jmeter-java-dsl (Kotlin)
+
+Те же сценарии, что в `src/test/jmeter/sql_demo_test.jmx` (эталон, профиль `jmeter` не менялся), описаны на
+[jmeter-java-dsl](https://abstracta.github.io/jmeter-java-dsl/guide/#jdbc-and-databases-interactions)
+в `src/test/kotlin/qa/load/sql`:
+
+| Файл | Что там |
+|---|---|
+| `LoadProfile.kt` | **интенсивность**: множитель к `-Dtps` для каждого сценария |
+| `scenarios/Qpt03SeqScan.kt … Qpt11Technics.kt`, `QptTransaction.kt` | SQL-запросы сценария (название + текст) |
+| `pools/Pools.kt` | пулы: `ApplicationName`, пользователь, `poolMax`, autocommit |
+| `SqlDemoPlan.kt` | сборка плана: thread group на сценарий + пейсинг |
+
+С jmx совпадают `ApplicationName` и пользователи пулов, тексты SQL байт в байт (`queryid` в `pg_stat_statements`),
+типы запросов, названия запросов и транзакций, Backend Listener InfluxDB.
+
+#### Интенсивность
+
+Каждый сценарий (Stable) работает в своей thread group, одна итерация = одна транзакция (все запросы сценария по разу).
+Темп сценария = `tps × множитель` транзакций в секунду на всю группу (Constant Throughput Timer).
+Все множители `1.0` = как в jmx; `0.1` = в 10 раз реже; `0` = сценарий выключен.
+Менять можно в `LoadProfile.kt` или без правки кода: `-Drate.qpt_11_technics=0.1 -Drate.qpt_04_indexscan=5`.
+Потолок сценария — `thread_count / время транзакции` (qpt_11 ~0.5 с × 50 потоков ≈ 100 TPS).
+
+```bash
+mvn verify -P jmeter-dsl,Stable -Dtps=1.0          # сценарии qpt_03..qpt_11 + transaction + пул qpt_idle
+mvn verify -P jmeter-dsl,MaxPerf                   # MaxPerf
+docker compose --profile dsl up jmeter-dsl         # внутри sql-monitor-network, метрики в InfluxDB
+```
+
+Из IDE / с хоста (PostgreSQL на `localhost:5432`, порт InfluxDB наружу не открыт):
+
+```bash
+mvn -P jmeter-dsl test -Dtest=SqlDemoSmokeTest -Ddb.host=localhost -Dinfluxdb.enabled=false   # каждый запрос 1 раз, 0 ошибок
+mvn -P jmeter-dsl,Stable verify -Dduration=60 -Dthread_count=5 -Dtps=1.0 -Ddb.host=localhost -Dinfluxdb.enabled=false
+mvn -P jmeter-dsl,Stable test -Ddsl.exportOnly=true   # только сохранить target/jmeter-dsl/sql_demo_test.dsl.jmx
+```
+
+Параметры: `isStable`, `isMaxPerf`, `duration` (секунды), `tps`, `thread_count`, `title`, `testId` (как в jmx),
+`rate.<id сценария>` (множитель, см. выше), `db.host` (`sql_monitor_postgres`), `db.port`, `db.name`, `db.password`,
+`influxdb.host/port/database`, `influxdb.enabled`.
+Результаты: `target/jmeter-dsl/results/*.jtl`, HTML-отчёт `target/jmeter-dsl/report/`.
+
 
 ## Stop
 

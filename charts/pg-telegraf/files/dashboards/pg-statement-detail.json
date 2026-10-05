@@ -1,0 +1,772 @@
+{
+  "annotations": {},
+  "description": "Variants and full text of one query mask. Open it from the Statements board.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "pg-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Full mask text (pg_stmt_text, collected every 10 min).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"query_mask\") AS \"query_mask\" FROM \"$rp\".\"pg_stmt_text\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY \"env\", \"query_mask_md5\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Query mask",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT non_negative_derivative(last(\"calls\"), 1s) FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Calls / s",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Execution time / calls per interval: a step up with steady calls means a plan / data regression.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 3,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT \"t\" / \"c\" FROM ( SELECT non_negative_difference(last(\"total_exec_time\")) AS \"t\", non_negative_difference(last(\"calls\")) AS \"c\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\" fill(none) ) GROUP BY \"env\", \"db_instance\", \"usename\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Mean time per call",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Rows returned / affected per call: growth means the result set (data or filter) changes.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT \"r\" / \"c\" AS \"rows\" FROM ( SELECT non_negative_difference(last(\"rows\")) AS \"r\", non_negative_difference(last(\"calls\")) AS \"c\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\" fill(none) ) GROUP BY \"env\", \"db_instance\", \"usename\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Rows per call",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Buffer hits / reads per call (8 KB blocks): growth with steady rows per call means more pages scanned for the same result (plan change, bloat).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 5,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT \"h\" / \"c\" AS \"blks_hit\", \"r\" / \"c\" AS \"blks_read\" FROM ( SELECT non_negative_difference(last(\"shared_blks_hit\")) AS \"h\", non_negative_difference(last(\"shared_blks_read\")) AS \"r\", non_negative_difference(last(\"calls\")) AS \"c\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\" fill(none) ) GROUP BY \"env\", \"db_instance\", \"usename\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Shared blocks per call",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "pg_stmt (top-N) of the variants selected by query_md5 / queryid (all variants of the mask by default).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 6,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"d\") AS \"calls\" FROM ( SELECT non_negative_derivative(last(\"calls\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ AND query_md5 =~ /^$query_md5$/ AND \"queryid\"::tag =~ /^$queryid$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\", \"queryid\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Calls / s by queryid",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Execution time / calls per interval of the selected variants: shows which queryid regressed.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 7,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT sum(\"t\") / sum(\"c\") AS \"mean_ms\" FROM ( SELECT non_negative_difference(last(\"total_exec_time\")) AS \"t\", non_negative_difference(last(\"calls\")) AS \"c\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ AND query_md5 =~ /^$query_md5$/ AND \"queryid\"::tag =~ /^$queryid$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\", \"queryid\" fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Mean time per call by queryid",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Statements behind the mask (narrowed by the query_md5 / queryid variables). Click query_md5 / queryid to filter the board, query_mask_md5 to show the whole mask again.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Whole mask",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by query_md5",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by queryid",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ AND query_md5 =~ /^$query_md5$/ AND \"queryid\"::tag =~ /^$queryid$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\", \"query_md5\", \"queryid\", \"toplevel\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Variants (queryid)",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "pg-monitoring"
+      },
+      "description": "Full statement text (\u2264 10000 chars), one row per query_md5 + queryid. Use it for EXPLAIN (ANALYZE, BUFFERS) on a copy.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Whole mask",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by query_md5",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by queryid",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "id": 9,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "pg-monitoring"
+          },
+          "query": "SELECT last(\"query\") AS \"query\" FROM \"$rp\".\"pg_stmt_text\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ AND query_md5 =~ /^$query_md5$/ AND \"queryid\"::tag =~ /^$queryid$/ GROUP BY \"env\", \"db_instance\", \"query_mask_md5\", \"query_md5\", \"queryid\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Full text",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 10,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 55
+          },
+          "id": 1001,
+          "options": {
+            "content": "# Slow query regression\n\n**Symptom.** Response time of an endpoint grows; DB CPU / IO grows without a matching increase in traffic.\n\n**Where to look.** `pg-statements` \u2192 *Top masks* table (sorted by total time over the range) \u2192\nclick `query_mask_md5` \u2192 `pg-statement-detail` (variants by `query_md5`, full text, calls / time series).\n\n**How to interpret.**\n- Over the range: `spread(total_exec_time)` = time spent, `spread(calls)` = executions,\n  mean = `spread(total_exec_time) / spread(calls)` (ms).\n- Compare the same mask for two ranges (before / after release): mean \u2191 with calls \u2248 \u2192 plan / data regression;\n  calls \u2191 with mean \u2248 \u2192 more traffic or an N+1 pattern.\n- `variants` of a mask \u226b 1 \u2192 the same statement shape is produced with different IN-list sizes etc.\n- `shared_blks_read` \u2191 \u2192 data no longer fits the cache ([cache hit drop](cache-hit-drop.md));\n  `temp_blks_written` \u2191 \u2192 sorts / hashes spill ([temp file spills](temp-file-spills.md)).\n- `rows / calls` \u2191 \u2192 the query returns more data (missing filter / pagination).\n\n**Likely causes.** New code path, changed plan (stale statistics, parameter sniffing on generic plans),\nmissing index, data growth, N+1 queries from the ORM.\n\n**Actions.**\n1. Take the full text from `pg_stmt_text` (detail board) and run `EXPLAIN (ANALYZE, BUFFERS)` on a copy.\n2. Check [autovacuum / analyze](autovacuum-lag.md) freshness of the involved tables.\n3. Check [indexes](unused-missing-indexes.md) for seq-scan-heavy tables involved.\n4. For N+1: batch the calls (`= ANY($1)`), which also collapses variants.\n\n**Related SQL.** `sql/cluster_stmt_mask.sql`, `sql/cluster_stmt.sql`, `sql/cluster_stmt_text.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Slow query regression",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "pg-runbooks",
+    "postgresql"
+  ],
+  "templating": {
+    "list": [
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "current": {
+          "selected": true,
+          "text": "7d",
+          "value": "7d"
+        },
+        "description": "7d: raw points; 200d: 1h rollups (use ranges of days or more)",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Retention",
+        "multi": false,
+        "name": "rp",
+        "options": [
+          {
+            "selected": true,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "200d",
+            "value": "200d"
+          }
+        ],
+        "query": "7d,200d",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"env\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\" WHERE env =~ /^$env$/",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Mask md5",
+        "multi": false,
+        "name": "query_mask_md5",
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Query md5",
+        "multi": false,
+        "name": "query_md5",
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Query id",
+        "multi": false,
+        "name": "queryid",
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL / Statement detail",
+  "uid": "pg-statement-detail"
+}

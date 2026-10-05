@@ -1,0 +1,48 @@
+<!-- Small single-node ClickHouse for the local monitoring stack: less logging, fewer system log tables, smaller caches. -->
+<clickhouse>
+    <logger>
+        <level>warning</level>
+        <console>1</console>
+        <size>100M</size>
+        <count>3</count>
+    </logger>
+
+    <!-- Per-thread / profiling logs are the biggest background writers; not needed here. -->
+    <query_thread_log remove="1"/>
+    <query_views_log remove="1"/>
+    <trace_log remove="1"/>
+    <metric_log remove="1"/>
+    <asynchronous_metric_log remove="1"/>
+    <processors_profile_log remove="1"/>
+    <opentelemetry_span_log remove="1"/>
+    <!--
+         Sections missing in this version (latency_log, query_metric_log on 24.8) are ignored. -->
+    <text_log remove="1"/>
+    <part_log remove="1"/>
+    <session_log remove="1"/>
+    <error_log remove="1"/>
+    <latency_log remove="1"/>
+    <query_metric_log remove="1"/>
+    <blob_storage_log remove="1"/>
+    <background_schedule_pool_log remove="1"/>
+    <!-- No async inserts any more (Telegraf writes into Buffer tables, see init/01_schema.sql). -->
+    <asynchronous_insert_log remove="1"/>
+
+    <!-- Keep query_log (reader queries, writer exceptions) for 3 days only. -->
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+
+    <mark_cache_size>268435456</mark_cache_size>
+    <uncompressed_cache_size>0</uncompressed_cache_size>
+    <max_server_memory_usage_to_ram_ratio>0.75</max_server_memory_usage_to_ram_ratio>
+    <max_concurrent_queries>50</max_concurrent_queries>
+
+    <!-- No crash reports sent from the local stack. -->
+    <send_crash_reports>
+        <enabled>false</enabled>
+    </send_crash_reports>
+</clickhouse>

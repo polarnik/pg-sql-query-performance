@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "helm.fullname" . }}-config"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+data:
+  telegraf.conf: |
+    {{- .Files.Get "files/telegraf.conf" | nindent 4 }}
+  entrypoint.sh: |
+    {{- .Files.Get "files/entrypoint.sh" | nindent 4 }}
+---
+# Input templates, rendered once per instance by entrypoint.sh (${PG_DSN} -> ${DB1_DSN}, ...)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "helm.fullname" . }}-inputs"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+data:
+  {{- range $path, $_ := .Files.Glob "files/inputs.d/*.conf" }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
+{{- with .Files.Glob "files/telegraf.d/*.conf" }}
+---
+# Static configs (outputs), copied as is next to the rendered inputs
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "helm.fullname" $ }}-static"
+  labels:
+    {{- include "helm.labels" $ | nindent 4 }}
+data:
+  {{- range $path, $_ := . }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ include "helm.fullname" . }}-sql"
+  labels:
+    {{- include "helm.labels" . | nindent 4 }}
+data:
+  {{- range $path, $_ := .Files.Glob "files/sql/*.sql" }}
+  {{ base $path }}: |
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}

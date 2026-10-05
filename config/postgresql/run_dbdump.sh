@@ -15,20 +15,17 @@ psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/grafana_db.
 echo "Load PostgreSQL Extensions"
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
 
-ALTER SYSTEM SET shared_preload_libraries='pg_stat_statements','auto_explain';
+-- shared_preload_libraries, track_io_timing, track_activity_query_size are set in docker-compose.yml (command)
 ALTER SYSTEM SET track_activities = 'on';
-ALTER SYSTEM SET track_activity_query_size = 1000;
 ALTER SYSTEM SET track_counts = 'on';
 ALTER SYSTEM SET track_io_timing = 'on';
 ALTER SYSTEM SET track_functions = 'all';
 
-ALTER SYSTEM SET max_connections = 10000;
+ALTER SYSTEM SET max_connections = 1000;
 ALTER SYSTEM SET shared_buffers = '480MB';
 
 EOSQL
 echo "Load PostgreSQL Extensions ... complete"
-
-pg_ctl -D /var/lib/postgresql/data/pgdata restart
 
 
 echo "Create PostgreSQL Extensions"
@@ -44,14 +41,9 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 EOSQL
 
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_user.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_count.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle_in_transaction.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_idle.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_activity_waiting.sql
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_stat_statements.sql
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f /sql.tmp/monitoring_user.sql
 
-echo "Create Monitoring Functions ... complete"
+echo "Create Monitoring User (pg_monitor, no functions) ... complete"
 
 echo "Restore Backup"
 

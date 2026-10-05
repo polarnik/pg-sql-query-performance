@@ -1,0 +1,1940 @@
+{
+  "annotations": {},
+  "description": "pg_stat_statements totals by datname / db_instance / usename (pg_stmt_totals, all entries) and top-N by query mask and by queryid. Click datname / db_instance / usename to filter the board. Source: ClickHouse pg_monitoring (dual write).",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ch-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks (ClickHouse)",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Breakdown: datname / db_instance / usename",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT sum(c_total_ms) AS total_ms FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))))) AS c_total_ms FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename)",
+          "refId": "A"
+        }
+      ],
+      "title": "Total exec time",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 3,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT sum(c_calls) AS calls FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))))) AS c_calls FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename)",
+          "refId": "A"
+        }
+      ],
+      "title": "Calls",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 4,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT mean_ms FROM (SELECT sum(c_total_ms) AS total_ms, sum(c_calls) AS calls, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))))) AS c_total_ms, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))))) AS c_calls FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename))",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean time",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 5,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT sum(c_rows) AS rows FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))))) AS c_rows FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename)",
+          "refId": "A"
+        }
+      ],
+      "title": "Rows",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 6,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT hit_ratio FROM (SELECT sum(c_blks_hit) AS blks_hit, sum(c_blks_read) AS blks_read, 100 * blks_hit / nullIf((blks_hit + blks_read), 0) AS hit_ratio FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))))) AS c_blks_hit, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))))) AS c_blks_read FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename))",
+          "refId": "A"
+        }
+      ],
+      "title": "Cache hit %",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "pg_stat_statements entries at the end of the range (compare with pg_stat_statements.max).",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 7,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT sum(c_statements) AS statements FROM (SELECT env, db_instance, datname, usename, argMax(statements, time) AS c_statements FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename)",
+          "refId": "A"
+        }
+      ],
+      "title": "Statements (entries)",
+      "transformations": [],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board. statements = pg_stat_statements entries at the end of the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blk_read_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hit_ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_hit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "statements"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, datname, sum(c_total_ms) AS total_ms, sum(c_calls) AS calls, sum(c_rows) AS rows, sum(c_blks_read) AS blks_read, sum(c_blks_hit) AS blks_hit, sum(c_temp_blks_written) AS temp_blks_written, sum(c_blk_read_ms) AS blk_read_ms, sum(c_statements) AS statements, total_ms / nullIf(calls, 0) AS mean_ms, 100 * blks_hit / nullIf((blks_hit + blks_read), 0) AS hit_ratio FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))))) AS c_total_ms, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))))) AS c_calls, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))))) AS c_rows, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))))) AS c_blks_read, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))))) AS c_blks_hit, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))))) AS c_temp_blks_written, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blk_read_time)), groupArray(time))))) AS c_blk_read_ms, argMax(statements, time) AS c_statements FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename) GROUP BY env, datname",
+          "refId": "A"
+        }
+      ],
+      "title": "Totals by datname",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board. statements = pg_stat_statements entries at the end of the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blk_read_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hit_ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_hit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "statements"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 13
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, datname, db_instance, sum(c_total_ms) AS total_ms, sum(c_calls) AS calls, sum(c_rows) AS rows, sum(c_blks_read) AS blks_read, sum(c_blks_hit) AS blks_hit, sum(c_temp_blks_written) AS temp_blks_written, sum(c_blk_read_ms) AS blk_read_ms, sum(c_statements) AS statements, total_ms / nullIf(calls, 0) AS mean_ms, 100 * blks_hit / nullIf((blks_hit + blks_read), 0) AS hit_ratio FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))))) AS c_total_ms, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))))) AS c_calls, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))))) AS c_rows, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))))) AS c_blks_read, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))))) AS c_blks_hit, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))))) AS c_temp_blks_written, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blk_read_time)), groupArray(time))))) AS c_blk_read_ms, argMax(statements, time) AS c_statements FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename) GROUP BY env, datname, db_instance",
+          "refId": "A"
+        }
+      ],
+      "title": "Totals by datname + db_instance",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. Click datname / db_instance / usename to filter the whole board. statements = pg_stat_statements entries at the end of the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blk_read_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hit_ratio"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rows"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_hit"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "statements"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usename"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, datname, usename, sum(c_total_ms) AS total_ms, sum(c_calls) AS calls, sum(c_rows) AS rows, sum(c_blks_read) AS blks_read, sum(c_blks_hit) AS blks_hit, sum(c_temp_blks_written) AS temp_blks_written, sum(c_blk_read_ms) AS blk_read_ms, sum(c_statements) AS statements, total_ms / nullIf(calls, 0) AS mean_ms, 100 * blks_hit / nullIf((blks_hit + blks_read), 0) AS hit_ratio FROM (SELECT env, db_instance, datname, usename, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))))) AS c_total_ms, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))))) AS c_calls, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))))) AS c_rows, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))))) AS c_blks_read, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))))) AS c_blks_hit, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))))) AS c_temp_blks_written, arraySum(arrayMap(d -> greatest(d, 0), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blk_read_time)), groupArray(time))))) AS c_blk_read_ms, argMax(statements, time) AS c_statements FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename) GROUP BY env, datname, usename",
+          "refId": "A"
+        }
+      ],
+      "title": "Totals by datname + usename",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "All statements (pg_stmt_totals) per datname. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 40,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__field.labels.env}&${db_instance:queryparam}&var-datname=${__field.labels.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "id": 11,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, datname, sum(greatest(c_total_exec_time - p_total_exec_time, 0) / dateDiff('second', pt, t)) AS total_exec_time FROM (SELECT t, env, db_instance, datname, usename, lagInFrame(t, 1, t) OVER w AS pt, c_total_exec_time, lagInFrame(c_total_exec_time, 1, c_total_exec_time) OVER w AS p_total_exec_time FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, argMax(total_exec_time, time) AS c_total_exec_time FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY t, env, db_instance, datname, usename) WINDOW w AS (PARTITION BY env, db_instance, datname, usename ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, datname ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Exec time / s by datname",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "All statements (pg_stmt_totals) per usename. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 40,
+            "stacking": {
+              "mode": "normal"
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__field.labels.env}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__field.labels.usename}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "id": 12,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, usename, sum(greatest(c_total_exec_time - p_total_exec_time, 0) / dateDiff('second', pt, t)) AS total_exec_time FROM (SELECT t, env, db_instance, datname, usename, lagInFrame(t, 1, t) OVER w AS pt, c_total_exec_time, lagInFrame(c_total_exec_time, 1, c_total_exec_time) OVER w AS p_total_exec_time FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, argMax(total_exec_time, time) AS c_total_exec_time FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY t, env, db_instance, datname, usename) WINDOW w AS (PARTITION BY env, db_instance, datname, usename ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, usename ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Exec time / s by usename",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 37
+      },
+      "id": 13,
+      "panels": [],
+      "title": "Top query masks / statements",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "All statements (pg_stmt_totals) per db_instance. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__field.labels.env}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 14,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, db_instance, sum(greatest(c_total_exec_time - p_total_exec_time, 0) / dateDiff('second', pt, t)) AS total_exec_time FROM (SELECT t, env, db_instance, datname, usename, lagInFrame(t, 1, t) OVER w AS pt, c_total_exec_time, lagInFrame(c_total_exec_time, 1, c_total_exec_time) OVER w AS p_total_exec_time FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, argMax(total_exec_time, time) AS c_total_exec_time FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY t, env, db_instance, datname, usename) WINDOW w AS (PARTITION BY env, db_instance, datname, usename ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Execution time / s (all statements)",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "All statements (pg_stmt_totals) per db_instance. Click a series to filter the board.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ops"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": ".*"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__field.labels.env}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 38
+      },
+      "id": 15,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, db_instance, sum(greatest(c_calls - p_calls, 0) / dateDiff('second', pt, t)) AS calls FROM (SELECT t, env, db_instance, datname, usename, lagInFrame(t, 1, t) OVER w AS pt, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY t, env, db_instance, datname, usename) WINDOW w AS (PARTITION BY env, db_instance, datname, usename ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Calls / s (all statements)",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "One row per mask (IN-lists / VALUES collapsed). Click query_mask_md5 for variants and full text. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usename"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 16,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_blks_hit AS blks_hit, c_temp_blks_written AS temp_blks_written, c_variants AS variants, c_query_mask AS query_mask, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(variants, time) AS c_variants, argMax(query_mask_short, time) AS c_query_mask FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename, query_mask_md5)",
+          "refId": "A"
+        }
+      ],
+      "title": "Top query masks",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_mask_md5 / query_md5 / queryid for the statement detail narrowed to that key. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "blks_read"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "temp_blks_written"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "db_instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by db_instance",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "datname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by datname",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "usename"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by usename",
+                    "url": "/d/ch-statements?${__url_time_range}&${env:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail (queryid)",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Mask detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 60
+      },
+      "id": 17,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel)",
+          "refId": "A"
+        }
+      ],
+      "title": "Top statements (queryid)",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "dealloc_in_range > 0: entries were evicted, raise pg_stat_statements.max. stats_reset inside the range: counters were reset.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "stats_reset"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "dealloc_in_range"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 100
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 72
+      },
+      "id": 18,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT env, db_instance, c_entries AS entries, c_max_entries AS max_entries, c_dealloc AS dealloc, c_dealloc_in_range AS dealloc_in_range, c_stats_reset AS stats_reset FROM (SELECT env, db_instance, argMax(entries, time) AS c_entries, argMax(max_entries, time) AS c_max_entries, argMax(dealloc, time) AS c_dealloc, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(dealloc)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(dealloc)), groupArray(time)))) AS c_dealloc_in_range, argMax(stats_reset_epoch, time) * 1000 AS c_stats_reset FROM pg_monitoring.pg_stmt_info WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY env, db_instance)",
+          "refId": "A"
+        }
+      ],
+      "title": "Statements health",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 78
+      },
+      "id": 19,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 79
+          },
+          "id": 1901,
+          "options": {
+            "content": "# Slow query regression\n\n**Symptom.** Response time of an endpoint grows; DB CPU / IO grows without a matching increase in traffic.\n\n**Where to look.** `pg-statements` \u2192 *Top masks* table (sorted by total time over the range) \u2192\nclick `query_mask_md5` \u2192 `pg-statement-detail` (variants by `query_md5`, full text, calls / time series).\n\n**How to interpret.**\n- Over the range: `spread(total_exec_time)` = time spent, `spread(calls)` = executions,\n  mean = `spread(total_exec_time) / spread(calls)` (ms).\n- Compare the same mask for two ranges (before / after release): mean \u2191 with calls \u2248 \u2192 plan / data regression;\n  calls \u2191 with mean \u2248 \u2192 more traffic or an N+1 pattern.\n- `variants` of a mask \u226b 1 \u2192 the same statement shape is produced with different IN-list sizes etc.\n- `shared_blks_read` \u2191 \u2192 data no longer fits the cache ([cache hit drop](cache-hit-drop.md));\n  `temp_blks_written` \u2191 \u2192 sorts / hashes spill ([temp file spills](temp-file-spills.md)).\n- `rows / calls` \u2191 \u2192 the query returns more data (missing filter / pagination).\n\n**Likely causes.** New code path, changed plan (stale statistics, parameter sniffing on generic plans),\nmissing index, data growth, N+1 queries from the ORM.\n\n**Actions.**\n1. Take the full text from `pg_stmt_text` (detail board) and run `EXPLAIN (ANALYZE, BUFFERS)` on a copy.\n2. Check [autovacuum / analyze](autovacuum-lag.md) freshness of the involved tables.\n3. Check [indexes](unused-missing-indexes.md) for seq-scan-heavy tables involved.\n4. For N+1: batch the calls (`= ANY($1)`), which also collapses variants.\n\n**Related SQL.** `sql/cluster_stmt_mask.sql`, `sql/cluster_stmt.sql`, `sql/cluster_stmt_text.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: Slow query regression",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 79
+      },
+      "id": 20,
+      "panels": [
+        {
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 14,
+            "w": 24,
+            "x": 0,
+            "y": 80
+          },
+          "id": 2001,
+          "options": {
+            "content": "# pg_stat_statements reset / dealloc\n\n**Symptom.** Statement tables show negative or sudden drops, masks disappear, totals look too small.\n\n**Where to look.** `pg-statements` \u2192 *Statements health* row (dealloc, entries / max, last reset).\n\n**How to interpret.**\n- `pg_stmt_info.stats_reset_epoch` changed inside the range \u2192 counters were reset; `spread()` across the reset is wrong,\n  use a range that starts after the reset.\n- `pg_settings_limits.postmaster_start_epoch` changed \u2192 restart / failover, all counters restart from 0.\n- `spread(pg_stmt_info.dealloc)` > 0 \u2192 entries were evicted because `entries` reached `max_entries`\n  (`pg_stat_statements.max`); rare statements are lost and totals are underestimated.\n- `pg_stmt.stats_since_epoch` newer than the range start \u2192 that statement entry was (re)created inside the range.\n\n**Likely causes.** Someone called `pg_stat_statements_reset()`, instance restart / failover,\ntoo many distinct statements (unparameterized SQL, variable IN-lists, temp tables) with a small `pg_stat_statements.max`.\n\n**Actions.**\n1. Choose a time range that does not cross the reset / restart.\n2. If `dealloc` grows: raise `pg_stat_statements.max` (e.g. 10000) in the parameter group; parameterize SQL;\n   use `= ANY($1)` instead of variable IN-lists.\n3. Agree on a reset policy for perf tests (reset only at test start, record the time in the test report).\n\n**Related SQL.** `sql/cluster_stmt_info.sql`, `sql/cluster_settings_limits.sql`, `sql/cluster_stmt.sql`.\n",
+            "mode": "markdown"
+          },
+          "repeatDirection": "h",
+          "title": "",
+          "transformations": [],
+          "transparent": false,
+          "type": "text"
+        }
+      ],
+      "title": "Runbook: pg_stat_statements reset / dealloc",
+      "type": "row"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "ch-runbooks",
+    "postgresql",
+    "clickhouse"
+  ],
+  "templating": {
+    "list": [
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Instance",
+        "multi": true,
+        "name": "db_instance",
+        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) ORDER BY db_instance",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) ORDER BY datname",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "User",
+        "multi": true,
+        "name": "usename",
+        "query": "SELECT DISTINCT usename FROM pg_monitoring.pg_stmt_totals WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) ORDER BY usename",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL (ClickHouse) / Statements",
+  "uid": "ch-statements"
+}
