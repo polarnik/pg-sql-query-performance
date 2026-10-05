@@ -3,7 +3,7 @@
 Source of truth for what Telegraf collects. Every measurement has one SQL file in `sql/`, tested on
 PostgreSQL 17 as a user that only has `pg_monitor` (see `config/postgresql/monitoring_user.sql`).
 
-- Global tags on every metric: `db_instance` (`PG_INSTANCE`), `env` (`PG_ENV`), `host`; routing tags
+- Tags on every metric: `db_instance` = `host` = `server` (`<ID>_INSTANCE`, set per input, D21), `env` (`PG_ENV`); routing tags
   `db_and_stand` / `retention_policy` are consumed by the output and not stored.
 - Storage: InfluxDB `pg_monitoring` (`pg-*` boards) **and** ClickHouse `pg_monitoring.<measurement>` (`ch-*` boards),
   see [ClickHouse tables](#clickhouse-tables-pg_monitoring-d17d18).
@@ -34,7 +34,7 @@ PostgreSQL 17 as a user that only has `pg_monitor` (see `config/postgresql/monit
 
 Classic boards (`pgActivity` / `pgquery` / `pgstat`): `pg_stat_statements` (`sql/cluster_stat_statements.sql`, 60s),
 `pg_stat_activity_count`, `pg_stat_activity_idle`, `pg_stat_activity_idle_in_transaction`, `pg_stat_activity_waiting`
-(`sql/cluster_stat_activity_*.sql`, 5s) in `config/telegraf/telegraf.d/cluster_classic_boards.conf`; all instances,
+(`sql/cluster_stat_activity_*.sql`, 5s) in `config/telegraf/inputs.d/cluster_classic_boards.conf`; all instances,
 Influx DBs `INFLUX_DB_STATEMENTS` / `INFLUX_DB_ACTIVITY`; docker-compose only (not shipped by `charts/pg-telegraf`).
 No input uses inline `sqlquery`: every query is a `script = "/etc/telegraf/sql/<file>.sql"`.
 

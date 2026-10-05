@@ -1,29 +1,3 @@
-# One Telegraf per monitored PostgreSQL instance, identical config (telegraf.d + sql/).
-# Env load order: .env.example (defaults) -> config/telegraf/env/dbN.env (instance name) -> .env.dbN (real DSN, gitignored).
-x-telegraf: &telegraf
-  image: telegraf:1.32
-  restart: unless-stopped
-  depends_on:
-    influxdb:
-      condition: service_healthy
-    db:
-      condition: service_healthy
-    clickhouse:
-      condition: service_healthy
-  environment:
-    - INFLUXDB_HOST=sql_monitor_influxdb
-  volumes:
-    - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
-    - "./config/telegraf/telegraf.d:/etc/telegraf/telegraf.d:ro"
-    - "./sql:/etc/telegraf/sql:ro"
-  command: "telegraf --config /etc/telegraf/telegraf.conf --config-directory /etc/telegraf/telegraf.d/"
-  healthcheck:
-    test: ["CMD-SHELL", "curl -XGET localhost:8080"]
-    interval: 10s
-    timeout: 10s
-    retries: 40
-    start_period: 90s
-
 services:
 
 
@@ -109,9 +83,9 @@ services:
       - clickhouse-data:/var/lib/clickhouse
       - "./config/clickhouse/config.d/low-resources.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro"
       - "./config/clickhouse/init:/docker-entrypoint-initdb.d:ro"
-    #ports:
-    #  - 8123:8123
-    #  - 9000:9000
+    ports:
+      - 8123:8123
+      - 9000:9000
     healthcheck:
       test: ["CMD-SHELL", "clickhouse-client --host 127.0.0.1 --user \"${CH_WRITER_USER:-writer}\" --password \"${CH_WRITER_PASSWORD:-writer}\" -q 'SELECT 1' >/dev/null 2>&1"]
       interval: 10s
@@ -119,41 +93,42 @@ services:
       retries: 30
       start_period: 30s
 
+  # One Telegraf for all monitored PostgreSQL instances (PG_INSTANCES=DB1,...; DBn_INSTANCE / DBn_DSN / DBn_APP_DSN).
+  # config/telegraf/entrypoint.sh renders the input templates of config/telegraf/inputs.d once per instance
+  # into the tmpfs /etc/telegraf/rendered.d (+ static outputs of telegraf.d) and starts telegraf.
+  # Env load order: .env.example (defaults) -> .env.dbs (real DSNs of all instances, gitignored), last wins.
   telegraf:
-    <<: *telegraf
+    image: telegraf:1.32
     container_name: sql_monitor_telegraf
+    restart: unless-stopped
+    depends_on:
+      influxdb:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
     env_file:
       - path: .env.example
-      - path: config/telegraf/env/db1.env
-      - path: .env.db1
+      - path: .env.dbs
         required: false
-
-  telegraf-db2:
-    <<: *telegraf
-    container_name: sql_monitor_telegraf_db2
-    env_file:
-      - path: .env.example
-      - path: config/telegraf/env/db2.env
-      - path: .env.db2
-        required: false
-
-  telegraf-db3:
-    <<: *telegraf
-    container_name: sql_monitor_telegraf_db3
-    env_file:
-      - path: .env.example
-      - path: config/telegraf/env/db3.env
-      - path: .env.db3
-        required: false
-
-  telegraf-db4:
-    <<: *telegraf
-    container_name: sql_monitor_telegraf_db4
-    env_file:
-      - path: .env.example
-      - path: config/telegraf/env/db4.env
-      - path: .env.db4
-        required: false
+    environment:
+      - INFLUXDB_HOST=sql_monitor_influxdb
+    volumes:
+      - "./config/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro"
+      - "./config/telegraf/telegraf.d:/etc/telegraf/telegraf.d:ro"
+      - "./config/telegraf/inputs.d:/etc/telegraf/inputs.d:ro"
+      - "./config/telegraf/entrypoint.sh:/etc/telegraf/entrypoint.sh:ro"
+      - "./sql:/etc/telegraf/sql:ro"
+    tmpfs:
+      - /etc/telegraf/rendered.d:mode=1777
+    command: ["sh", "/etc/telegraf/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -XGET localhost:8080"]
+      interval: 10s
+      timeout: 10s
+      retries: 40
+      start_period: 90s
 
   grafana:
     image: grafana/grafana:11.3.0

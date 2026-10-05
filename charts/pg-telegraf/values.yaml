@@ -29,11 +29,13 @@ influxdbInit:
       cpu: 10m
       memory: 32Mi
 
-# Environment tag on every metric
+# Default environment tag (`env`) of the instances without their own `env`
 env: perf
 
-# One Telegraf Deployment per monitored PostgreSQL instance (same telegraf.d + sql for all).
-# name        -> db_instance tag and Deployment suffix
+# Monitored PostgreSQL instances, all served by ONE Telegraf Deployment: files/entrypoint.sh renders
+# files/inputs.d once per instance (env DB<N>_INSTANCE / DB<N>_DSN / DB<N>_APP_DSN, N = position in the list).
+# name        -> db_instance / host / server tag (unique)
+# env         -> optional `env` tag of this instance, default .Values.env
 # existingSecret: Secret with keys PG_DSN (maintenance DB, cluster-wide metrics) and
 #                 PG_APP_DSN (application DB, table/index metrics). Recommended.
 # dsn / appDsn: only for dev stands - the chart then creates the Secret itself.
@@ -42,6 +44,7 @@ instances:
     existingSecret: pg-telegraf-db1
 #  - name: db2
 #    existingSecret: pg-telegraf-db2
+#    env: stage
 #  - name: dev
 #    dsn: "postgres://telegraf_monitoring_user:pass@postgres:5432/postgres?sslmode=disable&statement_timeout=5000"
 #    appDsn: "postgres://telegraf_monitoring_user:pass@postgres:5432/demo?sslmode=disable&statement_timeout=5000"
@@ -75,10 +78,11 @@ containerSecurityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
 
+# One agent for all instances (metric_buffer_limit 40000): scale with the number of instances
 resources:
   limits:
-    cpu: 200m
-    memory: 256Mi
+    cpu: 500m
+    memory: 512Mi
   requests:
-    cpu: 50m
-    memory: 64Mi
+    cpu: 100m
+    memory: 128Mi

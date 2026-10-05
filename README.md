@@ -17,12 +17,13 @@ No functions are created in the monitored databases: all metrics are plain `SELE
 run by a `pg_monitor`-only user.
 
 ```bash
-docker compose up -d clickhouse db influxdb telegraf telegraf-db2 telegraf-db3 telegraf-db4 grafana
+docker compose up -d clickhouse db influxdb telegraf grafana
 make -C dashboards                                  # generate pg-* + ch-* dashboards (Python 3.13, grafana-foundation-sdk)
 (cd dashboards && .venv/bin/python check_queries.py) # every panel query runs through Grafana
 ```
 
-- Real instances: copy `.env.example` to `.env.db1..4` (gitignored) and set `PG_DSN` / `PG_APP_DSN`.
+- One Telegraf (`sql_monitor_telegraf`) monitors all instances (`DECISIONS.md` D21), see
+  [Monitored instances](#monitored-instances-one-telegraf-for-n-databases).
 - Dashboards: `pg-overview` → `pg-connections`, `pg-statements` → `pg-statement-detail`, `pg-indexes` (InfluxDB);
   the same set as `ch-*` on ClickHouse (see [ClickHouse](#clickhouse-dual-write-decisionsmd-d17d20)).
 - ClickHouse settings: `CH_*` variables in `.env.example`, real passwords in the gitignored `.env.clickhouse`.
@@ -44,6 +45,35 @@ docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitori
   post-install/upgrade hook Job against `influxdb.host`. Or run it manually:
   `INFLUX_ARGS="-host <influx> -port 8086" sh config/influxdb/pg_monitoring_downsample.sh`.
 
+### Monitored instances (one Telegraf for N databases)
+
+All connection settings live in one env file: `.env.example` (local demo: 4 instances `demo-db1..4` on the same
+PostgreSQL), real values in the gitignored `.env.dbs` (loaded after `.env.example`, last wins).
+
+```bash
+PG_INSTANCES=DB1,DB2,DB3,DB4   # ids: letters, digits, _
+DB1_INSTANCE=demo-db1          # tags db_instance / host / server of this instance
+DB1_DSN=postgres://telegraf_monitoring_user:...@host:5432/postgres?sslmode=disable&statement_timeout=5000
+DB1_APP_DSN=postgres://telegraf_monitoring_user:...@host:5432/demo?sslmode=disable&statement_timeout=5000
+DB1_ENV=stage                  # optional `env` tag of this instance, default PG_ENV
+# DB2_* .. DB4_*; PG_ENV (default env), INFLUX_DB_*, CH_* are set once for all instances
+```
+
+- `config/telegraf/inputs.d/*.conf` are input templates with `${PG_DSN}`, `${PG_APP_DSN}`, `${PG_INSTANCE}`, `${PG_ENV}`
+  (tags `db_instance`, `host`, `env` are set per input, not in `global_tags`).
+  `config/telegraf/entrypoint.sh` renders them once per id into the tmpfs `/etc/telegraf/rendered.d`
+  (`db1__cluster_activity.conf`, … with `${DB1_DSN}`, …: passwords are expanded by Telegraf, not written to files),
+  copies the static outputs of `config/telegraf/telegraf.d` and starts one `telegraf`.
+- New instance: add the id to `PG_INSTANCES` and its `<ID>_INSTANCE` / `<ID>_DSN` / `<ID>_APP_DSN`, then
+  `docker compose up -d telegraf`. A missing variable stops the container with `entrypoint: DB3_DSN is not set …`.
+- New metric: edit the template in `inputs.d` once, it applies to every instance.
+- Check without starting the agent:
+
+```bash
+docker compose run --rm --no-deps telegraf sh /etc/telegraf/entrypoint.sh --render-only  # list rendered files
+docker compose run --rm --no-deps telegraf sh /etc/telegraf/entrypoint.sh --test         # gather every input once
+```
+
 ### ClickHouse (dual write, `DECISIONS.md` D17–D20)
 
 Telegraf writes the same 13 `pg_monitoring` measurements to InfluxDB **and** ClickHouse (`[[outputs.sql]]`,
@@ -53,7 +83,7 @@ Telegraf writes the same 13 `pg_monitoring` measurements to InfluxDB **and** Cli
 Telegraf and Grafana wait until ClickHouse is healthy.
 
 ```bash
-docker compose up -d clickhouse db influxdb telegraf telegraf-db2 telegraf-db3 telegraf-db4 grafana
+docker compose up -d clickhouse db influxdb telegraf grafana
 make -C dashboards                                                 # also writes ch-*.json
 (cd dashboards && .venv/bin/python check_queries.py --clickhouse)  # every ch-* panel SQL as reader, via Grafana
 curl -s -u admin:admin http://localhost:3000/api/datasources/uid/pg-monitoring-ch/health
@@ -68,7 +98,7 @@ docker exec sql_monitor_clickhouse clickhouse-client --user admin --password adm
 
 - Env: `CH_HOST`, `CH_ADMIN_USER` / `CH_ADMIN_PASSWORD`, `CH_WRITER_USER` / `CH_WRITER_PASSWORD`,
   `CH_READER_USER` / `CH_READER_PASSWORD`. `.env.example` has local defaults only; put real passwords into the
-  gitignored `.env.clickhouse` (ClickHouse, Grafana) and `.env.db1..4` (Telegraf, same writer password).
+  gitignored `.env.clickhouse` (ClickHouse, Grafana) and `.env.dbs` (Telegraf, same writer password).
 - Users are created only on the first start (empty volume). To apply changed passwords to an existing volume:
   `docker exec -e CLICKHOUSE_USER=admin -e CLICKHOUSE_PASSWORD=admin sql_monitor_clickhouse bash /docker-entrypoint-initdb.d/02_users.sh`
   (idempotent; use your `CH_ADMIN_*` values).

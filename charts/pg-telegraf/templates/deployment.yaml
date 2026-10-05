@@ -1,59 +1,84 @@
-{{- range .Values.instances }}
----
+{{- /* One Telegraf for all instances: instance N gets the id DB<N> (DB1, DB2, ...) in PG_INSTANCES and
+       DB<N>_INSTANCE / DB<N>_DSN / DB<N>_APP_DSN / DB<N>_ENV (instance env, default .Values.env);
+       entrypoint.sh renders files/inputs.d once per id. */ -}}
+{{- if not .Values.instances }}
+{{- fail "instances: at least one PostgreSQL instance is required" }}
+{{- end }}
+{{- $ids := list }}
+{{- $names := dict }}
+{{- range $i, $inst := .Values.instances }}
+{{- if hasKey $names $inst.name }}
+{{- fail (printf "instances: duplicate name %q" $inst.name) }}
+{{- end }}
+{{- $_ := set $names $inst.name true }}
+{{- $ids = append $ids (printf "DB%d" (add1 $i)) }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s" (include "helm.fullname" $) .name | trunc 63 | trimSuffix "-" }}
+  name: {{ include "helm.fullname" . }}
   labels:
-    {{- include "helm.labels" $ | nindent 4 }}
-    db-instance: {{ .name | quote }}
+    {{- include "helm.labels" . | nindent 4 }}
 spec:
-  replicas: {{ $.Values.replicaCount | default 1 }}
+  replicas: {{ .Values.replicaCount | default 1 }}
   selector:
     matchLabels:
-      {{- include "helm.selectorLabels" $ | nindent 6 }}
-      db-instance: {{ .name | quote }}
+      {{- include "helm.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "helm.labels" $ | nindent 8 }}
-        db-instance: {{ .name | quote }}
+        {{- include "helm.labels" . | nindent 8 }}
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/instances: {{ toJson .Values.instances | sha256sum }}
     spec:
       securityContext:
-        {{- toYaml $.Values.podSecurityContext | nindent 8 }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: telegraf
-          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
-          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            {{- toYaml $.Values.containerSecurityContext | nindent 12 }}
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           command:
-            - telegraf
-            - --config
-            - /etc/telegraf/telegraf.conf
-            - --config-directory
-            - /etc/telegraf/telegraf.d
+            - sh
+            - /etc/telegraf/entrypoint.sh
           env:
-            - name: PG_INSTANCE
-              value: {{ .name | quote }}
+            - name: PG_INSTANCES
+              value: {{ join "," $ids | quote }}
+            {{- range $i, $inst := .Values.instances }}
+            {{- $id := printf "DB%d" (add1 $i) }}
+            {{- $secret := include "pgtelegraf.secretName" (dict "root" $ "instance" $inst) }}
+            - name: {{ $id }}_INSTANCE
+              value: {{ $inst.name | quote }}
+            - name: {{ $id }}_ENV
+              value: {{ $inst.env | default $.Values.env | quote }}
+            - name: {{ $id }}_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: PG_DSN
+            - name: {{ $id }}_APP_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret }}
+                  key: PG_APP_DSN
+            {{- end }}
             - name: PG_ENV
-              value: {{ $.Values.env | quote }}
+              value: {{ .Values.env | quote }}
             - name: INFLUXDB_HOST
-              value: {{ $.Values.influxdb.host | quote }}
+              value: {{ .Values.influxdb.host | quote }}
             - name: INFLUX_DB_MONITORING
-              value: {{ $.Values.influxdb.database | quote }}
-          envFrom:
-            - secretRef:
-                name: {{ include "pgtelegraf.secretName" (dict "root" $ "instance" .) }}
+              value: {{ .Values.influxdb.database | quote }}
+            - name: RENDER_DIR
+              value: /etc/telegraf/rendered.d
           livenessProbe:
             # outputs.health listens on localhost only
             exec:
               command: ["curl", "-fsS", "http://localhost:8080"]
             initialDelaySeconds: 30
             periodSeconds: 30
-          {{- with $.Values.resources }}
+          {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -61,23 +86,35 @@ spec:
             - name: config
               mountPath: /etc/telegraf/telegraf.conf
               subPath: telegraf.conf
-            - name: config-d
+            - name: config
+              mountPath: /etc/telegraf/entrypoint.sh
+              subPath: entrypoint.sh
+            - name: inputs
+              mountPath: /etc/telegraf/inputs.d
+            {{- if .Files.Glob "files/telegraf.d/*.conf" }}
+            - name: static
               mountPath: /etc/telegraf/telegraf.d
+            {{- end }}
+            # rendered per-instance configs; writable with readOnlyRootFilesystem
+            - name: rendered
+              mountPath: /etc/telegraf/rendered.d
             - name: sql
               mountPath: /etc/telegraf/sql
       volumes:
         - name: config
           configMap:
-            name: "{{ include "helm.fullname" $ }}-config"
-        - name: config-d
+            name: "{{ include "helm.fullname" . }}-config"
+        - name: inputs
           configMap:
-            name: "{{ include "helm.fullname" $ }}-config"
-            items:
-              {{- range $path, $_ := $.Files.Glob "files/telegraf.d/*.conf" }}
-              - key: {{ base $path }}
-                path: {{ base $path }}
-              {{- end }}
+            name: "{{ include "helm.fullname" . }}-inputs"
+        {{- if .Files.Glob "files/telegraf.d/*.conf" }}
+        - name: static
+          configMap:
+            name: "{{ include "helm.fullname" . }}-static"
+        {{- end }}
+        - name: rendered
+          emptyDir:
+            sizeLimit: 10Mi
         - name: sql
           configMap:
-            name: "{{ include "helm.fullname" $ }}-sql"
-{{- end }}
+            name: "{{ include "helm.fullname" . }}-sql"

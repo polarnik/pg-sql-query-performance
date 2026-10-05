@@ -48,7 +48,7 @@ if [ -f "$PG_MONITORING_DOWNSAMPLE" ]; then
     INFLUX_ARGS="$INFLUX_ARGS" sh "$PG_MONITORING_DOWNSAMPLE"
 fi
 
-# Classic pg_stat_statements chain (telegraf.d/cluster_classic_boards.conf, 60s):
+# Classic pg_stat_statements chain (inputs.d/cluster_classic_boards.conf, 60s):
 #   1d.pg_stat_statements -> 1d.diff_1m -> 1d.diff_1m_active -> 1d.query_10m -> archive.query_1d / archive.filters
 #                                                            \-> archive.diff_1m_archive
 # host is stable (telegraf.conf hostname = PG_INSTANCE); toplevel is part of the pg_stat_statements key.

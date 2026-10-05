@@ -138,3 +138,25 @@
     (code 184, nested aggregate).
   - (e) `check_queries.py --clickhouse` runs every variable and panel query through Grafana `/api/ds/query` on
     `pg-monitoring-ch` (= as `reader`), once with all variables = All and once with the first value of each.
+- **D21 One Telegraf for N instances, inputs rendered at start** (supersedes D6 and the env chain of D12; D15a `host`
+  now comes from the input tags): `config/telegraf/entrypoint.sh` + templates `config/telegraf/inputs.d/*.conf`.
+  - (a) Why: `inputs.postgresql_extensible` takes one `address` and Telegraf config has no loops, so N instances need
+    N copies of every input. Options: **A** render the templates per instance at start (chosen); **B** N telegraf
+    processes in one container (`DBn_*` → `PG_*`): configs unchanged, but still N agents, a health port each, a dead
+    process is hard to notice; **C** hand-written copies (~40 blocks with `${DB1_DSN}` … `${DB4_DSN}`): no script,
+    but heavy duplication and a new metric is easily forgotten for one instance. A = one process, one config to edit,
+    a new instance is three env lines.
+  - (b) Env contract (one file: `.env.example` → gitignored `.env.dbs`): `PG_INSTANCES=DB1,…` + per id
+    `<ID>_INSTANCE`, `<ID>_DSN`, `<ID>_APP_DSN`; `PG_ENV`, `INFLUX_DB_*`, `CH_*` once. A missing variable, an invalid
+    or duplicate id stops the container with the variable name in the log.
+  - (c) Rendering = `sed` of variable **names** only (`${PG_DSN}` → `${DB1_DSN}`, `${PG_APP_DSN}`, `${PG_INSTANCE}`)
+    into a flat dir (`db1__cluster_activity.conf`, …; tmpfs in compose, `emptyDir` in Helm), plus a copy of the static
+    `telegraf.d/*.conf` (outputs). Telegraf expands the values → no password on disk. `--render-only` / `--test`.
+  - (d) Tags unchanged for dashboards: `db_instance` and `host` moved from `global_tags` / `agent.hostname` into every
+    `[inputs.postgresql_extensible.tags]` (= `${PG_INSTANCE}`), `omit_hostname = true`; `server` = `outputaddress`;
+    `env` stays global. Verified: InfluxDB `db_instance` and classic `host` = `demo-db1..4`, ClickHouse 4 `db_instance`.
+  - (e) Helm: one Deployment; instance N of `instances[]` → id `DB<N>`, `DB<N>_DSN` / `DB<N>_APP_DSN` via
+    `secretKeyRef` to the existing per-instance Secrets (keys `PG_DSN` / `PG_APP_DSN`, values compatible).
+    ClickHouse output stays compose-only (`sync-files.sh` skips `output_clickhouse.conf`, like classic boards).
+  - (f) Trade-offs: 4× metrics on one agent → `metric_buffer_limit` 40000, chart limit 512Mi; a restart stops
+    collection for all instances at once; a broken DSN only fails its own inputs (per-input errors, `statement_timeout`).
