@@ -104,7 +104,7 @@
   - (d) Image `clickhouse/clickhouse-server:24.8` (LTS); native 9000 for Telegraf and Grafana, HTTP 8123 for checks;
     ports are not published. `x-telegraf` and Grafana `depends_on: clickhouse: service_healthy`; the healthcheck logs in
     as `writer` (not only `/ping`), so Telegraf does not start before `02_users.sh` has run (cold-start restart loop).
-  - (e) Batching: Telegraf `metric_batch_size` (unchanged) + `async_insert` in the writer profile. On a ClickHouse
+  - (e) Batching: Buffer tables in ClickHouse (D24); `outputs.sql` sends one INSERT per metric. On a ClickHouse
     restart Telegraf buffers up to `metric_buffer_limit` and catches up.
 - **D18 One wide typed table per measurement** (`config/clickhouse/init/01_schema.sql`, database `pg_monitoring`,
   table name = measurement name), created ahead by the init SQL (`IF NOT EXISTS`, safe to re-run).
@@ -121,12 +121,13 @@
     `queryid` is part of the key (and an Influx tag): one text can have several queryid, so the detail board can
     filter the text by queryid. Keys hierarchy: `query_mask_md5` → `query_md5` → `queryid`.
   - (e) Raw data only, `TTL toDateTime(time) + INTERVAL 30 DAY`; no rollups / materialized views (unlike D16).
-    Change with `ALTER TABLE … MODIFY TTL`.
+    Change with `ALTER TABLE <table>_data … MODIFY TTL` (the storage table behind the Buffer, D24).
 - **D19 Three ClickHouse users, least privilege** (`config/clickhouse/init/02_users.sh`, SQL-driven access control):
   - (a) `admin` = container user (`CLICKHOUSE_USER/PASSWORD` from `CH_ADMIN_USER/PASSWORD`,
     `CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1`); replaces the ClickHouse `default` user; full access incl. access management.
   - (b) `writer` (Telegraf): `GRANT INSERT, SELECT ON pg_monitoring.*` (SELECT for `table_exists_template`), profile
-    `writer_profile`: `async_insert=1`, `wait_for_async_insert=1`, `async_insert_busy_timeout_ms=1000`. No DDL / DROP.
+    `writer_profile`: `async_insert=0` (Buffer tables, D24), `log_queries_min_type='EXCEPTION_BEFORE_START'`
+    (only failed inserts in `query_log`). No DDL / DROP.
   - (c) `reader` (Grafana): `GRANT SELECT ON pg_monitoring.*`, profile `reader_profile`: `readonly=2 CONST`,
     `max_execution_time=30 MAX 60`, `max_memory_usage=2e9`, `max_result_rows=1e6`, `max_rows_to_read=1e9`.
   - (d) Passwords from env: `.env.example` (local defaults) → git-ignored `.env.clickhouse` (ClickHouse, Grafana) /
@@ -206,3 +207,19 @@
     top-N"; objects dropped inside the range still appear. Grafana-side transformations are not covered by
     `check_queries.py` (it runs the queries only); `CHECK_VARS=env_a=…,env_b=…,db_instance=…` pins the single-value
     variables to a pair with data on both sides, `--only=cmp` limits the run.
+- **D24 ClickHouse CPU: Buffer tables + fewer system logs** (`config/clickhouse/init/01_schema.sql`,
+  `config/clickhouse/config.d/low-resources.xml`, writer profile D19b).
+  - (a) Why: 60–350% CPU on ClickHouse. `outputs.sql` (Telegraf 1.32) sends one INSERT per metric (~3000/min) with a
+    random column order (Go map, tags too, so a Starlark field sort does not help); with `async_insert` +
+    `wait_for_async_insert=1` every row was its own part (~65k parts/h, constant merges), Telegraf missed its flush
+    interval, and `query_log` / `part_log` / `asynchronous_insert_log` logged every row (1.4M / 1M / 355k rows in 3h).
+  - (b) `pg_monitoring.<T>` = `Buffer(pg_monitoring, <T>_data, 1, 10, 60, 1e5, 1e6, 10MB, 100MB)` in front of the
+    MergeTree `<T>_data`; both are created by 01_schema.sql. Telegraf and the boards keep the table names (reads of a
+    Buffer read buffer + storage); one part per table per minute. Volumes created before D24:
+    `config/clickhouse/migrations/2026-10_buffer_tables.sh` (one-off, renames `<T>` → `<T>_data`, idempotent).
+    Trade-off: up to 60 s of rows lost on a ClickHouse crash; a schema change = `DROP TABLE <T>`, `ALTER <T>_data`,
+    re-create `<T>` with its statement from 01_schema.sql.
+  - (c) System logs as on the perf instance (`jcp-perftest-clickhouse`): only `query_log` (3 days) is kept;
+    `text_log`, `part_log`, `error_log`, `session_log`, `asynchronous_insert_log`, … removed.
+  - (d) Result (local, 4 instances): CPU 2–6% between Telegraf flushes (short peak at the flush), 1–5 active parts
+    per table, no Telegraf flush warnings.

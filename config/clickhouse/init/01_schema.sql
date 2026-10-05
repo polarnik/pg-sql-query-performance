@@ -1,7 +1,16 @@
 -- ClickHouse schema for the Telegraf `outputs.sql` (driver = "clickhouse") dual write.
 -- Runs once on an empty data volume from /docker-entrypoint-initdb.d as the admin user; safe to re-run (IF NOT EXISTS).
 --
--- One wide table per measurement, table name = measurement name. Telegraf does not create tables (writer has no DDL).
+-- One wide table per measurement. Telegraf does not create tables (writer has no DDL). Two tables per measurement <T>:
+--   pg_monitoring.<T>_data  MergeTree (ReplacingMergeTree for pg_stmt_text) - storage: partitions, ORDER BY, TTL, ALTERs
+--   pg_monitoring.<T>       Buffer -> <T>_data - Telegraf inserts here, Grafana reads here (buffer + <T>_data, transparent)
+-- Why the Buffer: Telegraf 1.32 outputs.sql sends one INSERT per metric (~3000 rows/min) with a random column order
+-- (Go map), so neither its batching nor async inserts can group them: one part per row, constant merges, high CPU.
+-- The Buffer keeps rows in memory and writes one part per table every 60 s (or earlier at 1e6 rows / 100 MB);
+-- Buffer(database, table, num_layers, min_time, max_time, min_rows, max_rows, min_bytes, max_bytes).
+-- Rows still in the buffer are flushed on a normal server stop and lost on a crash / kill -9 (<= 60 s of data).
+-- Schema change: DROP TABLE <T> (flushes the buffer), ALTER TABLE <T>_data ..., re-create <T> with the statement below.
+-- Volumes created before the Buffer tables: config/clickhouse/migrations/2026-10_buffer_tables.sh.
 -- Columns (Telegraf outputs.sql inserts one column per tag / field, the timestamp goes to `time`):
 --   - tags   -> LowCardinality(String): global db_instance, env; postgresql_extensible server (= outputaddress),
 --               db (= datname column or 'postgres'); the tagvalue columns of the input.
@@ -9,12 +18,12 @@
 --   - fields -> integer -> Int64, float8 -> Float64, text -> String (types follow sql/*.sql).
 --   - no Nullable: every column has a DEFAULT, a field missing in a metric (e.g. NULL usage_pct) becomes 0 / ''.
 -- ORDER BY starts with db_instance + the dashboard filter columns, then time.
--- Raw data TTL: 30 days (change later with ALTER TABLE ... MODIFY TTL toDateTime(time) + INTERVAL N DAY).
+-- Raw data TTL: 30 days (change later with ALTER TABLE <table>_data ... MODIFY TTL toDateTime(time) + INTERVAL N DAY).
 
 CREATE DATABASE IF NOT EXISTS pg_monitoring;
 
 -- pg_activity_grouped | sql/cluster_activity_grouped.sql | 15s
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_activity_grouped
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_activity_grouped_data
 (
     time              DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance       LowCardinality(String) DEFAULT '',
@@ -35,9 +44,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, application_name, state, wait_event_type, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_activity_grouped AS pg_monitoring.pg_activity_grouped_data
+ENGINE = Buffer(pg_monitoring, pg_activity_grouped_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_locks_blocked | sql/cluster_locks_blocked.sql | 15s
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_locks_blocked
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_locks_blocked_data
 (
     time        DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance LowCardinality(String) DEFAULT '',
@@ -53,9 +64,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_locks_blocked AS pg_monitoring.pg_locks_blocked_data
+ENGINE = Buffer(pg_monitoring, pg_locks_blocked_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_db_limits | sql/cluster_db_limits.sql | 15s
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_limits
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_limits_data
 (
     time                 DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance          LowCardinality(String) DEFAULT '',
@@ -72,9 +85,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_limits AS pg_monitoring.pg_db_limits_data
+ENGINE = Buffer(pg_monitoring, pg_db_limits_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_role_limits | sql/cluster_role_limits.sql | 15s
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_role_limits
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_role_limits_data
 (
     time                 DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance          LowCardinality(String) DEFAULT '',
@@ -91,9 +106,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, rolname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_role_limits AS pg_monitoring.pg_role_limits_data
+ENGINE = Buffer(pg_monitoring, pg_role_limits_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_db_stat | sql/cluster_db_stat.sql | 1m | cumulative counters since stats_reset
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_stat
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_stat_data
 (
     time                     DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance              LowCardinality(String) DEFAULT '',
@@ -131,9 +148,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_stat AS pg_monitoring.pg_db_stat_data
+ENGINE = Buffer(pg_monitoring, pg_db_stat_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_settings_limits | sql/cluster_settings_limits.sql | 10m | one row per instance
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_settings_limits
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_settings_limits_data
 (
     time                                   DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance                            LowCardinality(String) DEFAULT '',
@@ -160,9 +179,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_settings_limits AS pg_monitoring.pg_settings_limits_data
+ENGINE = Buffer(pg_monitoring, pg_settings_limits_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_stmt_info | sql/cluster_stmt_info.sql | 10m | one row per instance
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_info
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_info_data
 (
     time              DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance       LowCardinality(String) DEFAULT '',
@@ -178,9 +199,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_info AS pg_monitoring.pg_stmt_info_data
+ENGINE = Buffer(pg_monitoring, pg_stmt_info_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_stmt | sql/cluster_stmt.sql | 1m | top-N statements, cumulative counters
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_data
 (
     time                  DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance           LowCardinality(String) DEFAULT '',
@@ -217,9 +240,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt AS pg_monitoring.pg_stmt_data
+ENGINE = Buffer(pg_monitoring, pg_stmt_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_stmt_mask | sql/cluster_stmt_mask.sql | 1m | top-N query masks, cumulative counters
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_mask
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_mask_data
 (
     time                  DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance           LowCardinality(String) DEFAULT '',
@@ -247,9 +272,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, query_mask_md5, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_mask AS pg_monitoring.pg_stmt_mask_data
+ENGINE = Buffer(pg_monitoring, pg_stmt_mask_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_stmt_totals | sql/cluster_stmt_totals.sql | 1m | all pg_stat_statements entries by usename + datname
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_totals
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_totals_data
 (
     time                 DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance          LowCardinality(String) DEFAULT '',
@@ -271,10 +298,12 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_totals AS pg_monitoring.pg_stmt_totals_data
+ENGINE = Buffer(pg_monitoring, pg_stmt_totals_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_stmt_text | sql/cluster_stmt_text.sql | 10m | md5 -> full text lookup, only the latest row per key is kept.
 -- No partitioning: ReplacingMergeTree deduplicates within a partition only; use FINAL or argMax(query, time) in reads.
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_text
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_text_data
 (
     time           DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance    LowCardinality(String) DEFAULT '',
@@ -290,9 +319,11 @@ CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_text
 ENGINE = ReplacingMergeTree(time)
 ORDER BY (env, db_instance, query_md5, queryid)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_text AS pg_monitoring.pg_stmt_text_data
+ENGINE = Buffer(pg_monitoring, pg_stmt_text_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_table_stat | sql/database_table_stat.sql | 10m | top-N tables of the application DB
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_table_stat
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_table_stat_data
 (
     time                   DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance            LowCardinality(String) DEFAULT '',
@@ -331,9 +362,11 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, schemaname, relname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_table_stat AS pg_monitoring.pg_table_stat_data
+ENGINE = Buffer(pg_monitoring, pg_table_stat_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
 
 -- pg_index_stat | sql/database_index_stat.sql | 10m | top-N indexes of the application DB
-CREATE TABLE IF NOT EXISTS pg_monitoring.pg_index_stat
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_index_stat_data
 (
     time                DateTime64(3)          CODEC(DoubleDelta, ZSTD),
     db_instance         LowCardinality(String) DEFAULT '',
@@ -357,3 +390,5 @@ ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, schemaname, relname, indexrelname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
+CREATE TABLE IF NOT EXISTS pg_monitoring.pg_index_stat AS pg_monitoring.pg_index_stat_data
+ENGINE = Buffer(pg_monitoring, pg_index_stat_data, 1, 10, 60, 100000, 1000000, 10000000, 100000000);
