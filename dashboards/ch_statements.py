@@ -59,7 +59,7 @@ def _rate_by(title: str, field: str, tag: str, unit: str, stacked: bool = True, 
     return timeseries_panel(
         title,
         rate_query("pg_stmt_totals", {field: field}, ALL_FILTERS, SERIES, ("env", tag)),
-        unit=unit, interval="5m", stacked=stacked, w=w,
+        unit=unit, interval="1m", stacked=stacked, w=w,
         links=[(f"Filter board by {tag}", series_filter_url(UID_STATEMENTS, "env", tag))],
         description=f"All statements (pg_stmt_totals) per {tag}. Click a series to filter the board.",
     )
@@ -126,16 +126,20 @@ def build():
             "pg_stmt",
             {**{alias: increase(column) for alias, column in ENTRY.items() if alias != "blks_hit"},
              "query": last("query_short")},
-            ALL_FILTERS, SERIES + ("queryid", "query_md5", "query_mask_md5", "toplevel"),
+            ALL_FILTERS, SERIES + ("query_mask_md5", "query_md5", "queryid", "toplevel"),
             extra={"mean_ms": MEAN},
         ),
-        description="Top-N by cumulative total_exec_time ∪ top-N by calls. Click query_md5 for the full text."
+        description="Top-N by cumulative total_exec_time ∪ top-N by calls. Click query_mask_md5 / query_md5 / queryid "
+                    "for the statement detail narrowed to that key."
                     + TOP_N_NOTE,
         h=12, sort_by="total_ms", units=UNITS,
         links={
             **FILTER_LINKS,
             "query_md5": ("Statement detail", drill_url(
                 UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", query_md5="query_md5",
+                env="env", db_instance="db_instance")),
+            "queryid": ("Statement detail (queryid)", drill_url(
+                UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", query_md5="query_md5", queryid="queryid",
                 env="env", db_instance="db_instance")),
             "query_mask_md5": ("Mask detail", drill_url(
                 UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", env="env", db_instance="db_instance")),

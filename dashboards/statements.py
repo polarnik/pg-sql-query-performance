@@ -54,7 +54,7 @@ def _rate_by(title: str, field: str, tag: str, unit: str, stacked: bool = True, 
                 SELECT non_negative_derivative(last("{field}"), 1s) AS "d" FROM "$rp"."pg_stmt_totals"
                 WHERE {where(*ALL_FILTERS)} GROUP BY time($__interval), * fill(none)
             ) GROUP BY time($__interval), "env", "{tag}" fill(none)""",
-        unit=unit, interval="5m", stacked=stacked, alias=f"$tag_{tag} ($tag_env)", w=w,
+        unit=unit, interval="1m", stacked=stacked, alias=f"$tag_{tag} ($tag_env)", w=w,
         links=[(f"Filter board by {tag}", series_filter_url(UID_STATEMENTS, "env", tag))],
         description=f"All statements (pg_stmt_totals) per {tag}. Click a series to filter the board.",
     )
@@ -122,14 +122,18 @@ def build():
                    spread("shared_blks_read") AS "blks_read", spread("temp_blks_written") AS "temp_blks_written",
                    last("query_short") AS "query"
             FROM "$rp"."pg_stmt" WHERE {where(*ALL_FILTERS)}
-            GROUP BY "env", "db_instance", "datname", "usename", "queryid", "query_md5", "query_mask_md5", "toplevel" """,
-        description="Top-N by cumulative total_exec_time ∪ top-N by calls. Click query_md5 for the full text."
+            GROUP BY "env", "db_instance", "datname", "usename", "query_mask_md5", "query_md5", "queryid", "toplevel" """,
+        description="Top-N by cumulative total_exec_time ∪ top-N by calls. Click query_mask_md5 / query_md5 / queryid "
+                    "for the statement detail narrowed to that key."
                     + TOP_N_NOTE,
         h=12, sort_by="total_ms", units=UNITS,
         links={
             **FILTER_LINKS,
             "query_md5": ("Statement detail", drill_url(
                 UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", query_md5="query_md5",
+                env="env", db_instance="db_instance")),
+            "queryid": ("Statement detail (queryid)", drill_url(
+                UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", query_md5="query_md5", queryid="queryid",
                 env="env", db_instance="db_instance")),
             "query_mask_md5": ("Mask detail", drill_url(
                 UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", env="env", db_instance="db_instance")),

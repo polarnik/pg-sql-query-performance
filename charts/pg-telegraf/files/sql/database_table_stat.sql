@@ -1,4 +1,4 @@
--- measurement: pg_table_stat | scope: per app database (connect to each DB) | interval: 5m
+-- measurement: pg_table_stat | scope: per app database (connect to each DB) | interval: 10m
 -- tags: datname, schemaname, relname
 -- Top 300 tables by total size (cardinality budget). *_epoch = 0 means "never".
 SELECT

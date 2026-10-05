@@ -71,16 +71,16 @@ Validate in docker-compose first, then port to k8s like `jcp-perftest-common` (`
 ### Data contracts (Influx measurements)
 | measurement | tags | key fields | interval |
 |---|---|---|---|
-| `pg_settings_limits` | db_instance | max_connections, superuser_reserved, reserved, effective_limit, + config context | 5m |
-| `pg_db_limits` | db_instance, datname | datconnlimit, numbackends | 30s |
-| `pg_role_limits` | db_instance, rolname | rolconnlimit, current | 30s |
+| `pg_settings_limits` | db_instance | max_connections, superuser_reserved, reserved, effective_limit, + config context | 10m |
+| `pg_db_limits` | db_instance, datname | datconnlimit, numbackends | 15s |
+| `pg_role_limits` | db_instance, rolname | rolconnlimit, current | 15s |
 | `pg_activity_grouped` | db_instance, datname, usename, application_name, state, wait_event_type | cnt, max_xact_age_s, max_state_age_s | 15s |
-| `pg_stmt` | db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel | calls, total_exec_time, rows, shared_blks_*, temp_blks_*, query_short (field) | 5m |
-| `pg_stmt_mask` | db_instance, datname, usename, query_mask_md5 | sums of the above, variants, query_mask_short | 5m |
-| `pg_stmt_text` | db_instance, query_md5 / query_mask_md5 | query / query_mask (field, ≤10000) | 30m |
-| `pg_stmt_info` | db_instance | dealloc, stats_reset | 5m |
-| `pg_db_stat` | db_instance, datname | xact_commit/rollback, blks_hit/read, temp_bytes, deadlocks | 60s |
-| `pg_table_stat` / `pg_index_stat` | db_instance, datname, schemaname, relname[, indexrelname] | seq/idx scans, n_dead_tup, size, last_*vacuum | 5m |
+| `pg_stmt` | db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel | calls, total_exec_time, rows, shared_blks_*, temp_blks_*, query_short (field) | 1m |
+| `pg_stmt_mask` | db_instance, datname, usename, query_mask_md5 | sums of the above, variants, query_mask_short | 1m |
+| `pg_stmt_text` | db_instance, query_md5 / query_mask_md5 | query / query_mask (field, ≤10000) | 10m |
+| `pg_stmt_info` | db_instance | dealloc, stats_reset | 10m |
+| `pg_db_stat` | db_instance, datname | xact_commit/rollback, blks_hit/read, temp_bytes, deadlocks | 1m |
+| `pg_table_stat` / `pg_index_stat` | db_instance, datname, schemaname, relname[, indexrelname] | seq/idx scans, n_dead_tup, size, last_*vacuum | 10m |
 | `pg_locks_blocked` | db_instance, datname | blocked, blocking | 15s |
 
 ### File structure (target)

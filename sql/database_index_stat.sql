@@ -1,4 +1,4 @@
--- measurement: pg_index_stat | scope: per app database (connect to each DB) | interval: 5m
+-- measurement: pg_index_stat | scope: per app database (connect to each DB) | interval: 10m
 -- tags: datname, schemaname, relname, indexrelname
 -- Top 500 indexes by size. Unused index = idx_scan does not grow over the range (spread = 0)
 -- and it is not unique/primary (those enforce constraints).

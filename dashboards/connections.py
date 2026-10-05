@@ -29,7 +29,7 @@ def build():
                    last("superuser_reserved") AS "superuser_reserved", last("reserved") AS "reserved"
             FROM "$rp"."pg_settings_limits" WHERE {where(F_ENV, F_INSTANCE)} GROUP BY "env", "db_instance" """,
         description="effective limit = max_connections - superuser_reserved_connections - reserved_connections "
-                    "(5 min sample).",
+                    "(10 min sample).",
         w=24, h=6, sort_by="usage_pct",
         units={"usage_pct": "percent"}, thresholds={"usage_pct": USAGE_THRESHOLDS},
     ))
@@ -69,7 +69,7 @@ def build():
         "Database limit usage %",
         f"""SELECT max("usage_pct") FROM "$rp"."pg_db_limits" WHERE {where(F_ENV, F_INSTANCE, F_DATNAME)}
             GROUP BY time($__interval), "env", "db_instance", "datname" fill(none)""",
-        unit="percent", interval="30s",
+        unit="percent", interval="15s",
     ))
 
     # ---- grouped usage (FR4)

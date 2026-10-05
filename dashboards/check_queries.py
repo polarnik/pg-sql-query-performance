@@ -25,7 +25,7 @@ GRAFANA = ARGS[0] if len(ARGS) > 0 else "http://localhost:3000"
 FROM = ARGS[1] if len(ARGS) > 1 else "now-1h"
 AUTH = "Basic " + base64.b64encode(b"admin:admin").decode()
 VARS = {"$env": ".*", "$db_instance": ".*", "$datname": ".*", "$usename": ".*", "$query_mask_md5": ".*",
-        "$query_md5": ".*", "$schemaname": ".*", "$relname": ".*"}
+        "$query_md5": ".*", "$queryid": ".*", "$schemaname": ".*", "$relname": ".*"}
 
 
 def panels(board):

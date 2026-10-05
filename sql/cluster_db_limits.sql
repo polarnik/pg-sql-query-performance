@@ -1,4 +1,4 @@
--- measurement: pg_db_limits | scope: cluster | interval: 30s
+-- measurement: pg_db_limits | scope: cluster | interval: 15s
 -- tags: datname
 -- datconnlimit = -1 means "unlimited" -> effective_conn_limit falls back to the server limit.
 WITH l AS (

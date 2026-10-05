@@ -14,7 +14,7 @@
 - **D1 Inline SQL** replaces each `monitoring_*.sql` function body; use PG17 column names.
 - **D2 Cardinality control:** tags = `db_instance, datname, usename, query_md5/query_mask_md5`; text is a **field**;
   statements = top-N (default 200) by cumulative `total_exec_time` ∪ top-N by `calls`;
-  separate low-frequency (30 min) `pg_stmt_text` measurement for md5 → full text.
+  separate low-frequency (10 min) `pg_stmt_text` measurement for md5 → full text.
 - **D3 Two statement measurements:** `pg_stmt` (per queryid, carries `query_mask_md5`) and `pg_stmt_mask` (GROUP BY mask).
 - **D4 Counters are cumulative:** tables use `spread()` / `last()-first()` over `$timeFilter`;
   time series use `non_negative_derivative(...,1s)`; resets tracked through `pg_stmt_info.stats_reset`.
@@ -22,8 +22,18 @@
   `config/grafana/provisioning/dashboards/json/`; Jsonnet (youtrack-sitespeed-tests) is reference only.
 - **D6 One Telegraf service per DB instance** via compose `x-telegraf` anchor + `env_file: .env.<instance>`;
   identical `telegraf.d/` mounted read-only.
-- **D7 Split inputs by scope & interval:** `cluster_*.conf` (activity 15–30s, settings 5m, statements 5m) connect to
-  the maintenance DB; `database_*.conf` (tables/indexes 5m) connect to each app DB.
+- **D7 Split inputs by scope & interval:** `cluster_*.conf` connect to the maintenance DB; `database_*.conf` connect
+  to each app DB. Three interval classes by data kind, not by how often the value changes:
+  - **15s, state snapshots (gauges):** `pg_activity_grouped`, `pg_locks_blocked`, `pg_db_limits`, `pg_role_limits`,
+    classic `pg_stat_activity_*`. A sample sees only its instant: rarer polling loses short locks / connection spikes
+    (`peak` columns of `pg-connections`). Queries read shared memory and small catalogs, so they are cheap.
+  - **1m, cumulative counters:** `pg_db_stat`, `pg_stmt`, `pg_stmt_mask`, `pg_stmt_totals`, classic `pg_stat_statements`
+    (must stay at 60s: the CQ chain groups by `time(1m)`). Rarer polling only coarsens the resolution; 1m gives short
+    load tests enough points. `pg_stmt` is the largest measurement: if the volume is too high, move it alone to 10m.
+  - **10m, settings / reference data:** `pg_settings_limits`, `pg_stmt_info`, `pg_stmt_text`, `pg_table_stat`,
+    `pg_index_stat`. `pg_settings_limits.client_backends` is a gauge, its `last()` is a 10-minute-old sample.
+  - `round_interval = true`, so 1m / 10m points of all instances fall on the same bucket boundaries.
+    Panel `interval` (min step) = collection interval of the measurement.
 - **D8 Stable dashboard UIDs:** `pg-overview`, `pg-connections`, `pg-statements`, `pg-statement-detail`, `pg-indexes`.
 - **D9 Influx routing:** every input carries tag `db_and_stand` (value `${PG_INFLUX_DB}`) because the output uses
   `database_tag = "db_and_stand"`.
@@ -105,8 +115,11 @@
   - (b) Codecs: `time` `DoubleDelta`, integers `T64`, floats `Gorilla`, text `ZSTD(3)`, all + `ZSTD`.
   - (c) `PARTITION BY toYYYYMMDD(time)`; `ORDER BY` starts with `db_instance` + the dashboard filter columns, then
     `time` (settings snapshots: `(db_instance, time)`; objects: `(db_instance, datname, schemaname, relname[, indexrelname], time)`).
-  - (d) `pg_stmt_text` = `ReplacingMergeTree(time) ORDER BY (db_instance, query_md5)`, no partitioning: only the latest
-    text per md5 is kept; reads use `argMax(…, time)` / `FINAL`.
+  - (d) `pg_stmt_text` = `ReplacingMergeTree(time) ORDER BY (env, db_instance, query_md5, queryid)`, no partitioning:
+    only the latest text per md5 + queryid is kept; reads use `argMax(…, time)` / `FINAL`. `env` is part of the key:
+    the same `db_instance` name exists in several envs (perf / prod), without it one env's row replaces the other's.
+    `queryid` is part of the key (and an Influx tag): one text can have several queryid, so the detail board can
+    filter the text by queryid. Keys hierarchy: `query_mask_md5` → `query_md5` → `queryid`.
   - (e) Raw data only, `TTL toDateTime(time) + INTERVAL 30 DAY`; no rollups / materialized views (unlike D16).
     Change with `ALTER TABLE … MODIFY TTL`.
 - **D19 Three ClickHouse users, least privilege** (`config/clickhouse/init/02_users.sh`, SQL-driven access control):

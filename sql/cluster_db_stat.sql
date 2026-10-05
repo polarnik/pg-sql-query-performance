@@ -1,4 +1,4 @@
--- measurement: pg_db_stat | scope: cluster | interval: 60s
+-- measurement: pg_db_stat | scope: cluster | interval: 1m
 -- tags: datname
 -- All counters are cumulative since stats_reset -> use non_negative_derivative / spread() in Grafana.
 SELECT

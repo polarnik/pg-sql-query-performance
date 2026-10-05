@@ -125,7 +125,7 @@ def last_sum_query(field: str, measurement: str, filters: tuple[str, ...], group
 
 # ---------------------------------------------------------------- variables
 def var_rp() -> dashboard.CustomVariable:
-    """Retention policy: 7d = raw points (5m for statements), 200d = 1h rollups. Must be the first variable."""
+    """Retention policy: 7d = raw points (15s / 1m / 10m, D7), 200d = 1h rollups. Must be the first variable."""
     default = RETENTION_POLICIES[0]
     return (
         dashboard.CustomVariable("rp")

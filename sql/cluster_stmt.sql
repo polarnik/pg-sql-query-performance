@@ -1,4 +1,4 @@
--- measurement: pg_stmt | scope: cluster (DB with the pg_stat_statements extension) | interval: 5m
+-- measurement: pg_stmt | scope: cluster (DB with the pg_stat_statements extension) | interval: 1m
 -- tags: usename, datname, queryid, toplevel, query_md5, query_mask_md5
 -- fields: counters (cumulative) + query_short (<=120 chars)
 -- Selection: top 200 by cumulative total_exec_time UNION top 200 by calls.

@@ -42,7 +42,7 @@ def build():
             extra={"usage_pct": div("used", "limit", "100 * ")},
         ),
         description="effective limit = max_connections - superuser_reserved_connections - reserved_connections "
-                    "(5 min sample).",
+                    "(10 min sample).",
         w=24, h=6, sort_by="usage_pct",
         units={"usage_pct": "percent"}, thresholds={"usage_pct": USAGE_THRESHOLDS},
     ))
@@ -83,7 +83,7 @@ def build():
         "Database limit usage %",
         gauge_query("pg_db_limits", "usage_pct", DB_FILTERS, ("env", "db_instance", "datname"),
                     ("env", "db_instance", "datname"), outer="max"),
-        unit="percent", interval="30s",
+        unit="percent", interval="15s",
     ))
 
     # ---- grouped usage (FR4)

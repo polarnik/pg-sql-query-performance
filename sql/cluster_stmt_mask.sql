@@ -1,4 +1,4 @@
--- measurement: pg_stmt_mask | scope: cluster (DB with the pg_stat_statements extension) | interval: 5m
+-- measurement: pg_stmt_mask | scope: cluster (DB with the pg_stat_statements extension) | interval: 1m
 -- tags: usename, datname, query_mask_md5
 -- fields: summed counters, variants (number of queryids behind the mask), query_mask_short (<=120 chars)
 -- The mask is computed over ALL entries (so sums are complete), then top 200 masks by

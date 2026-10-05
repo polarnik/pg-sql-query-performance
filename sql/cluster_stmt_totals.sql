@@ -1,4 +1,4 @@
--- measurement: pg_stmt_totals | scope: cluster (DB with the pg_stat_statements extension) | interval: 5m
+-- measurement: pg_stmt_totals | scope: cluster (DB with the pg_stat_statements extension) | interval: 1m
 -- tags: usename, datname
 -- fields: counters summed over ALL pg_stat_statements entries (no top-N cut), statements (number of entries)
 -- Complete totals for the datname / datname+db_instance / datname+usename breakdowns on pg-statements.

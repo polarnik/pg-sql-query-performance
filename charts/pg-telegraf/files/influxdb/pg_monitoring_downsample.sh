@@ -1,5 +1,5 @@
 #!/bin/sh
-# pg_monitoring."7d" (raw, 5m..15s) -> pg_monitoring."200d" (1h rollups), same measurement and field names (D16).
+# pg_monitoring."7d" (raw, 10m..15s) -> pg_monitoring."200d" (1h rollups), same measurement and field names (D16).
 # Idempotent: RP CREATE-or-ALTER, every CQ DROP + CREATE. Safe to re-run on a live InfluxDB:
 #   docker exec sql_monitor_influxdb sh /opt/influxdb-init/pg_monitoring_downsample.sh
 #   docker exec -e BACKFILL=1 sql_monitor_influxdb sh /opt/influxdb-init/pg_monitoring_downsample.sh
@@ -70,7 +70,7 @@ ds pg_stmt_mask "$I, datname, usename, query_mask_md5" "$(agg last \
 ds pg_stmt_totals "$I, datname, usename" "$(agg last \
     statements calls rows total_exec_time shared_blks_hit shared_blks_read shared_blk_read_time temp_blks_written)"
 
-ds pg_stmt_text "$I, query_md5, query_mask_md5" "$(agg last query query_mask queryid)"
+ds pg_stmt_text "$I, query_mask_md5, query_md5, queryid" "$(agg last query query_mask)"
 
 ds pg_stmt_info "$I" "$(agg last dealloc entries max_entries stats_reset_epoch)"
 

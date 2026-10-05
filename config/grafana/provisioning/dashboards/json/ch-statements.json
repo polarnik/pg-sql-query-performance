@@ -1011,7 +1011,7 @@
         "y": 29
       },
       "id": 11,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1075,7 +1075,7 @@
         "y": 29
       },
       "id": 12,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1149,7 +1149,7 @@
         "y": 38
       },
       "id": 14,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1210,7 +1210,7 @@
         "y": 38
       },
       "id": 15,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1437,7 +1437,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "pg-monitoring-ch"
       },
-      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_md5 for the full text. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
+      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_mask_md5 / query_md5 / queryid for the statement detail narrowed to that key. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -1577,6 +1577,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail (queryid)",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "query_mask_md5"
             },
             "properties": [
@@ -1627,7 +1644,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel)",
+          "rawSql": "SELECT env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) AND $__conditionalAll(usename IN (${usename:singlequote}), $usename) GROUP BY env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel)",
           "refId": "A"
         }
       ],

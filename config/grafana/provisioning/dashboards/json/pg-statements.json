@@ -1032,7 +1032,7 @@
         "y": 29
       },
       "id": 11,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1096,7 +1096,7 @@
         "y": 29
       },
       "id": 12,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1170,7 +1170,7 @@
         "y": 38
       },
       "id": 14,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1231,7 +1231,7 @@
         "y": 38
       },
       "id": 15,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -1457,7 +1457,7 @@
         "type": "influxdb",
         "uid": "pg-monitoring"
       },
-      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_md5 for the full text. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
+      "description": "Top-N by cumulative total_exec_time \u222a top-N by calls. Click query_mask_md5 / query_md5 / queryid for the statement detail narrowed to that key. Top-N subset: totals here are \u2264 Breakdown totals. Click datname / db_instance / usename to filter the whole board.",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -1597,6 +1597,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail (queryid)",
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "query_mask_md5"
             },
             "properties": [
@@ -1644,7 +1661,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\", \"query_md5\", \"queryid\", \"toplevel\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"

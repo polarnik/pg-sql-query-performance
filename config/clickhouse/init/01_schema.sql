@@ -54,7 +54,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_db_limits | sql/cluster_db_limits.sql | 30s
+-- pg_db_limits | sql/cluster_db_limits.sql | 15s
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_limits
 (
     time                 DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -73,7 +73,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_role_limits | sql/cluster_role_limits.sql | 30s
+-- pg_role_limits | sql/cluster_role_limits.sql | 15s
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_role_limits
 (
     time                 DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -92,7 +92,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, rolname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_db_stat | sql/cluster_db_stat.sql | 60s | cumulative counters since stats_reset
+-- pg_db_stat | sql/cluster_db_stat.sql | 1m | cumulative counters since stats_reset
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_db_stat
 (
     time                     DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -132,7 +132,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_settings_limits | sql/cluster_settings_limits.sql | 5m | one row per instance
+-- pg_settings_limits | sql/cluster_settings_limits.sql | 10m | one row per instance
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_settings_limits
 (
     time                                   DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -161,7 +161,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_stmt_info | sql/cluster_stmt_info.sql | 5m | one row per instance
+-- pg_stmt_info | sql/cluster_stmt_info.sql | 10m | one row per instance
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_info
 (
     time              DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -179,7 +179,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_stmt | sql/cluster_stmt.sql | 5m | top-N statements, cumulative counters
+-- pg_stmt | sql/cluster_stmt.sql | 1m | top-N statements, cumulative counters
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt
 (
     time                  DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -218,7 +218,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_stmt_mask | sql/cluster_stmt_mask.sql | 5m | top-N query masks, cumulative counters
+-- pg_stmt_mask | sql/cluster_stmt_mask.sql | 1m | top-N query masks, cumulative counters
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_mask
 (
     time                  DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -248,7 +248,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, query_mask_md5, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_stmt_totals | sql/cluster_stmt_totals.sql | 5m | all pg_stat_statements entries by usename + datname
+-- pg_stmt_totals | sql/cluster_stmt_totals.sql | 1m | all pg_stat_statements entries by usename + datname
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_totals
 (
     time                 DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -272,7 +272,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, usename, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_stmt_text | sql/cluster_stmt_text.sql | 30m | md5 -> full text lookup, only the latest row per key is kept.
+-- pg_stmt_text | sql/cluster_stmt_text.sql | 10m | md5 -> full text lookup, only the latest row per key is kept.
 -- No partitioning: ReplacingMergeTree deduplicates within a partition only; use FINAL or argMax(query, time) in reads.
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_text
 (
@@ -288,10 +288,10 @@ CREATE TABLE IF NOT EXISTS pg_monitoring.pg_stmt_text
     query_mask     String DEFAULT '' CODEC(ZSTD(3))
 )
 ENGINE = ReplacingMergeTree(time)
-ORDER BY (db_instance, query_md5)
+ORDER BY (env, db_instance, query_md5, queryid)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_table_stat | sql/database_table_stat.sql | 5m | top-N tables of the application DB
+-- pg_table_stat | sql/database_table_stat.sql | 10m | top-N tables of the application DB
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_table_stat
 (
     time                   DateTime64(3)          CODEC(DoubleDelta, ZSTD),
@@ -332,7 +332,7 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY (db_instance, datname, schemaname, relname, time)
 TTL toDateTime(time) + INTERVAL 30 DAY;
 
--- pg_index_stat | sql/database_index_stat.sql | 5m | top-N indexes of the application DB
+-- pg_index_stat | sql/database_index_stat.sql | 10m | top-N indexes of the application DB
 CREATE TABLE IF NOT EXISTS pg_monitoring.pg_index_stat
 (
     time                DateTime64(3)          CODEC(DoubleDelta, ZSTD),

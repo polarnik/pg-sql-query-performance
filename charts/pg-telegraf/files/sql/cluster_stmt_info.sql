@@ -1,4 +1,4 @@
--- measurement: pg_stmt_info | scope: cluster (DB with the pg_stat_statements extension) | interval: 5m
+-- measurement: pg_stmt_info | scope: cluster (DB with the pg_stat_statements extension) | interval: 10m
 -- tags: db_instance (global)
 -- dealloc grows when pg_stat_statements.max is too small (entries evicted) -> stats become incomplete.
 SELECT

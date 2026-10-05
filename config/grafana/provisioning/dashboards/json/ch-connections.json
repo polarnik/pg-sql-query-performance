@@ -26,7 +26,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "pg-monitoring-ch"
       },
-      "description": "effective limit = max_connections - superuser_reserved_connections - reserved_connections (5 min sample).",
+      "description": "effective limit = max_connections - superuser_reserved_connections - reserved_connections (10 min sample).",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -520,7 +520,7 @@
         "y": 14
       },
       "id": 5,
-      "interval": "30s",
+      "interval": "15s",
       "options": null,
       "repeatDirection": "h",
       "targets": [

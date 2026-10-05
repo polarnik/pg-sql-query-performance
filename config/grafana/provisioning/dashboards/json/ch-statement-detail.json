@@ -26,7 +26,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "pg-monitoring-ch"
       },
-      "description": "Full mask text (pg_stmt_text, collected every 30 min, latest text regardless of the time range).",
+      "description": "Full mask text (pg_stmt_text, collected every 10 min, latest text regardless of the time range).",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -110,7 +110,7 @@
         "y": 8
       },
       "id": 2,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -153,7 +153,7 @@
         "y": 8
       },
       "id": 3,
-      "interval": "5m",
+      "interval": "1m",
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -179,7 +179,179 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "pg-monitoring-ch"
       },
-      "description": "Statements behind the mask. Click query_md5 to filter the full text below.",
+      "description": "Rows returned / affected per call: growth means the result set (data or filter) changes.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, db_instance, usename, sum(if(c_rows < p_rows, c_rows, c_rows - p_rows)) / nullIf(sum(if(c_calls < p_calls, c_calls, c_calls - p_calls)), 0) AS rows FROM (SELECT t, env, db_instance, datname, usename, query_mask_md5, lagInFrame(t, 1, t) OVER w AS pt, c_rows, lagInFrame(c_rows, 1, c_rows) OVER w AS p_rows, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, query_mask_md5, argMax(rows, time) AS c_rows, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY t, env, db_instance, datname, usename, query_mask_md5) WINDOW w AS (PARTITION BY env, db_instance, datname, usename, query_mask_md5 ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, usename ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Rows per call",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Buffer hits / reads per call (8 KB blocks): growth with steady rows per call means more pages scanned for the same result (plan change, bloat).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 5,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, db_instance, usename, sum(if(c_hit < p_hit, c_hit, c_hit - p_hit)) / nullIf(sum(if(c_calls < p_calls, c_calls, c_calls - p_calls)), 0) AS blks_hit, sum(if(c_read < p_read, c_read, c_read - p_read)) / nullIf(sum(if(c_calls < p_calls, c_calls, c_calls - p_calls)), 0) AS blks_read FROM (SELECT t, env, db_instance, datname, usename, query_mask_md5, lagInFrame(t, 1, t) OVER w AS pt, c_hit, lagInFrame(c_hit, 1, c_hit) OVER w AS p_hit, c_read, lagInFrame(c_read, 1, c_read) OVER w AS p_read, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, query_mask_md5, argMax(shared_blks_hit, time) AS c_hit, argMax(shared_blks_read, time) AS c_read, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY t, env, db_instance, datname, usename, query_mask_md5) WINDOW w AS (PARTITION BY env, db_instance, datname, usename, query_mask_md5 ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, usename ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Shared blocks per call",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "pg_stmt (top-N) of the variants selected by query_md5 / queryid (all variants of the mask by default).",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 6,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, db_instance, usename, queryid, sum(if(c_calls < p_calls, c_calls, c_calls - p_calls) / dateDiff('second', pt, t)) AS calls FROM (SELECT t, env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, lagInFrame(t, 1, t) OVER w AS pt, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) AND match(queryid, concat('^(', ${queryid:sqlstring}, ')$')) GROUP BY t, env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel) WINDOW w AS (PARTITION BY env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, usename, queryid ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Calls / s by queryid",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Execution time / calls per interval of the selected variants: shows which queryid regressed.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 10
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 7,
+      "interval": "1m",
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT t AS time, env, db_instance, usename, queryid, sum(if(c_total_ms < p_total_ms, c_total_ms, c_total_ms - p_total_ms)) / nullIf(sum(if(c_calls < p_calls, c_calls, c_calls - p_calls)), 0) AS mean_ms FROM (SELECT t, env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, lagInFrame(t, 1, t) OVER w AS pt, c_total_ms, lagInFrame(c_total_ms, 1, c_total_ms) OVER w AS p_total_ms, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, argMax(total_exec_time, time) AS c_total_ms, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) AND match(queryid, concat('^(', ${queryid:sqlstring}, ')$')) GROUP BY t, env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel) WINDOW w AS (PARTITION BY env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, usename, queryid ORDER BY t",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean time per call by queryid",
+      "transformations": [],
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Statements behind the mask (narrowed by the query_md5 / queryid variables). Click query_md5 / queryid to filter the board, query_mask_md5 to show the whole mask again.",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -210,6 +382,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Whole mask",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "query_md5"
             },
             "properties": [
@@ -217,8 +406,25 @@
                 "id": "links",
                 "value": [
                   {
-                    "title": "Show full text",
+                    "title": "Filter by query_md5",
                     "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by queryid",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -230,9 +436,9 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 32
       },
-      "id": 4,
+      "id": 8,
       "options": {
         "cellHeight": "sm",
         "footer": {
@@ -260,7 +466,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_blks_hit AS blks_hit, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel)",
+          "rawSql": "SELECT env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_blks_hit AS blks_hit, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) AND match(queryid, concat('^(', ${queryid:sqlstring}, ')$')) GROUP BY env, db_instance, datname, usename, query_mask_md5, query_md5, queryid, toplevel)",
           "refId": "A"
         }
       ],
@@ -288,7 +494,7 @@
         "type": "grafana-clickhouse-datasource",
         "uid": "pg-monitoring-ch"
       },
-      "description": "Full statement text (\u2264 10000 chars). Use it for EXPLAIN (ANALYZE, BUFFERS) on a copy.",
+      "description": "Full statement text (\u2264 10000 chars), one row per query_md5 + queryid. Use it for EXPLAIN (ANALYZE, BUFFERS) on a copy.",
       "fieldConfig": {
         "defaults": {},
         "overrides": [
@@ -306,6 +512,57 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Whole mask",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by query_md5",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queryid"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter by queryid",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-queryid=${__data.fields.queryid}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -313,9 +570,9 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 42
       },
-      "id": 5,
+      "id": 9,
       "options": null,
       "repeatDirection": "h",
       "targets": [
@@ -327,7 +584,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT env, query_md5, c_queryid AS queryid, c_query AS query FROM (SELECT env, query_md5, argMax(queryid, time) AS c_queryid, argMax(query, time) AS c_query FROM pg_monitoring.pg_stmt_text WHERE $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) GROUP BY env, query_md5)",
+          "rawSql": "SELECT env, db_instance, query_mask_md5, query_md5, queryid, c_query AS query FROM (SELECT env, db_instance, query_mask_md5, query_md5, queryid, argMax(query, time) AS c_query FROM pg_monitoring.pg_stmt_text WHERE $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) AND match(queryid, concat('^(', ${queryid:sqlstring}, ')$')) GROUP BY env, db_instance, query_mask_md5, query_md5, queryid)",
           "refId": "A"
         }
       ],
@@ -356,9 +613,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 54
       },
-      "id": 6,
+      "id": 10,
       "panels": [
         {
           "fieldConfig": {
@@ -369,9 +626,9 @@
             "h": 14,
             "w": 24,
             "x": 0,
-            "y": 39
+            "y": 55
           },
-          "id": 601,
+          "id": 1001,
           "options": {
             "content": "# Slow query regression\n\n**Symptom.** Response time of an endpoint grows; DB CPU / IO grows without a matching increase in traffic.\n\n**Where to look.** `pg-statements` \u2192 *Top masks* table (sorted by total time over the range) \u2192\nclick `query_mask_md5` \u2192 `pg-statement-detail` (variants by `query_md5`, full text, calls / time series).\n\n**How to interpret.**\n- Over the range: `spread(total_exec_time)` = time spent, `spread(calls)` = executions,\n  mean = `spread(total_exec_time) / spread(calls)` (ms).\n- Compare the same mask for two ranges (before / after release): mean \u2191 with calls \u2248 \u2192 plan / data regression;\n  calls \u2191 with mean \u2248 \u2192 more traffic or an N+1 pattern.\n- `variants` of a mask \u226b 1 \u2192 the same statement shape is produced with different IN-list sizes etc.\n- `shared_blks_read` \u2191 \u2192 data no longer fits the cache ([cache hit drop](cache-hit-drop.md));\n  `temp_blks_written` \u2191 \u2192 sorts / hashes spill ([temp file spills](temp-file-spills.md)).\n- `rows / calls` \u2191 \u2192 the query returns more data (missing filter / pagination).\n\n**Likely causes.** New code path, changed plan (stale statistics, parameter sniffing on generic plans),\nmissing index, data growth, N+1 queries from the ORM.\n\n**Actions.**\n1. Take the full text from `pg_stmt_text` (detail board) and run `EXPLAIN (ANALYZE, BUFFERS)` on a copy.\n2. Check [autovacuum / analyze](autovacuum-lag.md) freshness of the involved tables.\n3. Check [indexes](unused-missing-indexes.md) for seq-scan-heavy tables involved.\n4. For N+1: batch the calls (`= ANY($1)`), which also collapses variants.\n\n**Related SQL.** `sql/cluster_stmt_mask.sql`, `sql/cluster_stmt.sql`, `sql/cluster_stmt_text.sql`.\n",
             "mode": "markdown"
@@ -461,6 +718,20 @@
         "label": "Query md5",
         "multi": false,
         "name": "query_md5",
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Query id",
+        "multi": false,
+        "name": "queryid",
         "query": ".*",
         "skipUrlSync": false,
         "type": "textbox"

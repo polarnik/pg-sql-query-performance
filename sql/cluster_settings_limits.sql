@@ -1,4 +1,4 @@
--- measurement: pg_settings_limits | scope: cluster (maintenance DB) | interval: 5m
+-- measurement: pg_settings_limits | scope: cluster (maintenance DB) | interval: 10m
 -- tags: db_instance (global)
 SELECT
     current_setting('max_connections')::int                         AS max_connections,
