@@ -1,0 +1,42 @@
+<!-- Small single-node ClickHouse for the local monitoring stack: less logging, fewer system log tables, smaller caches. -->
+<clickhouse>
+    <logger>
+        <level>warning</level>
+        <console>1</console>
+        <size>100M</size>
+        <count>3</count>
+    </logger>
+
+    <!-- Per-thread / profiling logs are the biggest background writers; not needed here. -->
+    <query_thread_log remove="1"/>
+    <query_views_log remove="1"/>
+    <trace_log remove="1"/>
+    <metric_log remove="1"/>
+    <asynchronous_metric_log remove="1"/>
+    <processors_profile_log remove="1"/>
+    <opentelemetry_span_log remove="1"/>
+
+    <!-- Keep query_log / part_log (useful for checking reader queries and inserts) but only for 3 days. -->
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+    <part_log>
+        <database>system</database>
+        <table>part_log</table>
+        <ttl>event_date + INTERVAL 3 DAY DELETE</ttl>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </part_log>
+
+    <mark_cache_size>268435456</mark_cache_size>
+    <uncompressed_cache_size>0</uncompressed_cache_size>
+    <max_server_memory_usage_to_ram_ratio>0.75</max_server_memory_usage_to_ram_ratio>
+    <max_concurrent_queries>50</max_concurrent_queries>
+
+    <!-- No crash reports sent from the local stack. -->
+    <send_crash_reports>
+        <enabled>false</enabled>
+    </send_crash_reports>
+</clickhouse>
