@@ -15,6 +15,15 @@ BOARDS = {
     "ch_statements": "ch-statements.json",
     "ch_statement_detail": "ch-statement-detail.json",
     "ch_indexes": "ch-indexes.json",
+    # env comparison (D23)
+    "compare_tables": "pg-cmp-tables.json",
+    "ch_compare_tables": "ch-cmp-tables.json",
+    "compare_indexes": "pg-cmp-indexes.json",
+    "ch_compare_indexes": "ch-cmp-indexes.json",
+    "compare_statements": "pg-cmp-statements.json",
+    "ch_compare_statements": "ch-cmp-statements.json",
+    "compare_schema": "pg-cmp-schema.json",
+    "ch_compare_schema": "ch-cmp-schema.json",
 }
 
 

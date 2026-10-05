@@ -112,7 +112,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, c_used AS used, c_limit AS limit, c_max_connections AS max_connections, c_superuser_reserved AS superuser_reserved, c_reserved AS reserved, 100 * used / nullIf(limit, 0) AS usage_pct FROM (SELECT db_instance, argMax(client_backends, time) AS c_used, argMax(effective_limit, time) AS c_limit, argMax(max_connections, time) AS c_max_connections, argMax(superuser_reserved, time) AS c_superuser_reserved, argMax(reserved, time) AS c_reserved FROM pg_monitoring.pg_settings_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY db_instance)",
+          "rawSql": "SELECT env, db_instance, c_used AS used, c_limit AS limit, c_max_connections AS max_connections, c_superuser_reserved AS superuser_reserved, c_reserved AS reserved, 100 * used / nullIf(limit, 0) AS usage_pct FROM (SELECT env, db_instance, argMax(client_backends, time) AS c_used, argMax(effective_limit, time) AS c_limit, argMax(max_connections, time) AS c_max_connections, argMax(superuser_reserved, time) AS c_superuser_reserved, argMax(reserved, time) AS c_reserved FROM pg_monitoring.pg_settings_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY env, db_instance)",
           "refId": "A"
         }
       ],
@@ -272,7 +272,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, datname, c_used AS used, c_peak AS peak, c_limit AS limit, c_datconnlimit AS datconnlimit, c_usage_pct AS usage_pct, c_peak_pct AS peak_pct FROM (SELECT db_instance, datname, argMax(numbackends, time) AS c_used, max(numbackends) AS c_peak, argMax(effective_conn_limit, time) AS c_limit, argMax(datconnlimit, time) AS c_datconnlimit, argMax(usage_pct, time) AS c_usage_pct, max(usage_pct) AS c_peak_pct FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname)",
+          "rawSql": "SELECT env, db_instance, datname, c_used AS used, c_peak AS peak, c_limit AS limit, c_datconnlimit AS datconnlimit, c_usage_pct AS usage_pct, c_peak_pct AS peak_pct FROM (SELECT env, db_instance, datname, argMax(numbackends, time) AS c_used, max(numbackends) AS c_peak, argMax(effective_conn_limit, time) AS c_limit, argMax(datconnlimit, time) AS c_datconnlimit, argMax(usage_pct, time) AS c_usage_pct, max(usage_pct) AS c_peak_pct FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname)",
           "refId": "A"
         }
       ],
@@ -432,7 +432,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, rolname, c_used AS used, c_peak AS peak, c_limit AS limit, c_rolconnlimit AS rolconnlimit, c_usage_pct AS usage_pct, c_peak_pct AS peak_pct FROM (SELECT db_instance, rolname, argMax(current, time) AS c_used, max(current) AS c_peak, argMax(effective_conn_limit, time) AS c_limit, argMax(rolconnlimit, time) AS c_rolconnlimit, argMax(usage_pct, time) AS c_usage_pct, max(usage_pct) AS c_peak_pct FROM pg_monitoring.pg_role_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY db_instance, rolname)",
+          "rawSql": "SELECT env, db_instance, rolname, c_used AS used, c_peak AS peak, c_limit AS limit, c_rolconnlimit AS rolconnlimit, c_usage_pct AS usage_pct, c_peak_pct AS peak_pct FROM (SELECT env, db_instance, rolname, argMax(current, time) AS c_used, max(current) AS c_peak, argMax(effective_conn_limit, time) AS c_limit, argMax(rolconnlimit, time) AS c_rolconnlimit, argMax(usage_pct, time) AS c_usage_pct, max(usage_pct) AS c_peak_pct FROM pg_monitoring.pg_role_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY env, db_instance, rolname)",
           "refId": "A"
         }
       ],
@@ -489,7 +489,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, state, sum(c) AS cnt FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, db_instance, datname, usename, application_name, state, wait_event_type) GROUP BY t, db_instance, state ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, state, sum(c) AS cnt FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, env, db_instance, datname, usename, application_name, state, wait_event_type) GROUP BY t, env, db_instance, state ORDER BY t",
           "refId": "A"
         }
       ],
@@ -532,7 +532,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, datname, max(c) AS usage_pct FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, max(usage_pct) AS c FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, db_instance, datname) GROUP BY t, db_instance, datname ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, datname, max(c) AS usage_pct FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, max(usage_pct) AS c FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, env, db_instance, datname) GROUP BY t, env, db_instance, datname ORDER BY t",
           "refId": "A"
         }
       ],
@@ -656,7 +656,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, datname, usename, application_name, state, wait_event_type, c_peak_cnt AS peak_cnt, c_avg_cnt AS avg_cnt, c_oldest_xact_s AS oldest_xact_s, c_oldest_state_s AS oldest_state_s FROM (SELECT db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c_peak_cnt, avg(cnt) AS c_avg_cnt, max(max_xact_age_s) AS c_oldest_xact_s, max(max_state_age_s) AS c_oldest_state_s FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname, usename, application_name, state, wait_event_type)",
+          "rawSql": "SELECT env, db_instance, datname, usename, application_name, state, wait_event_type, c_peak_cnt AS peak_cnt, c_avg_cnt AS avg_cnt, c_oldest_xact_s AS oldest_xact_s, c_oldest_state_s AS oldest_state_s FROM (SELECT env, db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c_peak_cnt, avg(cnt) AS c_avg_cnt, max(max_xact_age_s) AS c_oldest_xact_s, max(max_state_age_s) AS c_oldest_state_s FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, usename, application_name, state, wait_event_type)",
           "refId": "A"
         }
       ],
@@ -723,7 +723,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, application_name, usename, state, sum(c_peak_cnt) AS peak_cnt FROM (SELECT db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c_peak_cnt FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname, usename, application_name, state, wait_event_type) GROUP BY db_instance, application_name, usename, state",
+          "rawSql": "SELECT env, db_instance, application_name, usename, state, sum(c_peak_cnt) AS peak_cnt FROM (SELECT env, db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c_peak_cnt FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, usename, application_name, state, wait_event_type) GROUP BY env, db_instance, application_name, usename, state",
           "refId": "A"
         }
       ],
@@ -790,7 +790,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, usename, sum(c_peak_cnt) AS peak_cnt FROM (SELECT db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c_peak_cnt FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname, usename, application_name, state, wait_event_type) GROUP BY db_instance, usename",
+          "rawSql": "SELECT env, db_instance, usename, sum(c_peak_cnt) AS peak_cnt FROM (SELECT env, db_instance, datname, usename, application_name, state, wait_event_type, max(cnt) AS c_peak_cnt FROM pg_monitoring.pg_activity_grouped WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname, usename, application_name, state, wait_event_type) GROUP BY env, db_instance, usename",
           "refId": "A"
         }
       ],
@@ -943,10 +943,30 @@
         "hide": 0,
         "id": "00000000-0000-0000-0000-000000000000",
         "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY db_instance",
+        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) ORDER BY db_instance",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,
@@ -966,7 +986,7 @@
         "label": "Database",
         "multi": true,
         "name": "datname",
-        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) ORDER BY datname",
+        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) ORDER BY datname",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

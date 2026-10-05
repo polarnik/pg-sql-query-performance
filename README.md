@@ -74,6 +74,32 @@ docker compose run --rm --no-deps telegraf sh /etc/telegraf/entrypoint.sh --rend
 docker compose run --rm --no-deps telegraf sh /etc/telegraf/entrypoint.sh --test         # gather every input once
 ```
 
+### Env filter and env comparison boards (`DECISIONS.md` D22, D23)
+
+- Every generated `pg-*` / `ch-*` board has an `Env` variable (the `env` tag = `<ID>_ENV` / `PG_ENV`, multi, All);
+  `Instance` lists the instances of the selected envs. `env` is part of every series key: with Env = All the tables
+  have an `env` column and two envs with the same instance name are never summed. Links carry `var-env`.
+- Env comparison: the same Instance in two envs, **Env A left, Env B right**, every table sorted descending.
+  Variables: `Env A`, `Env B` (sorted descending, so the default differs from Env A), `Instance` (single value),
+  `Database` (default All); `pg-cmp-*` also `Retention`. The `Env compare` links dropdown keeps them.
+
+| board (InfluxDB / ClickHouse) | what it compares |
+|---|---|
+| `pg-cmp-tables` / `ch-cmp-tables` | row count Δ (B − A, Δ %, sorted by \|Δ\|), tables of one env only, rows / sizes, seq scans and DML with share % of the env total |
+| `pg-cmp-indexes` / `ch-cmp-indexes` | indexes of one env only (new / missing), changed unique / primary / valid flags, scans with share %, unused, sizes |
+| `pg-cmp-statements` / `ch-cmp-statements` | query masks by total time / calls with share %, masks of one env only, mean time Δ; md5 → statement detail of that env |
+| `pg-cmp-schema` / `ch-cmp-schema` | one schema (+ table regex): the above for its tables and indexes; opened from the schemaname / relname cells |
+
+- Share % (of the env total) normalizes activity: the load differs between envs, the ordering stays by absolute value.
+- Objects are collected as top-N (300 tables / 500 indexes / 200 statements): "only in" may mean "outside the
+  top-N" of the other env; use a short range for composition checks (dropped objects stay inside the range).
+- Check with an instance present in both envs (single-value variables otherwise take the first option):
+
+```bash
+(cd dashboards && CHECK_VARS=env_a=perf,env_b=prod,db_instance=facade .venv/bin/python check_queries.py --only=cmp)
+(cd dashboards && CHECK_VARS=env_a=perf,env_b=prod,db_instance=facade .venv/bin/python check_queries.py --clickhouse --only=cmp)
+```
+
 ### ClickHouse (dual write, `DECISIONS.md` D17–D20)
 
 Telegraf writes the same 13 `pg_monitoring` measurements to InfluxDB **and** ClickHouse (`[[outputs.sql]]`,

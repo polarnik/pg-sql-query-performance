@@ -65,7 +65,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT query_mask_md5, c_query_mask AS query_mask FROM (SELECT query_mask_md5, argMax(query_mask, time) AS c_query_mask FROM pg_monitoring.pg_stmt_text WHERE $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY query_mask_md5)",
+          "rawSql": "SELECT env, query_mask_md5, c_query_mask AS query_mask FROM (SELECT env, query_mask_md5, argMax(query_mask, time) AS c_query_mask FROM pg_monitoring.pg_stmt_text WHERE $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY env, query_mask_md5)",
           "refId": "A"
         }
       ],
@@ -122,7 +122,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, usename, sum(if(c_calls < p_calls, c_calls, c_calls - p_calls) / dateDiff('second', pt, t)) AS calls FROM (SELECT t, db_instance, datname, usename, query_mask_md5, lagInFrame(t, 1, t) OVER w AS pt, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, usename, query_mask_md5, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY t, db_instance, datname, usename, query_mask_md5) WINDOW w AS (PARTITION BY db_instance, datname, usename, query_mask_md5 ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, db_instance, usename ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, usename, sum(if(c_calls < p_calls, c_calls, c_calls - p_calls) / dateDiff('second', pt, t)) AS calls FROM (SELECT t, env, db_instance, datname, usename, query_mask_md5, lagInFrame(t, 1, t) OVER w AS pt, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, query_mask_md5, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY t, env, db_instance, datname, usename, query_mask_md5) WINDOW w AS (PARTITION BY env, db_instance, datname, usename, query_mask_md5 ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, usename ORDER BY t",
           "refId": "A"
         }
       ],
@@ -165,7 +165,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, usename, sum(if(c_total_ms < p_total_ms, c_total_ms, c_total_ms - p_total_ms)) / nullIf(sum(if(c_calls < p_calls, c_calls, c_calls - p_calls)), 0) AS mean_ms FROM (SELECT t, db_instance, datname, usename, query_mask_md5, lagInFrame(t, 1, t) OVER w AS pt, c_total_ms, lagInFrame(c_total_ms, 1, c_total_ms) OVER w AS p_total_ms, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, usename, query_mask_md5, argMax(total_exec_time, time) AS c_total_ms, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY t, db_instance, datname, usename, query_mask_md5) WINDOW w AS (PARTITION BY db_instance, datname, usename, query_mask_md5 ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, db_instance, usename ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, usename, sum(if(c_total_ms < p_total_ms, c_total_ms, c_total_ms - p_total_ms)) / nullIf(sum(if(c_calls < p_calls, c_calls, c_calls - p_calls)), 0) AS mean_ms FROM (SELECT t, env, db_instance, datname, usename, query_mask_md5, lagInFrame(t, 1, t) OVER w AS pt, c_total_ms, lagInFrame(c_total_ms, 1, c_total_ms) OVER w AS p_total_ms, c_calls, lagInFrame(c_calls, 1, c_calls) OVER w AS p_calls FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, usename, query_mask_md5, argMax(total_exec_time, time) AS c_total_ms, argMax(calls, time) AS c_calls FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY t, env, db_instance, datname, usename, query_mask_md5) WINDOW w AS (PARTITION BY env, db_instance, datname, usename, query_mask_md5 ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, usename ORDER BY t",
           "refId": "A"
         }
       ],
@@ -218,7 +218,7 @@
                 "value": [
                   {
                     "title": "Show full text",
-                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -260,7 +260,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_blks_hit AS blks_hit, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel)",
+          "rawSql": "SELECT env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows, c_blks_read AS blks_read, c_blks_hit AS blks_hit, c_temp_blks_written AS temp_blks_written, c_query AS query, total_ms / nullIf(calls, 0) AS mean_ms FROM (SELECT env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(shared_blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_blks_written)), groupArray(time)))) AS c_temp_blks_written, argMax(query_short, time) AS c_query FROM pg_monitoring.pg_stmt WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) GROUP BY env, db_instance, datname, usename, queryid, query_md5, query_mask_md5, toplevel)",
           "refId": "A"
         }
       ],
@@ -327,7 +327,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT query_md5, c_queryid AS queryid, c_query AS query FROM (SELECT query_md5, argMax(queryid, time) AS c_queryid, argMax(query, time) AS c_query FROM pg_monitoring.pg_stmt_text WHERE $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) GROUP BY query_md5)",
+          "rawSql": "SELECT env, query_md5, c_queryid AS queryid, c_query AS query FROM (SELECT env, query_md5, argMax(queryid, time) AS c_queryid, argMax(query, time) AS c_query FROM pg_monitoring.pg_stmt_text WHERE $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND match(query_mask_md5, concat('^(', ${query_mask_md5:sqlstring}, ')$')) AND match(query_md5, concat('^(', ${query_md5:sqlstring}, ')$')) GROUP BY env, query_md5)",
           "refId": "A"
         }
       ],
@@ -408,10 +408,30 @@
         "hide": 0,
         "id": "00000000-0000-0000-0000-000000000000",
         "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY db_instance",
+        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) ORDER BY db_instance",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

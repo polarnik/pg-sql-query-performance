@@ -61,7 +61,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"total_ms\") AS \"total_ms\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none))",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -99,7 +99,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"calls\") AS \"calls\" FROM (SELECT non_negative_difference(last(\"calls\")) AS \"calls\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "query": "SELECT sum(\"calls\") AS \"calls\" FROM (SELECT non_negative_difference(last(\"calls\")) AS \"calls\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none))",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -137,7 +137,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none))",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -175,7 +175,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"rows\") AS \"rows\" FROM (SELECT non_negative_difference(last(\"rows\")) AS \"rows\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "query": "SELECT sum(\"rows\") AS \"rows\" FROM (SELECT non_negative_difference(last(\"rows\")) AS \"rows\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none))",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -213,7 +213,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"blks_hit\") AS \"blks_hit\", sum(\"blks_read\") AS \"blks_read\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none))",
+          "query": "SELECT sum(\"blks_hit\") AS \"blks_hit\", sum(\"blks_read\") AS \"blks_read\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none))",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -251,7 +251,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\")",
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\")",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -394,6 +394,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "datname"
             },
             "properties": [
@@ -402,7 +419,7 @@
                 "value": [
                   {
                     "title": "Filter board by datname",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
                   }
                 ]
               }
@@ -441,7 +458,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"datname\"",
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"env\", \"datname\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -451,7 +468,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\") GROUP BY \"datname\"",
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\") GROUP BY \"env\", \"datname\"",
           "rawQuery": true,
           "refId": "B",
           "resultFormat": "table"
@@ -608,6 +625,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "datname"
             },
             "properties": [
@@ -616,7 +650,7 @@
                 "value": [
                   {
                     "title": "Filter board by datname",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
                   }
                 ]
               }
@@ -633,7 +667,7 @@
                 "value": [
                   {
                     "title": "Filter board by db_instance",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
                   }
                 ]
               }
@@ -672,7 +706,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"datname\", \"db_instance\"",
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"env\", \"datname\", \"db_instance\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -682,7 +716,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\") GROUP BY \"datname\", \"db_instance\"",
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\") GROUP BY \"env\", \"datname\", \"db_instance\"",
           "rawQuery": true,
           "refId": "B",
           "resultFormat": "table"
@@ -839,6 +873,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "datname"
             },
             "properties": [
@@ -847,7 +898,7 @@
                 "value": [
                   {
                     "title": "Filter board by datname",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
                   }
                 ]
               }
@@ -864,7 +915,7 @@
                 "value": [
                   {
                     "title": "Filter board by usename",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
                   }
                 ]
               }
@@ -903,7 +954,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"datname\", \"usename\"",
+          "query": "SELECT sum(\"total_ms\") AS \"total_ms\", sum(\"calls\") AS \"calls\", sum(\"rows\") AS \"rows\", sum(\"blks_read\") AS \"blks_read\", sum(\"blks_hit\") AS \"blks_hit\", sum(\"temp_blks_written\") AS \"temp_blks_written\", sum(\"blk_read_ms\") AS \"blk_read_ms\", sum(\"total_ms\") / sum(\"calls\") AS \"mean_ms\", 100 * sum(\"blks_hit\") / (sum(\"blks_hit\") + sum(\"blks_read\")) AS \"hit_ratio\" FROM (SELECT non_negative_difference(last(\"total_exec_time\")) AS \"total_ms\", non_negative_difference(last(\"calls\")) AS \"calls\", non_negative_difference(last(\"rows\")) AS \"rows\", non_negative_difference(last(\"shared_blks_read\")) AS \"blks_read\", non_negative_difference(last(\"shared_blks_hit\")) AS \"blks_hit\", non_negative_difference(last(\"temp_blks_written\")) AS \"temp_blks_written\", non_negative_difference(last(\"shared_blk_read_time\")) AS \"blk_read_ms\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time(5m), \"env\", \"db_instance\", \"datname\", \"usename\" fill(none)) GROUP BY \"env\", \"datname\", \"usename\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -913,7 +964,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\") GROUP BY \"datname\", \"usename\"",
+          "query": "SELECT sum(\"statements\") AS \"statements\" FROM (SELECT last(\"statements\") AS \"statements\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\") GROUP BY \"env\", \"datname\", \"usename\"",
           "rawQuery": true,
           "refId": "B",
           "resultFormat": "table"
@@ -966,7 +1017,7 @@
                 "value": [
                   {
                     "title": "Filter board by datname",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__field.labels.datname}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__field.labels.env}&${db_instance:queryparam}&var-datname=${__field.labels.datname}&${usename:queryparam}"
                   }
                 ]
               }
@@ -986,12 +1037,12 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "alias": "$tag_datname",
+          "alias": "$tag_datname ($tag_env)",
           "datasource": {
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"datname\" fill(none)",
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"env\", \"datname\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -1030,7 +1081,7 @@
                 "value": [
                   {
                     "title": "Filter board by usename",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__field.labels.usename}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__field.labels.env}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__field.labels.usename}"
                   }
                 ]
               }
@@ -1050,12 +1101,12 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "alias": "$tag_usename",
+          "alias": "$tag_usename ($tag_env)",
           "datasource": {
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"usename\" fill(none)",
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"env\", \"usename\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -1104,7 +1155,7 @@
                 "value": [
                   {
                     "title": "Filter board by db_instance",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__field.labels.env}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
                   }
                 ]
               }
@@ -1124,12 +1175,12 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "alias": "$tag_db_instance",
+          "alias": "$tag_db_instance ($tag_env)",
           "datasource": {
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"total_exec_time\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"env\", \"db_instance\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -1165,7 +1216,7 @@
                 "value": [
                   {
                     "title": "Filter board by db_instance",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__field.labels.env}&var-db_instance=${__field.labels.db_instance}&${datname:queryparam}&${usename:queryparam}"
                   }
                 ]
               }
@@ -1185,12 +1236,12 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "alias": "$tag_db_instance",
+          "alias": "$tag_db_instance ($tag_env)",
           "datasource": {
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"calls\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"db_instance\" fill(none)",
+          "query": "SELECT sum(\"d\") FROM ( SELECT non_negative_derivative(last(\"calls\"), 1s) AS \"d\" FROM \"$rp\".\"pg_stmt_totals\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY time($__interval), * fill(none) ) GROUP BY time($__interval), \"env\", \"db_instance\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -1261,6 +1312,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "db_instance"
             },
             "properties": [
@@ -1269,7 +1337,7 @@
                 "value": [
                   {
                     "title": "Filter board by db_instance",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
                   }
                 ]
               }
@@ -1286,7 +1354,7 @@
                 "value": [
                   {
                     "title": "Filter board by datname",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
                   }
                 ]
               }
@@ -1303,7 +1371,7 @@
                 "value": [
                   {
                     "title": "Filter board by usename",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
                   }
                 ]
               }
@@ -1320,7 +1388,7 @@
                 "value": [
                   {
                     "title": "Statement detail",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -1359,7 +1427,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"variants\") AS \"variants\", last(\"query_mask_short\") AS \"query_mask\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\"",
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"variants\") AS \"variants\", last(\"query_mask_short\") AS \"query_mask\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\", \"query_mask_md5\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -1444,6 +1512,23 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "env"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Filter board by env",
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-env=${__data.fields.env}&${db_instance:queryparam}&${datname:queryparam}&${usename:queryparam}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "db_instance"
             },
             "properties": [
@@ -1452,7 +1537,7 @@
                 "value": [
                   {
                     "title": "Filter board by db_instance",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&var-db_instance=${__data.fields.db_instance}&${datname:queryparam}&${usename:queryparam}"
                   }
                 ]
               }
@@ -1469,7 +1554,7 @@
                 "value": [
                   {
                     "title": "Filter board by datname",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&${usename:queryparam}"
                   }
                 ]
               }
@@ -1486,7 +1571,7 @@
                 "value": [
                   {
                     "title": "Filter board by usename",
-                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
+                    "url": "/d/pg-statements?${__url_time_range}&${rp:queryparam}&${env:queryparam}&${db_instance:queryparam}&${datname:queryparam}&var-usename=${__data.fields.usename}"
                   }
                 ]
               }
@@ -1503,7 +1588,7 @@
                 "value": [
                   {
                     "title": "Statement detail",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -1520,7 +1605,7 @@
                 "value": [
                   {
                     "title": "Mask detail",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -1559,7 +1644,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/ AND usename =~ /^$usename$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -1656,7 +1741,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT last(\"entries\") AS \"entries\", last(\"max_entries\") AS \"max_entries\", last(\"dealloc\") AS \"dealloc\", spread(\"dealloc\") AS \"dealloc_in_range\", last(\"stats_reset_epoch\") * 1000 AS \"stats_reset\" FROM \"$rp\".\"pg_stmt_info\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ GROUP BY \"db_instance\"",
+          "query": "SELECT last(\"entries\") AS \"entries\", last(\"max_entries\") AS \"max_entries\", last(\"dealloc\") AS \"dealloc\", spread(\"dealloc\") AS \"dealloc_in_range\", last(\"stats_reset_epoch\") * 1000 AS \"stats_reset\" FROM \"$rp\".\"pg_stmt_info\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ GROUP BY \"env\", \"db_instance\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -1807,10 +1892,31 @@
         "hide": 0,
         "id": "00000000-0000-0000-0000-000000000000",
         "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"env\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\" WHERE env =~ /^$env$/",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,
@@ -1831,7 +1937,7 @@
         "label": "Database",
         "multi": true,
         "name": "datname",
-        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"datname\" WHERE db_instance =~ /^$db_instance$/",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"datname\" WHERE env =~ /^$env$/ AND db_instance =~ /^$db_instance$/",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,
@@ -1852,7 +1958,7 @@
         "label": "User",
         "multi": true,
         "name": "usename",
-        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_stmt_totals\" WITH KEY = \"usename\" WHERE db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_stmt_totals\" WITH KEY = \"usename\" WHERE env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND datname =~ /^$datname$/",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

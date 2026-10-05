@@ -1,0 +1,1480 @@
+{
+  "annotations": {},
+  "description": "The same Instance in Env A (left) and Env B (right): pg_stat_statements per query mask (pg_stmt_mask, top 200), masks of one env only and mean time changes. Click query_mask_md5 for the statement detail. Source: ClickHouse pg_monitoring (dual write).",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ch-env-compare"
+      ],
+      "targetBlank": false,
+      "title": "Env compare (ClickHouse)",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [
+        "ch-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks (ClickHouse)",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Top query masks",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "share_pct = share of the env total exec time: the load differs between envs, compare the shares. Per query mask (IN-lists / VALUES collapsed), summed over users, increase over the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-env=${env_a}&var-db_instance=${db_instance}&var-query_mask_md5=${__data.fields.query_mask_md5}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, total_ms / nullIf(sum(total_ms) OVER (), 0) AS share_pct FROM (SELECT datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, usename, query_mask_md5)) GROUP BY datname, query_mask_md5) AS s LEFT JOIN (SELECT query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} GROUP BY query_mask_md5) AS t USING (query_mask_md5))",
+          "refId": "A"
+        }
+      ],
+      "title": "Masks by total time \u2014 ${env_a}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "share_pct = share of the env total exec time: the load differs between envs, compare the shares. Per query mask (IN-lists / VALUES collapsed), summed over users, increase over the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-env=${env_b}&var-db_instance=${db_instance}&var-query_mask_md5=${__data.fields.query_mask_md5}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, total_ms / nullIf(sum(total_ms) OVER (), 0) AS share_pct FROM (SELECT datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, usename, query_mask_md5)) GROUP BY datname, query_mask_md5) AS s LEFT JOIN (SELECT query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} GROUP BY query_mask_md5) AS t USING (query_mask_md5))",
+          "refId": "A"
+        }
+      ],
+      "title": "Masks by total time \u2014 ${env_b}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "share_pct = share of the env calls. Per query mask (IN-lists / VALUES collapsed), summed over users, increase over the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-env=${env_a}&var-db_instance=${db_instance}&var-query_mask_md5=${__data.fields.query_mask_md5}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "calls"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, calls / nullIf(sum(calls) OVER (), 0) AS share_pct FROM (SELECT datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, usename, query_mask_md5)) GROUP BY datname, query_mask_md5) AS s LEFT JOIN (SELECT query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} GROUP BY query_mask_md5) AS t USING (query_mask_md5))",
+          "refId": "A"
+        }
+      ],
+      "title": "Masks by calls \u2014 ${env_a}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "share_pct = share of the env calls. Per query mask (IN-lists / VALUES collapsed), summed over users, increase over the range.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-env=${env_b}&var-db_instance=${db_instance}&var-query_mask_md5=${__data.fields.query_mask_md5}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "calls"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, calls / nullIf(sum(calls) OVER (), 0) AS share_pct FROM (SELECT datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, usename, query_mask_md5)) GROUP BY datname, query_mask_md5) AS s LEFT JOIN (SELECT query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} GROUP BY query_mask_md5) AS t USING (query_mask_md5))",
+          "refId": "A"
+        }
+      ],
+      "title": "Masks by calls \u2014 ${env_b}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Differences",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Masks of both envs: mean time per call. A large delta with similar data volume is a plan candidate (EXPLAIN on both envs). Per query mask (IN-lists / VALUES collapsed), summed over users, increase over the range. delta = B - A, delta_pct = delta / A; sorted by |delta|. Objects of one env only: see the Only in panels.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 7,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, query_mask_md5, mean_ms_a, mean_ms_b, mean_ms_b - mean_ms_a AS delta, delta / nullIf(mean_ms_a, 0) AS delta_pct, calls_a, calls_b, calls_b - calls_a AS calls_delta, query_mask_a AS query_mask FROM (SELECT datname, query_mask_md5, anyIf(total_ms, env = ${env_a:singlequote}) AS total_ms_a, anyIf(total_ms, env = ${env_b:singlequote}) AS total_ms_b, anyIf(calls, env = ${env_a:singlequote}) AS calls_a, anyIf(calls, env = ${env_b:singlequote}) AS calls_b, anyIf(mean_ms, env = ${env_a:singlequote}) AS mean_ms_a, anyIf(mean_ms, env = ${env_b:singlequote}) AS mean_ms_b, anyIf(rows, env = ${env_a:singlequote}) AS rows_a, anyIf(rows, env = ${env_b:singlequote}) AS rows_b, anyIf(query_mask, env = ${env_a:singlequote}) AS query_mask_a, anyIf(query_mask, env = ${env_b:singlequote}) AS query_mask_b, countIf(env = ${env_a:singlequote}) AS n_a, countIf(env = ${env_b:singlequote}) AS n_b FROM (SELECT env, datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT env, datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT env, datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT env, datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, datname, usename, query_mask_md5)) GROUP BY env, datname, query_mask_md5) AS s LEFT JOIN (SELECT env, query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} GROUP BY env, query_mask_md5) AS t USING (env, query_mask_md5)) GROUP BY datname, query_mask_md5) WHERE n_a > 0 AND n_b > 0 ORDER BY abs(delta) DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Mean time differences",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Masks executed in one env only (by query_mask_md5). Collected top-N per instance (top 300 tables / 500 indexes / 200 statements): an object missing in one env may just be outside its top-N. Use a short range for composition checks (dropped objects stay in it).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-env=${env_a}&var-db_instance=${db_instance}&var-query_mask_md5=${__data.fields.query_mask_md5}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 38
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, query_mask_md5, total_ms_a AS total_ms, calls_a AS calls, mean_ms_a AS mean_ms, rows_a AS rows, query_mask_a AS query_mask FROM (SELECT datname, query_mask_md5, anyIf(total_ms, env = ${env_a:singlequote}) AS total_ms_a, anyIf(total_ms, env = ${env_b:singlequote}) AS total_ms_b, anyIf(calls, env = ${env_a:singlequote}) AS calls_a, anyIf(calls, env = ${env_b:singlequote}) AS calls_b, anyIf(mean_ms, env = ${env_a:singlequote}) AS mean_ms_a, anyIf(mean_ms, env = ${env_b:singlequote}) AS mean_ms_b, anyIf(rows, env = ${env_a:singlequote}) AS rows_a, anyIf(rows, env = ${env_b:singlequote}) AS rows_b, anyIf(query_mask, env = ${env_a:singlequote}) AS query_mask_a, anyIf(query_mask, env = ${env_b:singlequote}) AS query_mask_b, countIf(env = ${env_a:singlequote}) AS n_a, countIf(env = ${env_b:singlequote}) AS n_b FROM (SELECT env, datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT env, datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT env, datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT env, datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, datname, usename, query_mask_md5)) GROUP BY env, datname, query_mask_md5) AS s LEFT JOIN (SELECT env, query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} GROUP BY env, query_mask_md5) AS t USING (env, query_mask_md5)) GROUP BY datname, query_mask_md5) WHERE n_a > 0 AND n_b = 0 ORDER BY total_ms DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Only in ${env_a} (not in ${env_b})",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Masks executed in one env only (by query_mask_md5). Collected top-N per instance (top 300 tables / 500 indexes / 200 statements): an object missing in one env may just be outside its top-N. Use a short range for composition checks (dropped objects stay in it).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_ms_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto",
+                  "wrapText": true
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_mask_md5"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Statement detail",
+                    "url": "/d/ch-statement-detail?${__url_time_range}&var-env=${env_b}&var-db_instance=${db_instance}&var-query_mask_md5=${__data.fields.query_mask_md5}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 38
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_ms"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, query_mask_md5, total_ms_b AS total_ms, calls_b AS calls, mean_ms_b AS mean_ms, rows_b AS rows, query_mask_b AS query_mask FROM (SELECT datname, query_mask_md5, anyIf(total_ms, env = ${env_a:singlequote}) AS total_ms_a, anyIf(total_ms, env = ${env_b:singlequote}) AS total_ms_b, anyIf(calls, env = ${env_a:singlequote}) AS calls_a, anyIf(calls, env = ${env_b:singlequote}) AS calls_b, anyIf(mean_ms, env = ${env_a:singlequote}) AS mean_ms_a, anyIf(mean_ms, env = ${env_b:singlequote}) AS mean_ms_b, anyIf(rows, env = ${env_a:singlequote}) AS rows_a, anyIf(rows, env = ${env_b:singlequote}) AS rows_b, anyIf(query_mask, env = ${env_a:singlequote}) AS query_mask_a, anyIf(query_mask, env = ${env_b:singlequote}) AS query_mask_b, countIf(env = ${env_a:singlequote}) AS n_a, countIf(env = ${env_b:singlequote}) AS n_b FROM (SELECT env, datname, query_mask_md5, s_total_ms AS total_ms, s_calls AS calls, s_total_ms / nullIf(s_calls, 0) AS mean_ms, s_rows AS rows, query_mask FROM (SELECT env, datname, query_mask_md5, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows FROM (SELECT env, datname, usename, query_mask_md5, c_total_ms AS total_ms, c_calls AS calls, c_rows AS rows FROM (SELECT env, datname, usename, query_mask_md5, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(total_exec_time)), groupArray(time)))) AS c_total_ms, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(calls)), groupArray(time)))) AS c_calls, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(rows)), groupArray(time)))) AS c_rows FROM pg_monitoring.pg_stmt_mask WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, datname, usename, query_mask_md5)) GROUP BY env, datname, query_mask_md5) AS s LEFT JOIN (SELECT env, query_mask_md5, argMax(query_mask, time) AS query_mask FROM pg_monitoring.pg_stmt_text WHERE env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} GROUP BY env, query_mask_md5) AS t USING (env, query_mask_md5)) GROUP BY datname, query_mask_md5) WHERE n_b > 0 AND n_a = 0 ORDER BY total_ms DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Only in ${env_b} (not in ${env_a})",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "ch-env-compare",
+    "postgresql",
+    "clickhouse",
+    "env-compare"
+  ],
+  "templating": {
+    "list": [
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Env A",
+        "multi": false,
+        "name": "env_a",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Env B",
+        "multi": false,
+        "name": "env_b",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env DESC",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 2,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Instance",
+        "multi": false,
+        "name": "db_instance",
+        "query": "SELECT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) GROUP BY db_instance HAVING countIf(env = ${env_a:singlequote}) > 0 ORDER BY uniqExact(env) DESC, db_instance",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} ORDER BY datname",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL (ClickHouse) / Env compare / Statements",
+  "uid": "ch-cmp-statements"
+}

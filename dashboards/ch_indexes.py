@@ -1,12 +1,12 @@
 """ch-indexes: pg-indexes on ClickHouse - unused / large indexes, seq-scan-heavy tables, dead tuples, vacuum (FR7)."""
 from builder.clickhouse import (
-    F_DATNAME, F_INSTANCE, UID_INDEXES, base_dashboard, increase, last, runbook_row, series_query, table_panel,
-    var_datname, var_instance,
+    F_DATNAME, F_ENV, F_INSTANCE, UID_INDEXES, base_dashboard, increase, last, runbook_row, series_query,
+    table_panel, var_datname, var_env, var_instance,
 )
 
-OBJ = ("db_instance", "datname", "schemaname", "relname")
+OBJ = ("env", "db_instance", "datname", "schemaname", "relname")
 INDEX = OBJ + ("indexrelname",)
-FILTERS = (F_INSTANCE, F_DATNAME)
+FILTERS = (F_ENV, F_INSTANCE, F_DATNAME)
 
 
 def build():
@@ -16,6 +16,7 @@ def build():
             "PostgreSQL (ClickHouse) / Indexes and tables",
             "Per-database object statistics (pg_stat_user_tables / pg_stat_user_indexes, top by size).",
         )
+        .with_variable(var_env())
         .with_variable(var_instance())
         .with_variable(var_datname())
     )

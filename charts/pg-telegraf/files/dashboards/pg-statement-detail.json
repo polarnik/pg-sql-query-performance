@@ -62,7 +62,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT last(\"query_mask\") AS \"query_mask\" FROM \"$rp\".\"pg_stmt_text\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY \"query_mask_md5\"",
+          "query": "SELECT last(\"query_mask\") AS \"query_mask\" FROM \"$rp\".\"pg_stmt_text\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY \"env\", \"query_mask_md5\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -118,7 +118,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT non_negative_derivative(last(\"calls\"), 1s) FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"db_instance\", \"usename\" fill(none)",
+          "query": "SELECT non_negative_derivative(last(\"calls\"), 1s) FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\" fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -160,7 +160,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT \"t\" / \"c\" FROM ( SELECT non_negative_difference(last(\"total_exec_time\")) AS \"t\", non_negative_difference(last(\"calls\")) AS \"c\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"db_instance\", \"usename\" fill(none) ) GROUP BY \"db_instance\", \"usename\"",
+          "query": "SELECT \"t\" / \"c\" FROM ( SELECT non_negative_difference(last(\"total_exec_time\")) AS \"t\", non_negative_difference(last(\"calls\")) AS \"c\" FROM \"$rp\".\"pg_stmt_mask\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY time($__interval), \"env\", \"db_instance\", \"usename\" fill(none) ) GROUP BY \"env\", \"db_instance\", \"usename\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -215,7 +215,7 @@
                 "value": [
                   {
                     "title": "Show full text",
-                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/pg-statement-detail?${__url_time_range}&${rp:queryparam}&var-query_mask_md5=${__data.fields.query_mask_md5}&var-query_md5=${__data.fields.query_md5}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -254,7 +254,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
+          "query": "SELECT spread(\"total_exec_time\") AS \"total_ms\", spread(\"calls\") AS \"calls\", spread(\"total_exec_time\") / spread(\"calls\") AS \"mean_ms\", spread(\"rows\") AS \"rows\", spread(\"shared_blks_read\") AS \"blks_read\", spread(\"shared_blks_hit\") AS \"blks_hit\", spread(\"temp_blks_written\") AS \"temp_blks_written\", last(\"query_short\") AS \"query\" FROM \"$rp\".\"pg_stmt\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ GROUP BY \"env\", \"db_instance\", \"datname\", \"usename\", \"queryid\", \"query_md5\", \"query_mask_md5\", \"toplevel\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -320,7 +320,7 @@
             "type": "influxdb",
             "uid": "pg-monitoring"
           },
-          "query": "SELECT last(\"queryid\") AS \"queryid\", last(\"query\") AS \"query\" FROM \"$rp\".\"pg_stmt_text\" WHERE $timeFilter AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ AND query_md5 =~ /^$query_md5$/ GROUP BY \"query_md5\"",
+          "query": "SELECT last(\"queryid\") AS \"queryid\", last(\"query\") AS \"query\" FROM \"$rp\".\"pg_stmt_text\" WHERE $timeFilter AND env =~ /^$env$/ AND db_instance =~ /^$db_instance$/ AND query_mask_md5 =~ /^$query_mask_md5$/ AND query_md5 =~ /^$query_md5$/ GROUP BY \"env\", \"query_md5\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
@@ -435,10 +435,31 @@
         "hide": 0,
         "id": "00000000-0000-0000-0000-000000000000",
         "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"env\"",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "pg-monitoring"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\"",
+        "query": "SHOW TAG VALUES FROM \"$rp\".\"pg_db_limits\" WITH KEY = \"db_instance\" WHERE env =~ /^$env$/",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

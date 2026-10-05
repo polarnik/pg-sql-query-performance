@@ -3,9 +3,9 @@ query masks and statements over the time range, click an md5 to drill down (FR5,
 from grafana_foundation_sdk.builders import dashboard
 
 from builder.common import (
-    F_DATNAME, F_INSTANCE, F_USENAME, UID_STATEMENT_DETAIL, UID_STATEMENTS, base_dashboard, var_rp, drill_url,
+    F_DATNAME, F_ENV, F_INSTANCE, F_USENAME, UID_STATEMENT_DETAIL, UID_STATEMENTS, base_dashboard, var_rp, drill_url,
     field_filter_url, increase_query, last_sum_query, runbook_row, series_filter_url, stat_panel, table_panel,
-    timeseries_panel, var_datname, var_instance, var_usename, where,
+    timeseries_panel, var_datname, var_env, var_instance, var_usename, where,
 )
 
 UNITS = {"total_ms": "ms", "mean_ms": "ms", "blks_read": "short", "temp_blks_written": "short"}
@@ -19,14 +19,14 @@ TOTALS = {"total_ms": "total_exec_time", "calls": "calls", "rows": "rows", "blks
           "blk_read_ms": "shared_blk_read_time"}
 MEAN = 'sum("total_ms") / sum("calls")'
 HIT = '100 * sum("blks_hit") / (sum("blks_hit") + sum("blks_read"))'
-ALL_FILTERS = (F_INSTANCE, F_DATNAME, F_USENAME)
+ALL_FILTERS = (F_ENV, F_INSTANCE, F_DATNAME, F_USENAME)
 
 TOTALS_NOTE = ("Sum over ALL pg_stat_statements entries (pg_stmt_totals), increase over the range. "
                "Click datname / db_instance / usename to filter the whole board.")
 TOP_N_NOTE = (" Top-N subset: totals here are ≤ Breakdown totals. "
               "Click datname / db_instance / usename to filter the whole board.")
 FILTER_LINKS = {tag: (f"Filter board by {tag}", field_filter_url(UID_STATEMENTS, tag))
-                for tag in ("db_instance", "datname", "usename")}
+                for tag in ("env", "db_instance", "datname", "usename")}
 
 
 def _stat(title: str, fields: dict[str, str], unit: str, extra: dict[str, str] | None = None, desc: str = ""):
@@ -35,6 +35,7 @@ def _stat(title: str, fields: dict[str, str], unit: str, extra: dict[str, str] |
 
 
 def _breakdown_table(title: str, group_by: tuple[str, ...]):
+    group_by = ("env",) + group_by
     links = {tag: (f"Filter board by {tag}", field_filter_url(UID_STATEMENTS, tag)) for tag in group_by}
     return table_panel(
         title,
@@ -52,9 +53,9 @@ def _rate_by(title: str, field: str, tag: str, unit: str, stacked: bool = True, 
         f"""SELECT sum("d") FROM (
                 SELECT non_negative_derivative(last("{field}"), 1s) AS "d" FROM "$rp"."pg_stmt_totals"
                 WHERE {where(*ALL_FILTERS)} GROUP BY time($__interval), * fill(none)
-            ) GROUP BY time($__interval), "{tag}" fill(none)""",
-        unit=unit, interval="5m", stacked=stacked, alias=f"$tag_{tag}", w=w,
-        links=[(f"Filter board by {tag}", series_filter_url(UID_STATEMENTS, tag))],
+            ) GROUP BY time($__interval), "env", "{tag}" fill(none)""",
+        unit=unit, interval="5m", stacked=stacked, alias=f"$tag_{tag} ($tag_env)", w=w,
+        links=[(f"Filter board by {tag}", series_filter_url(UID_STATEMENTS, "env", tag))],
         description=f"All statements (pg_stmt_totals) per {tag}. Click a series to filter the board.",
     )
 
@@ -68,6 +69,7 @@ def build():
             "top-N by query mask and by queryid. Click datname / db_instance / usename to filter the board.",
         )
         .with_variable(var_rp())
+        .with_variable(var_env())
         .with_variable(var_instance())
         .with_variable(var_datname())
         .with_variable(var_usename())
@@ -106,12 +108,12 @@ def build():
                    spread("temp_blks_written") AS "temp_blks_written", last("variants") AS "variants",
                    last("query_mask_short") AS "query_mask"
             FROM "$rp"."pg_stmt_mask" WHERE {where(*ALL_FILTERS)}
-            GROUP BY "db_instance", "datname", "usename", "query_mask_md5" """,
+            GROUP BY "env", "db_instance", "datname", "usename", "query_mask_md5" """,
         description="One row per mask (IN-lists / VALUES collapsed). Click query_mask_md5 for variants and full text."
                     + TOP_N_NOTE,
         h=14, sort_by="total_ms", units=UNITS,
         links={**FILTER_LINKS, "query_mask_md5": ("Statement detail", drill_url(
-            UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", db_instance="db_instance"))},
+            UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", env="env", db_instance="db_instance"))},
     ))
     board = board.with_panel(table_panel(
         "Top statements (queryid)",
@@ -120,7 +122,7 @@ def build():
                    spread("shared_blks_read") AS "blks_read", spread("temp_blks_written") AS "temp_blks_written",
                    last("query_short") AS "query"
             FROM "$rp"."pg_stmt" WHERE {where(*ALL_FILTERS)}
-            GROUP BY "db_instance", "datname", "usename", "queryid", "query_md5", "query_mask_md5", "toplevel" """,
+            GROUP BY "env", "db_instance", "datname", "usename", "queryid", "query_md5", "query_mask_md5", "toplevel" """,
         description="Top-N by cumulative total_exec_time ∪ top-N by calls. Click query_md5 for the full text."
                     + TOP_N_NOTE,
         h=12, sort_by="total_ms", units=UNITS,
@@ -128,9 +130,9 @@ def build():
             **FILTER_LINKS,
             "query_md5": ("Statement detail", drill_url(
                 UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", query_md5="query_md5",
-                db_instance="db_instance")),
+                env="env", db_instance="db_instance")),
             "query_mask_md5": ("Mask detail", drill_url(
-                UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", db_instance="db_instance")),
+                UID_STATEMENT_DETAIL, query_mask_md5="query_mask_md5", env="env", db_instance="db_instance")),
         },
     ))
 
@@ -139,7 +141,7 @@ def build():
         f"""SELECT last("entries") AS "entries", last("max_entries") AS "max_entries",
                    last("dealloc") AS "dealloc", spread("dealloc") AS "dealloc_in_range",
                    last("stats_reset_epoch") * 1000 AS "stats_reset"
-            FROM "$rp"."pg_stmt_info" WHERE {where(F_INSTANCE)} GROUP BY "db_instance" """,
+            FROM "$rp"."pg_stmt_info" WHERE {where(F_ENV, F_INSTANCE)} GROUP BY "env", "db_instance" """,
         description="dealloc_in_range > 0: entries were evicted, raise pg_stat_statements.max. "
                     "stats_reset inside the range: counters were reset.",
         h=6, units={"stats_reset": "dateTimeAsIso"}, thresholds={"dealloc_in_range": (1, 100)},

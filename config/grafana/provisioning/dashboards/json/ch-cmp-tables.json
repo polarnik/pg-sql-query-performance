@@ -1,0 +1,1272 @@
+{
+  "annotations": {},
+  "description": "The same Instance in Env A (left) and Env B (right): row counts, sizes, scans and DML per table (pg_stat_user_tables, top 300 by size). Tables are sorted descending. Source: ClickHouse pg_monitoring (dual write).",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "ch-env-compare"
+      ],
+      "targetBlank": false,
+      "title": "Env compare (ClickHouse)",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [
+        "ch-runbooks"
+      ],
+      "targetBlank": false,
+      "title": "PostgreSQL runbooks (ClickHouse)",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "Differences",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Tables of both envs, last n_live_tup (estimate, updated by ANALYZE) and total size. delta = B - A, delta_pct = delta / A; sorted by |delta|. Objects of one env only: see the Only in panels.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "delta_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size_a"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size_b"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size_delta"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": null,
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, schemaname, relname, rows_a, rows_b, rows_b - rows_a AS delta, delta / nullIf(rows_a, 0) AS delta_pct, size_a, size_b, size_b - size_a AS size_delta FROM (SELECT datname, schemaname, relname, anyIf(rows, env = ${env_a:singlequote}) AS rows_a, anyIf(rows, env = ${env_b:singlequote}) AS rows_b, anyIf(size, env = ${env_a:singlequote}) AS size_a, anyIf(size, env = ${env_b:singlequote}) AS size_b, countIf(env = ${env_a:singlequote}) AS n_a, countIf(env = ${env_b:singlequote}) AS n_b FROM (SELECT datname, schemaname, relname, env, c_rows AS rows, c_size AS size FROM (SELECT datname, schemaname, relname, env, argMax(n_live_tup, time) AS c_rows, argMax(total_bytes, time) AS c_size FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname, env)) GROUP BY datname, schemaname, relname) WHERE n_a > 0 AND n_b > 0 ORDER BY abs(delta) DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Row count differences",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Tables collected in one env only. Collected top-N per instance (top 300 tables / 500 indexes / 200 statements): an object missing in one env may just be outside its top-N. Use a short range for composition checks (dropped objects stay in it).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 11
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "size"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, schemaname, relname, rows_a AS rows, size_a AS size FROM (SELECT datname, schemaname, relname, anyIf(rows, env = ${env_a:singlequote}) AS rows_a, anyIf(rows, env = ${env_b:singlequote}) AS rows_b, anyIf(size, env = ${env_a:singlequote}) AS size_a, anyIf(size, env = ${env_b:singlequote}) AS size_b, countIf(env = ${env_a:singlequote}) AS n_a, countIf(env = ${env_b:singlequote}) AS n_b FROM (SELECT datname, schemaname, relname, env, c_rows AS rows, c_size AS size FROM (SELECT datname, schemaname, relname, env, argMax(n_live_tup, time) AS c_rows, argMax(total_bytes, time) AS c_size FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname, env)) GROUP BY datname, schemaname, relname) WHERE n_a > 0 AND n_b = 0 ORDER BY size DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Only in ${env_a} (not in ${env_b})",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Tables collected in one env only. Collected top-N per instance (top 300 tables / 500 indexes / 200 statements): an object missing in one env may just be outside its top-N. Use a short range for composition checks (dropped objects stay in it).",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 11
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "size"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, schemaname, relname, rows_b AS rows, size_b AS size FROM (SELECT datname, schemaname, relname, anyIf(rows, env = ${env_a:singlequote}) AS rows_a, anyIf(rows, env = ${env_b:singlequote}) AS rows_b, anyIf(size, env = ${env_a:singlequote}) AS size_a, anyIf(size, env = ${env_b:singlequote}) AS size_b, countIf(env = ${env_a:singlequote}) AS n_a, countIf(env = ${env_b:singlequote}) AS n_b FROM (SELECT datname, schemaname, relname, env, c_rows AS rows, c_size AS size FROM (SELECT datname, schemaname, relname, env, argMax(n_live_tup, time) AS c_rows, argMax(total_bytes, time) AS c_size FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname, env)) GROUP BY datname, schemaname, relname) WHERE n_b > 0 AND n_a = 0 ORDER BY size DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Only in ${env_b} (not in ${env_a})",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 5,
+      "panels": [],
+      "title": "Rows and sizes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Last values in the range: n_live_tup, total / heap / index size, dead tuples.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "table_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "index_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "rows"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, schemaname, relname, c_rows AS rows, c_total_size AS total_size, c_table_size AS table_size, c_index_size AS index_size, c_dead_tup AS dead_tup FROM (SELECT datname, schemaname, relname, argMax(n_live_tup, time) AS c_rows, argMax(total_bytes, time) AS c_total_size, argMax(table_bytes, time) AS c_table_size, argMax(indexes_bytes, time) AS c_index_size, argMax(n_dead_tup, time) AS c_dead_tup FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname)",
+          "refId": "A"
+        }
+      ],
+      "title": "Tables by rows \u2014 ${env_a}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Last values in the range: n_live_tup, total / heap / index size, dead tuples.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "table_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "index_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "rows"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT datname, schemaname, relname, c_rows AS rows, c_total_size AS total_size, c_table_size AS table_size, c_index_size AS index_size, c_dead_tup AS dead_tup FROM (SELECT datname, schemaname, relname, argMax(n_live_tup, time) AS c_rows, argMax(total_bytes, time) AS c_total_size, argMax(table_bytes, time) AS c_table_size, argMax(indexes_bytes, time) AS c_index_size, argMax(n_dead_tup, time) AS c_dead_tup FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname)",
+          "refId": "A"
+        }
+      ],
+      "title": "Tables by rows \u2014 ${env_b}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 8,
+      "panels": [],
+      "title": "Activity over the range",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Rows read by seq scans over the range (increase); share_pct = share of the env total: the load differs between envs, compare the shares.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "seq_tup_read"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, seq_tup_read / nullIf(sum(seq_tup_read) OVER (), 0) AS share_pct FROM (SELECT datname, schemaname, relname, c_seq_tup_read AS seq_tup_read, c_seq_scans AS seq_scans, c_idx_scans AS idx_scans, c_rows AS rows FROM (SELECT datname, schemaname, relname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(seq_tup_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(seq_tup_read)), groupArray(time)))) AS c_seq_tup_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(seq_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(seq_scan)), groupArray(time)))) AS c_seq_scans, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time)))) AS c_idx_scans, argMax(n_live_tup, time) AS c_rows FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname))",
+          "refId": "A"
+        }
+      ],
+      "title": "Tables by seq_tup_read \u2014 ${env_a}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Rows read by seq scans over the range (increase); share_pct = share of the env total: the load differs between envs, compare the shares.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "seq_tup_read"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, seq_tup_read / nullIf(sum(seq_tup_read) OVER (), 0) AS share_pct FROM (SELECT datname, schemaname, relname, c_seq_tup_read AS seq_tup_read, c_seq_scans AS seq_scans, c_idx_scans AS idx_scans, c_rows AS rows FROM (SELECT datname, schemaname, relname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(seq_tup_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(seq_tup_read)), groupArray(time)))) AS c_seq_tup_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(seq_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(seq_scan)), groupArray(time)))) AS c_seq_scans, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(idx_scan)), groupArray(time)))) AS c_idx_scans, argMax(n_live_tup, time) AS c_rows FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname))",
+          "refId": "A"
+        }
+      ],
+      "title": "Tables by seq_tup_read \u2014 ${env_b}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Inserted + updated + deleted rows over the range; share_pct = share of the env total.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 43
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "dml"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, dml / nullIf(sum(dml) OVER (), 0) AS share_pct FROM (SELECT datname, schemaname, relname, c_ins AS ins, c_upd AS upd, c_del AS del, c_hot_upd AS hot_upd, ins + upd + del AS dml FROM (SELECT datname, schemaname, relname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_ins)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_ins)), groupArray(time)))) AS c_ins, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_upd)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_upd)), groupArray(time)))) AS c_upd, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_del)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_del)), groupArray(time)))) AS c_del, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_hot_upd)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_hot_upd)), groupArray(time)))) AS c_hot_upd FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env = ${env_a:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname))",
+          "refId": "A"
+        }
+      ],
+      "title": "Tables by DML \u2014 ${env_a}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "pg-monitoring-ch"
+      },
+      "description": "Inserted + updated + deleted rows over the range; share_pct = share of the env total.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "share_pct"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "schemaname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "relname"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Schema drill: this table",
+                    "url": "/d/ch-cmp-schema?${__url_time_range}&${env_a:queryparam}&${env_b:queryparam}&${db_instance:queryparam}&var-datname=${__data.fields.datname}&var-schemaname=${__data.fields.schemaname}&var-relname=${__data.fields.relname}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "id": 12,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "reducer": [],
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "showTypeIcons": false,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "dml"
+          }
+        ]
+      },
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "pg-monitoring-ch"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT *, dml / nullIf(sum(dml) OVER (), 0) AS share_pct FROM (SELECT datname, schemaname, relname, c_ins AS ins, c_upd AS upd, c_del AS del, c_hot_upd AS hot_upd, ins + upd + del AS dml FROM (SELECT datname, schemaname, relname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_ins)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_ins)), groupArray(time)))) AS c_ins, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_upd)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_upd)), groupArray(time)))) AS c_upd, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_del)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_del)), groupArray(time)))) AS c_del, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(n_tup_hot_upd)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(n_tup_hot_upd)), groupArray(time)))) AS c_hot_upd FROM pg_monitoring.pg_table_stat WHERE $__timeFilter(time) AND env = ${env_b:singlequote} AND db_instance = ${db_instance:singlequote} AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY datname, schemaname, relname))",
+          "refId": "A"
+        }
+      ],
+      "title": "Tables by DML \u2014 ${env_b}",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "table"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "ch-env-compare",
+    "postgresql",
+    "clickhouse",
+    "env-compare"
+  ],
+  "templating": {
+    "list": [
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Env A",
+        "multi": false,
+        "name": "env_a",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Env B",
+        "multi": false,
+        "name": "env_b",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env DESC",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 2,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": false,
+        "label": "Instance",
+        "multi": false,
+        "name": "db_instance",
+        "query": "SELECT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) GROUP BY db_instance HAVING countIf(env = ${env_a:singlequote}) > 0 ORDER BY uniqExact(env) DESC, db_instance",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
+        "label": "Database",
+        "multi": true,
+        "name": "datname",
+        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND env IN (${env_a:singlequote}, ${env_b:singlequote}) AND db_instance = ${db_instance:singlequote} ORDER BY datname",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "PostgreSQL (ClickHouse) / Env compare / Tables",
+  "uid": "ch-cmp-tables"
+}

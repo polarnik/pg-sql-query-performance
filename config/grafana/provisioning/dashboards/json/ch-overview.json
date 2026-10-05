@@ -68,7 +68,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT max(c_usage) AS usage FROM (SELECT db_instance, 100 * argMax(client_backends, time) / nullIf(argMax(effective_limit, time), 0) AS c_usage FROM pg_monitoring.pg_settings_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY db_instance)",
+          "rawSql": "SELECT max(c_usage) AS usage FROM (SELECT env, db_instance, 100 * argMax(client_backends, time) / nullIf(argMax(effective_limit, time), 0) AS c_usage FROM pg_monitoring.pg_settings_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY env, db_instance)",
           "refId": "A"
         }
       ],
@@ -124,7 +124,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT max(c_blocked) AS blocked FROM (SELECT db_instance, datname, max(blocked) AS c_blocked FROM pg_monitoring.pg_locks_blocked WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname)",
+          "rawSql": "SELECT max(c_blocked) AS blocked FROM (SELECT env, db_instance, datname, max(blocked) AS c_blocked FROM pg_monitoring.pg_locks_blocked WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname)",
           "refId": "A"
         }
       ],
@@ -180,7 +180,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT sum(c_deadlocks) AS deadlocks FROM (SELECT db_instance, datname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time)))) AS c_deadlocks FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname)",
+          "rawSql": "SELECT sum(c_deadlocks) AS deadlocks FROM (SELECT env, db_instance, datname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time)))) AS c_deadlocks FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname)",
           "refId": "A"
         }
       ],
@@ -219,7 +219,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT sum(c_temp_bytes) AS temp_bytes FROM (SELECT db_instance, datname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time)))) AS c_temp_bytes FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname)",
+          "rawSql": "SELECT sum(c_temp_bytes) AS temp_bytes FROM (SELECT env, db_instance, datname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time)))) AS c_temp_bytes FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname)",
           "refId": "A"
         }
       ],
@@ -272,7 +272,7 @@
                 "value": [
                   {
                     "title": "Connections",
-                    "url": "/d/ch-connections?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/ch-connections?${__url_time_range}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -314,7 +314,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, datname, c_commits AS commits, c_rollbacks AS rollbacks, c_blks_hit AS blks_hit, c_blks_read AS blks_read, c_temp_files AS temp_files, c_temp_bytes AS temp_bytes, c_deadlocks AS deadlocks, c_sessions_killed AS sessions_killed, c_backends AS backends, 100 * blks_hit / nullIf((blks_hit + blks_read), 0) AS cache_hit_pct FROM (SELECT db_instance, datname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(xact_commit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(xact_commit)), groupArray(time)))) AS c_commits, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(xact_rollback)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(xact_rollback)), groupArray(time)))) AS c_rollbacks, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_files)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_files)), groupArray(time)))) AS c_temp_files, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time)))) AS c_temp_bytes, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time)))) AS c_deadlocks, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(sessions_killed)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(sessions_killed)), groupArray(time)))) AS c_sessions_killed, argMax(numbackends, time) AS c_backends FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY db_instance, datname)",
+          "rawSql": "SELECT env, db_instance, datname, c_commits AS commits, c_rollbacks AS rollbacks, c_blks_hit AS blks_hit, c_blks_read AS blks_read, c_temp_files AS temp_files, c_temp_bytes AS temp_bytes, c_deadlocks AS deadlocks, c_sessions_killed AS sessions_killed, c_backends AS backends, 100 * blks_hit / nullIf((blks_hit + blks_read), 0) AS cache_hit_pct FROM (SELECT env, db_instance, datname, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(xact_commit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(xact_commit)), groupArray(time)))) AS c_commits, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(xact_rollback)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(xact_rollback)), groupArray(time)))) AS c_rollbacks, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(blks_hit)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(blks_hit)), groupArray(time)))) AS c_blks_hit, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(blks_read)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(blks_read)), groupArray(time)))) AS c_blks_read, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_files)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_files)), groupArray(time)))) AS c_temp_files, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(temp_bytes)), groupArray(time)))) AS c_temp_bytes, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(deadlocks)), groupArray(time)))) AS c_deadlocks, arraySum(arrayMap((d, v) -> if(d < 0, v, d), arrayDifference(arraySort((v, t) -> t, groupArray(toFloat64(sessions_killed)), groupArray(time))), arraySort((v, t) -> t, groupArray(toFloat64(sessions_killed)), groupArray(time)))) AS c_sessions_killed, argMax(numbackends, time) AS c_backends FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY env, db_instance, datname)",
           "refId": "A"
         }
       ],
@@ -371,7 +371,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, datname, sum(greatest(c_xact_commit - p_xact_commit, 0) / dateDiff('second', pt, t)) AS xact_commit FROM (SELECT t, db_instance, datname, lagInFrame(t, 1, t) OVER w AS pt, c_xact_commit, lagInFrame(c_xact_commit, 1, c_xact_commit) OVER w AS p_xact_commit FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, argMax(xact_commit, time) AS c_xact_commit FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, db_instance, datname) WINDOW w AS (PARTITION BY db_instance, datname ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, db_instance, datname ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, datname, sum(greatest(c_xact_commit - p_xact_commit, 0) / dateDiff('second', pt, t)) AS xact_commit FROM (SELECT t, env, db_instance, datname, lagInFrame(t, 1, t) OVER w AS pt, c_xact_commit, lagInFrame(c_xact_commit, 1, c_xact_commit) OVER w AS p_xact_commit FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, argMax(xact_commit, time) AS c_xact_commit FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, env, db_instance, datname) WINDOW w AS (PARTITION BY env, db_instance, datname ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, datname ORDER BY t",
           "refId": "A"
         }
       ],
@@ -414,7 +414,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, datname, sum(greatest(c_blks_read - p_blks_read, 0) / dateDiff('second', pt, t)) AS blks_read FROM (SELECT t, db_instance, datname, lagInFrame(t, 1, t) OVER w AS pt, c_blks_read, lagInFrame(c_blks_read, 1, c_blks_read) OVER w AS p_blks_read FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, argMax(blks_read, time) AS c_blks_read FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, db_instance, datname) WINDOW w AS (PARTITION BY db_instance, datname ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, db_instance, datname ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, datname, sum(greatest(c_blks_read - p_blks_read, 0) / dateDiff('second', pt, t)) AS blks_read FROM (SELECT t, env, db_instance, datname, lagInFrame(t, 1, t) OVER w AS pt, c_blks_read, lagInFrame(c_blks_read, 1, c_blks_read) OVER w AS p_blks_read FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, argMax(blks_read, time) AS c_blks_read FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, env, db_instance, datname) WINDOW w AS (PARTITION BY env, db_instance, datname ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, datname ORDER BY t",
           "refId": "A"
         }
       ],
@@ -457,7 +457,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, datname, sum(greatest(c_temp_bytes - p_temp_bytes, 0) / dateDiff('second', pt, t)) AS temp_bytes FROM (SELECT t, db_instance, datname, lagInFrame(t, 1, t) OVER w AS pt, c_temp_bytes, lagInFrame(c_temp_bytes, 1, c_temp_bytes) OVER w AS p_temp_bytes FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, argMax(temp_bytes, time) AS c_temp_bytes FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, db_instance, datname) WINDOW w AS (PARTITION BY db_instance, datname ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, db_instance, datname ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, datname, sum(greatest(c_temp_bytes - p_temp_bytes, 0) / dateDiff('second', pt, t)) AS temp_bytes FROM (SELECT t, env, db_instance, datname, lagInFrame(t, 1, t) OVER w AS pt, c_temp_bytes, lagInFrame(c_temp_bytes, 1, c_temp_bytes) OVER w AS p_temp_bytes FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, argMax(temp_bytes, time) AS c_temp_bytes FROM pg_monitoring.pg_db_stat WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, env, db_instance, datname) WINDOW w AS (PARTITION BY env, db_instance, datname ORDER BY t ROWS BETWEEN 1 PRECEDING AND CURRENT ROW)) WHERE t > pt GROUP BY t, env, db_instance, datname ORDER BY t",
           "refId": "A"
         }
       ],
@@ -500,7 +500,7 @@
           "editorType": "sql",
           "format": 0,
           "queryType": "timeseries",
-          "rawSql": "SELECT t AS time, db_instance, datname, max(c) AS blocked FROM (SELECT $__timeInterval(time) AS t, db_instance, datname, max(blocked) AS c FROM pg_monitoring.pg_locks_blocked WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, db_instance, datname) GROUP BY t, db_instance, datname ORDER BY t",
+          "rawSql": "SELECT t AS time, env, db_instance, datname, max(c) AS blocked FROM (SELECT $__timeInterval(time) AS t, env, db_instance, datname, max(blocked) AS c FROM pg_monitoring.pg_locks_blocked WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) AND $__conditionalAll(datname IN (${datname:singlequote}), $datname) GROUP BY t, env, db_instance, datname) GROUP BY t, env, db_instance, datname ORDER BY t",
           "refId": "A"
         }
       ],
@@ -553,7 +553,7 @@
                 "value": [
                   {
                     "title": "Statements",
-                    "url": "/d/ch-statements?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/ch-statements?${__url_time_range}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -570,7 +570,7 @@
                 "value": [
                   {
                     "title": "Indexes",
-                    "url": "/d/ch-indexes?${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
+                    "url": "/d/ch-indexes?${__url_time_range}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
                   }
                 ]
               }
@@ -596,7 +596,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT db_instance, c_version AS version, c_max_connections AS max_connections, c_shared_buffers AS shared_buffers, c_work_mem AS work_mem, c_statement_timeout_ms AS statement_timeout_ms, c_idle_in_tx_timeout_ms AS idle_in_tx_timeout_ms, c_pgss_max AS pgss_max FROM (SELECT db_instance, argMax(server_version_num, time) AS c_version, argMax(max_connections, time) AS c_max_connections, argMax(shared_buffers_bytes, time) AS c_shared_buffers, argMax(work_mem_bytes, time) AS c_work_mem, argMax(statement_timeout_ms, time) AS c_statement_timeout_ms, argMax(idle_in_transaction_session_timeout_ms, time) AS c_idle_in_tx_timeout_ms, argMax(pg_stat_statements_max, time) AS c_pgss_max FROM pg_monitoring.pg_settings_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY db_instance)",
+          "rawSql": "SELECT env, db_instance, c_version AS version, c_max_connections AS max_connections, c_shared_buffers AS shared_buffers, c_work_mem AS work_mem, c_statement_timeout_ms AS statement_timeout_ms, c_idle_in_tx_timeout_ms AS idle_in_tx_timeout_ms, c_pgss_max AS pgss_max FROM (SELECT env, db_instance, argMax(server_version_num, time) AS c_version, argMax(max_connections, time) AS c_max_connections, argMax(shared_buffers_bytes, time) AS c_shared_buffers, argMax(work_mem_bytes, time) AS c_work_mem, argMax(statement_timeout_ms, time) AS c_statement_timeout_ms, argMax(idle_in_transaction_session_timeout_ms, time) AS c_idle_in_tx_timeout_ms, argMax(pg_stat_statements_max, time) AS c_pgss_max FROM pg_monitoring.pg_settings_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) GROUP BY env, db_instance)",
           "refId": "A"
         }
       ],
@@ -749,10 +749,30 @@
         "hide": 0,
         "id": "00000000-0000-0000-0000-000000000000",
         "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "env",
+        "query": "SELECT DISTINCT env FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY env",
+        "refresh": 2,
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "auto": false,
+        "auto_count": 30,
+        "auto_min": "10s",
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "pg-monitoring-ch"
+        },
+        "hide": 0,
+        "id": "00000000-0000-0000-0000-000000000000",
+        "includeAll": true,
         "label": "Instance",
         "multi": true,
         "name": "db_instance",
-        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) ORDER BY db_instance",
+        "query": "SELECT DISTINCT db_instance FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) ORDER BY db_instance",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,
@@ -772,7 +792,7 @@
         "label": "Database",
         "multi": true,
         "name": "datname",
-        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) ORDER BY datname",
+        "query": "SELECT DISTINCT datname FROM pg_monitoring.pg_db_limits WHERE $__timeFilter(time) AND $__conditionalAll(env IN (${env:singlequote}), $env) AND $__conditionalAll(db_instance IN (${db_instance:singlequote}), $db_instance) ORDER BY datname",
         "refresh": 2,
         "skipUrlSync": false,
         "sort": 1,

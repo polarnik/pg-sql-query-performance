@@ -1,13 +1,13 @@
 """ch-overview: pg-overview on ClickHouse - health of every instance / database, links to the detailed boards."""
 from builder.clickhouse import (
-    F_DATNAME, F_INSTANCE, UID_CONNECTIONS, UID_INDEXES, UID_OVERVIEW, UID_STATEMENTS, base_dashboard, div, gauge_query,
-    increase, last, rate_query, runbook_row, series_query, stat_panel, table_panel, timeseries_panel, var_datname,
-    var_instance,
+    F_DATNAME, F_ENV, F_INSTANCE, UID_CONNECTIONS, UID_INDEXES, UID_OVERVIEW, UID_STATEMENTS, base_dashboard, div,
+    gauge_query, increase, last, rate_query, runbook_row, series_query, stat_panel, table_panel, timeseries_panel,
+    var_datname, var_env, var_instance,
 )
 
-KEEP = "${__url_time_range}&var-db_instance=${__data.fields.db_instance}"
-DB_SERIES = ("db_instance", "datname")
-DB_FILTERS = (F_INSTANCE, F_DATNAME)
+KEEP = "${__url_time_range}&var-env=${__data.fields.env}&var-db_instance=${__data.fields.db_instance}"
+DB_SERIES = ("env", "db_instance", "datname")
+DB_FILTERS = (F_ENV, F_INSTANCE, F_DATNAME)
 
 
 def _db_rate(title: str, column: str, unit: str, description: str = ""):
@@ -24,6 +24,7 @@ def build():
             "PostgreSQL (ClickHouse) / Overview",
             "Start here: limits, throughput, cache, temp files, locks. Drill down via links in the tables.",
         )
+        .with_variable(var_env())
         .with_variable(var_instance())
         .with_variable(var_datname())
     )
@@ -32,7 +33,7 @@ def build():
     board = board.with_panel(stat_panel(
         "Max server connection usage",
         series_query("pg_settings_limits", {"usage": div(last("client_backends"), last("effective_limit"), "100 * ")},
-                     (F_INSTANCE,), ("db_instance",), group_by=(), agg="max"),
+                     (F_ENV, F_INSTANCE), ("env", "db_instance"), group_by=(), agg="max"),
         unit="percent", warn=70, crit=90,
     ))
     board = board.with_panel(stat_panel(
@@ -93,7 +94,7 @@ def build():
              "statement_timeout_ms": last("statement_timeout_ms"),
              "idle_in_tx_timeout_ms": last("idle_in_transaction_session_timeout_ms"),
              "pgss_max": last("pg_stat_statements_max")},
-            (F_INSTANCE,), ("db_instance",),
+            (F_ENV, F_INSTANCE), ("env", "db_instance"),
         ),
         description="Configuration context. Links: Statements / Indexes for the instance.",
         h=7,

@@ -103,6 +103,7 @@ def f_regex(column: str, var: str | None = None) -> str:
     return f"match({column}, concat('^(', ${{{var}:sqlstring}}, ')$'))"
 
 
+F_ENV = f_in("env")
 F_INSTANCE = f_in("db_instance")
 F_DATNAME = f_in("datname")
 F_USENAME = f_in("usename")
@@ -221,17 +222,23 @@ def _query_variable(name: str, label: str, sql: str) -> dashboard.QueryVariable:
     )
 
 
+def var_env() -> dashboard.QueryVariable:
+    """Environment (`env` column = <ID>_ENV / PG_ENV of Telegraf), narrows the Instance list."""
+    return _query_variable("env", "Env", f"""
+        SELECT DISTINCT env FROM {table("pg_db_limits")} WHERE {where()} ORDER BY env""")
+
+
 def var_instance() -> dashboard.QueryVariable:
     return _query_variable("db_instance", "Instance", f"""
-        SELECT DISTINCT db_instance FROM {table("pg_db_limits")} WHERE {where()} ORDER BY db_instance""")
+        SELECT DISTINCT db_instance FROM {table("pg_db_limits")} WHERE {where(F_ENV)} ORDER BY db_instance""")
 
 
 def var_datname() -> dashboard.QueryVariable:
     return _query_variable("datname", "Database", f"""
-        SELECT DISTINCT datname FROM {table("pg_db_limits")} WHERE {where(F_INSTANCE)} ORDER BY datname""")
+        SELECT DISTINCT datname FROM {table("pg_db_limits")} WHERE {where(F_ENV, F_INSTANCE)} ORDER BY datname""")
 
 
 def var_usename() -> dashboard.QueryVariable:
     return _query_variable("usename", "User", f"""
-        SELECT DISTINCT usename FROM {table("pg_stmt_totals")} WHERE {where(F_INSTANCE, F_DATNAME)}
+        SELECT DISTINCT usename FROM {table("pg_stmt_totals")} WHERE {where(F_ENV, F_INSTANCE, F_DATNAME)}
         ORDER BY usename""")

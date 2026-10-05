@@ -32,12 +32,16 @@ UID_STATEMENT_DETAIL = "pg-statement-detail"
 UID_INDEXES = "pg-indexes"
 
 # InfluxQL filters shared by all panels
+F_ENV = 'env =~ /^$env$/'
 F_INSTANCE = 'db_instance =~ /^$db_instance$/'
 F_DATNAME = 'datname =~ /^$datname$/'
 F_USENAME = 'usename =~ /^$usename$/'
 
 # Variables kept by self-filter links (order = order in the URL)
-FILTER_VARS = ("db_instance", "datname", "usename")
+FILTER_VARS = ("env", "db_instance", "datname", "usename")
+
+# Series key of the per-user / per-database counters: env first, two envs may reuse an instance name (D22)
+SERIES = ("env", "db_instance", "datname", "usename")
 
 # Retention policies of pg_monitoring (DECISIONS.md D16): raw 7d (default) or 1h rollups for 200d
 RETENTION_POLICIES = ("7d", "200d")
@@ -88,7 +92,7 @@ def where(*filters: str) -> str:
 
 
 def increase_query(fields: dict[str, str], measurement: str, filters: tuple[str, ...], group_by: tuple[str, ...] = (),
-                   series: tuple[str, ...] = ("db_instance", "datname", "usename"), step: str = "5m",
+                   series: tuple[str, ...] = SERIES, step: str = "5m",
                    extra: dict[str, str] | None = None) -> str:
     """Increase of cumulative counters over $timeFilter, summed per breakdown (DECISIONS.md D14b).
 
@@ -109,7 +113,7 @@ def increase_query(fields: dict[str, str], measurement: str, filters: tuple[str,
 
 
 def last_sum_query(field: str, measurement: str, filters: tuple[str, ...], group_by: tuple[str, ...] = (),
-                   series: tuple[str, ...] = ("db_instance", "datname", "usename")) -> str:
+                   series: tuple[str, ...] = SERIES) -> str:
     """Gauge (not a counter): last value per series over $timeFilter, summed per `group_by`."""
     tags = ", ".join(f'"{t}"' for t in series)
     query = (f'SELECT sum("{field}") AS "{field}" FROM ('
@@ -133,12 +137,27 @@ def var_rp() -> dashboard.CustomVariable:
     )
 
 
+def var_env() -> dashboard.QueryVariable:
+    """Environment (`env` tag = <ID>_ENV / PG_ENV of Telegraf), narrows the Instance list."""
+    return (
+        dashboard.QueryVariable("env")
+        .label("Env")
+        .datasource(DATASOURCE)
+        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "env"')
+        .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
+        .sort(dm.VariableSort.ALPHABETICAL_ASC)
+        .multi(True)
+        .include_all(True)
+        .all_value(".*")
+    )
+
+
 def var_instance() -> dashboard.QueryVariable:
     return (
         dashboard.QueryVariable("db_instance")
         .label("Instance")
         .datasource(DATASOURCE)
-        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "db_instance"')
+        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "db_instance" WHERE ' + F_ENV)
         .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
         .sort(dm.VariableSort.ALPHABETICAL_ASC)
         .multi(True)
@@ -152,7 +171,7 @@ def var_datname() -> dashboard.QueryVariable:
         dashboard.QueryVariable("datname")
         .label("Database")
         .datasource(DATASOURCE)
-        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "datname" WHERE ' + F_INSTANCE)
+        .query(f'SHOW TAG VALUES FROM {src("pg_db_limits")} WITH KEY = "datname" WHERE ' + F_ENV + " AND " + F_INSTANCE)
         .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
         .sort(dm.VariableSort.ALPHABETICAL_ASC)
         .multi(True)
@@ -166,7 +185,8 @@ def var_usename() -> dashboard.QueryVariable:
         dashboard.QueryVariable("usename")
         .label("User")
         .datasource(DATASOURCE)
-        .query(f'SHOW TAG VALUES FROM {src("pg_stmt_totals")} WITH KEY = "usename" WHERE ' + F_INSTANCE + " AND " + F_DATNAME)
+        .query(f'SHOW TAG VALUES FROM {src("pg_stmt_totals")} WITH KEY = "usename" WHERE '
+               + " AND ".join((F_ENV, F_INSTANCE, F_DATNAME)))
         .refresh(dm.VariableRefresh.ON_TIME_RANGE_CHANGED)
         .sort(dm.VariableSort.ALPHABETICAL_ASC)
         .multi(True)
@@ -269,6 +289,8 @@ def table_panel(
     wrap: list[str] | None = None,
     datasource: dm.DataSourceRef = DATASOURCE,
     target=influx_target,
+    transformations: list[dm.DataTransformerConfig] | None = None,
+    merge: bool = True,
 ) -> table.Panel:
     """Table from one InfluxQL query (resultFormat=table).
 
@@ -277,16 +299,20 @@ def table_panel(
     thresholds: column -> (warning, critical), colored background
     wrap:       columns with wrapped long text (query text)
     query:      one query or several (refId A, B, ...), rows are merged by equal tag columns
+    transformations: applied after merge (env compare diffs, builder/compare.py); Time is then dropped before
+                the merge too (the Time of last() differs between the queries)
+    merge:      False -> the queries are combined by `transformations` (e.g. joinByField)
     """
     panel = table.Panel().title(title).description(description).datasource(datasource)
     for i, q in enumerate([query] if isinstance(query, str) else query):
         panel = panel.with_target(target(q, chr(ord("A") + i), "table"))
-    panel = (
-        panel
-        .with_transformation(dm.DataTransformerConfig(id_val="merge", options={}))
-        .with_transformation(_organize(["Time"]))
-        .grid_pos(dm.GridPos(h=h, w=w, x=0, y=0))
-    )
+    if transformations is not None:
+        panel = panel.with_transformation(_organize(["Time"]))
+    if merge:
+        panel = panel.with_transformation(dm.DataTransformerConfig(id_val="merge", options={}))
+    panel = panel.with_transformation(_organize(["Time"])).grid_pos(dm.GridPos(h=h, w=w, x=0, y=0))
+    for transformation in transformations or []:
+        panel = panel.with_transformation(transformation)
     if sort_by:
         panel = panel.sort_by([_SortBy(sort_by)])
     for column, unit in (units or {}).items():

@@ -160,3 +160,36 @@
     ClickHouse output stays compose-only (`sync-files.sh` skips `output_clickhouse.conf`, like classic boards).
   - (f) Trade-offs: 4× metrics on one agent → `metric_buffer_limit` 40000, chart limit 512Mi; a restart stops
     collection for all instances at once; a broken DSN only fails its own inputs (per-input errors, `statement_timeout`).
+- **D22 `env` on the generated boards: filter + series key** (`dashboards/builder/common.py`, `builder/clickhouse.py`,
+  the 10 `pg-*` / `ch-*` generators; the hand-made `pgActivity` / `pgquery` / `pgstat` are not touched).
+  - (a) Why: the `env` tag / column (`<ID>_ENV`, default `PG_ENV`, D21) was collected but ignored by the boards, so two
+    envs with the same `db_instance` name were merged (counters summed, `last()` mixed).
+  - (b) Variable `Env` (multi, All = `.*`), first after `Retention`; `Instance` / `Database` / `User` are narrowed by it
+    (`WHERE env =~ /^$env$/`, ClickHouse `$__conditionalAll(env IN (...))`).
+  - (c) Series key: `env` prefixes every `GROUP BY` / `series` / `group_by` tuple (`common.SERIES`, `OBJ`, `ACTIVITY`,
+    …), so with Env = All every table has an `env` column and rows of different envs are never summed; time series
+    are split per env (legend `<tag> (<env>)` on pg-statements).
+  - (d) Links: `env` is in `FILTER_VARS` (self-filter links keep `${env:queryparam}`), drill-down links pass
+    `var-env=${__data.fields.env}`. Dashboard UIDs unchanged.
+  - (e) `check_queries.py` substitutes `$env = .*` and now also runs the `pg-*` variable queries.
+- **D23 Env comparison boards** (`dashboards/builder/compare.py`, `compare_*.py` → `pg-cmp-*`, `ch_compare_*.py` →
+  `ch-cmp-*`; Tables, Indexes, Statements, Schema drill, separate boards linked by the tag `pg-env-compare` /
+  `ch-env-compare`).
+  - (a) Layout: the same Instance in two envs, Env A left / Env B right (two `w=12` tables per topic), sorted
+    descending by the main metric; full-width diff tables: "only in A / B", Δ (B − A, `delta_pct` = Δ / A, sorted by
+    |Δ|), changed index flags.
+  - (b) Variables: `env_a` / `env_b` single value, `env_b` sorted descending (default ≠ `env_a`); `db_instance`
+    single value (InfluxDB: instances of env A; ClickHouse: of env A, the ones of both envs first); `datname` multi,
+    default All; Schema drill: `schemaname` single + `relname` regex textbox. Table / schema cells link to the drill.
+  - (c) InfluxDB has no joins: query A (`env = '$env_a'`, columns `*_a`) and B (`*_b`) group by the same tags
+    without env; Grafana drops Time (the `last()` timestamp differs), outer-merges them (`merge`), then
+    `filterByValue` (isNull → only in A / B), `calculateField` (Δ, Δ %, |Δ|), `sortBy`. ClickHouse: one SQL, per-object
+    rows of both envs → `anyIf(x, env = A)` / `countIf` (`compare.pair_query`), no transformations.
+  - (d) Activity is normalized as `share_pct` = share of the env total (loads differ): InfluxDB joins a per-env
+    total query on `env` (`joinByField` inner), ClickHouse `x / sum(x) OVER ()`.
+  - (e) Statements are matched by `query_mask_md5`, summed over users (roles may differ); ClickHouse takes the full
+    mask text from `pg_stmt_text`. md5 cells open `*-statement-detail` with `var-env` of that side.
+  - (f) Limits: top-N collection (300 tables / 500 indexes / 200 statements) → "only in" can mean "outside the
+    top-N"; objects dropped inside the range still appear. Grafana-side transformations are not covered by
+    `check_queries.py` (it runs the queries only); `CHECK_VARS=env_a=…,env_b=…,db_instance=…` pins the single-value
+    variables to a pair with data on both sides, `--only=cmp` limits the run.
