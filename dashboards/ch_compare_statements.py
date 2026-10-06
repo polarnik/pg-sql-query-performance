@@ -18,8 +18,10 @@ def _masks(env_filter: str, by_env: bool = False) -> str:
     """One row per (datname, query_mask_md5[, env]): totals over users + the mask text of pg_stmt_text."""
     env = ("env",) if by_env else ()
     keys = ", ".join(env + KEYS)
+    # pg_stmt_mask sums the variants of a mask: it drops when variants are evicted -> drops are ignored (D14b)
     per_user = series_query(
-        "pg_stmt_mask", {"total_ms": increase("total_exec_time"), "calls": increase("calls"), "rows": increase("rows")},
+        "pg_stmt_mask", {alias: increase(column, on_reset="ignore") for alias, column in
+                         {"total_ms": "total_exec_time", "calls": "calls", "rows": "rows"}.items()},
         (env_filter, CH_INSTANCE, CH_DATNAME), env + ("datname", "usename", "query_mask_md5"),
     )
     sums = (f"SELECT {keys}, sum(total_ms) AS s_total_ms, sum(calls) AS s_calls, sum(rows) AS s_rows "
