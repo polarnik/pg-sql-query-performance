@@ -11,7 +11,8 @@ SQL conventions:
   an alias equal to a column name inside other expressions of the same SELECT (nested aggregate errors).
 - counters (spread / non_negative_difference in pg-*): `increase()` sums the positive steps of every series;
   on a decrease (pg_stat_statements / pg_stat_database reset, entry re-admitted after dealloc) the new value
-  is counted (on_reset="value") or the step is ignored (on_reset="ignore", sums over many entries, D14b).
+  is counted (on_reset="value", one entry per series: pg_stmt) or the step is ignored (on_reset="ignore", sums
+  over many entries that drop on dealloc: pg_stmt_totals, pg_stmt_mask, D14b).
   Delta panels are never negative.
 """
 from __future__ import annotations
@@ -126,7 +127,8 @@ def increase(column: str, on_reset: str = "value") -> str:
     """Increase of a cumulative counter within the group over the range (replaces InfluxQL spread()).
 
     on_reset="value":  a decrease is a reset, the new value is the increase since the reset.
-    on_reset="ignore": a decrease is ignored (sums over many entries that drop on dealloc, D14b).
+    on_reset="ignore": a decrease is ignored (sums over many entries that drop on dealloc: pg_stmt_totals,
+                       pg_stmt_mask, D14b).
     """
     values = f"arraySort((v, t) -> t, groupArray(toFloat64({column})), groupArray(time))"
     if on_reset == "ignore":

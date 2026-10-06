@@ -52,17 +52,18 @@ def build():
         h=8, wrap=["query_mask"],
     ))
 
+    # pg_stmt_mask sums the variants of a mask: it drops when variants are evicted -> drops are ignored (D14b)
     board = board.with_panel(timeseries_panel(
         "Calls / s",
         rate_query("pg_stmt_mask", {"calls": "calls"}, (F_ENV, F_INSTANCE, F_MASK), MASK_SERIES,
-                   ("env", "db_instance", "usename"), on_reset="value"),
+                   ("env", "db_instance", "usename"), on_reset="ignore"),
         unit="ops", interval="1m",
     ))
     board = board.with_panel(timeseries_panel(
         "Mean time per call",
         rate_query("pg_stmt_mask", {"total_ms": "total_exec_time", "calls": "calls"}, (F_ENV, F_INSTANCE, F_MASK),
                    MASK_SERIES, ("env", "db_instance", "usename"),
-                   values={"mean_ms": div("sum({total_ms})", "sum({calls})")}, on_reset="value"),
+                   values={"mean_ms": div("sum({total_ms})", "sum({calls})")}, on_reset="ignore"),
         unit="ms", interval="1m",
         description="Execution time / calls per interval: a step up with steady calls means a plan / data regression.",
     ))
@@ -70,7 +71,7 @@ def build():
         "Rows per call",
         rate_query("pg_stmt_mask", {"rows": "rows", "calls": "calls"}, (F_ENV, F_INSTANCE, F_MASK),
                    MASK_SERIES, ("env", "db_instance", "usename"),
-                   values={"rows": div("sum({rows})", "sum({calls})")}, on_reset="value"),
+                   values={"rows": div("sum({rows})", "sum({calls})")}, on_reset="ignore"),
         interval="1m",
         description="Rows returned / affected per call: growth means the result set (data or filter) changes.",
     ))
@@ -79,7 +80,7 @@ def build():
         rate_query("pg_stmt_mask", {"hit": "shared_blks_hit", "read": "shared_blks_read", "calls": "calls"},
                    (F_ENV, F_INSTANCE, F_MASK), MASK_SERIES, ("env", "db_instance", "usename"),
                    values={"blks_hit": div("sum({hit})", "sum({calls})"),
-                           "blks_read": div("sum({read})", "sum({calls})")}, on_reset="value"),
+                           "blks_read": div("sum({read})", "sum({calls})")}, on_reset="ignore"),
         interval="1m",
         description="Buffer hits / reads per call (8 KB blocks): growth with steady rows per call means "
                     "more pages scanned for the same result (plan change, bloat).",

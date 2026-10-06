@@ -146,8 +146,11 @@
     Filters: `$__timeFilter(time)`, `$__conditionalAll(col IN (${var:singlequote}), $var)` (no commas inside),
     textbox variables via `match(col, '^(…)$')`.
   - (c) Counter increase (replaces `spread()` / `non_negative_difference`, D4, D14b) = sum of the positive steps per
-    series (`lagInFrame`) → never negative. Per-entry counters count the new value after a reset; `pg_stmt_totals`
-    sums ignore drops (dealloc, as in D14b). Rates per bucket use the same steps divided by the time delta.
+    series (`lagInFrame`) → never negative. Per-entry counters (`pg_stmt`) count the new value after a reset;
+    `pg_stmt_totals` and `pg_stmt_mask` sums ignore drops (dealloc, as in D14b). A mask sums 60–80 variants that are
+    evicted and re-admitted every few minutes: counting the new value showed the whole cumulative sum as the increase
+    (35 min instead of ~330 ms). Cost: a real `pg_stat_statements_reset()` step counts 0. Rates per bucket use the
+    same steps divided by the time delta.
   - (d) Inner aliases are named `c_*`: ClickHouse resolves an alias equal to a column name inside other expressions
     (code 184, nested aggregate).
   - (e) `check_queries.py --clickhouse` runs every variable and panel query through Grafana `/api/ds/query` on

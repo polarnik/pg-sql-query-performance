@@ -24,7 +24,8 @@ TOTALS_NOTE = ("Sum over ALL pg_stat_statements entries (pg_stmt_totals), increa
 FILTER_LINKS = {tag: (f"Filter board by {tag}", field_filter_url(UID_STATEMENTS, tag))
                 for tag in ("env", "db_instance", "datname", "usename")}
 
-# per-entry counters of pg_stmt_mask / pg_stmt (spread() in pg-*): alias -> counter
+# counters of pg_stmt_mask / pg_stmt (spread() in pg-*): alias -> counter. pg_stmt (one entry per series): a drop
+# is a reset (on_reset="value"); pg_stmt_mask (sum over the variants): drops when variants are evicted -> ignored (D14b)
 ENTRY = {"total_ms": "total_exec_time", "calls": "calls", "rows": "rows", "blks_read": "shared_blks_read",
          "blks_hit": "shared_blks_hit", "temp_blks_written": "temp_blks_written"}
 
@@ -109,7 +110,7 @@ def build():
         "Top query masks",
         series_query(
             "pg_stmt_mask",
-            {**{alias: increase(column) for alias, column in ENTRY.items()},
+            {**{alias: increase(column, on_reset="ignore") for alias, column in ENTRY.items()},
              "variants": last("variants"), "query_mask": last("query_mask_short")},
             ALL_FILTERS, SERIES + ("query_mask_md5",),
             extra={"mean_ms": MEAN},
